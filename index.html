@@ -1,49 +1,59 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="ar">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>لعبة ماريو 2D</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>لعبة ماريو الجوال</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="icon" type="image/x-icon" href="/assets/favicon.ico">
+    <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
 </head>
 <body>
-    <div class="container">
-        <!-- شاشة البداية -->
-        <div id="startScreen" class="screen">
-            <h1>✨ لعبة ماريو ✨</h1>
-            <p>حرك الشخصية باستخدام الأزرار</p>
-            <button id="startButton">ابدأ اللعبة</button>
-            <button id="horizontalTip">💡 تأكد من تدوير هاتفك أفقيًا</button>
+    <!-- إشعار الهاتف -->
+    <div id="orientationWarning">
+        🔄 يُرجى تدوير هاتفك أفقيًا
+    </div>
+
+    <!-- واجهة اللعبة -->
+    <div class="game-container">
+        <!-- معلومات اللعبة -->
+        <div class="game-info">
+            <div class="info-box">
+                <span>⏱ <span id="timer">120</span>ث</span>
+                <span>⭐ <span id="score">0</span></span>
+                <span>❤ <span id="lives">3</span></span>
+            </div>
+            <button id="pauseBtn">⏸</button>
         </div>
 
-        <!-- شاشة اللعبة -->
-        <div id="gameScreen" class="screen hidden">
-            <div class="game-header">
-                <span>الوقت: <span id="time">100</span></span>
-                <span>النقاط: <span id="score">0</span></span>
-                <span>الحياة: <span id="lives">3</span></span>
-            </div>
+        <!-- منطقة اللعبة -->
+        <canvas id="gameCanvas"></canvas>
 
-            <div class="game-container">
-                <canvas id="gameCanvas"></canvas>
+        <!-- أزرار التحكم -->
+        <div class="controls">
+            <div class="left-controls">
+                <button id="leftBtn" class="control-btn">←</button>
+                <button id="rightBtn" class="control-btn">→</button>
             </div>
-
-            <!-- أزرار التحكم للهاتف -->
-            <div class="mobile-controls">
-                <button class="control-btn" id="leftBtn">◀</button>
-                <button class="control-btn" id="jumpBtn">⬆</button>
-                <button class="control-btn" id="rightBtn">▶</button>
+            <div class="right-controls">
+                <button id="jumpBtn" class="control-btn jump-btn">⬆ قفز</button>
+                <button id="actionBtn" class="control-btn">⚡</button>
             </div>
+        </div>
 
-            <button id="pauseBtn">إيقاف مؤقت</button>
+        <!-- شاشة الإيقاف المؤقت -->
+        <div id="pauseMenu" class="menu hidden">
+            <h2>⏸ اللعبة متوقفة</h2>
+            <button id="resumeBtn">▶ استئناف</button>
+            <button id="restartBtn">🔄 إعادة</button>
+            <button id="soundBtn">🔊 صوت: تشغيل</button>
         </div>
 
         <!-- شاشة النهاية -->
-        <div id="endScreen" class="screen hidden">
-            <h2 id="endMessage">!انتهت اللعبة</h2>
-            <p>النقاط النهائية: <span id="finalScore">0</span></p>
-            <button id="restartButton">العب مجدداً</button>
+        <div id="gameOverMenu" class="menu hidden">
+            <h2 id="gameOverTitle">انتهت اللعبة!</h2>
+            <p>🎯 النقاط: <span id="finalScore">0</span></p>
+            <button id="playAgainBtn">🎮 لعب مجدداً</button>
         </div>
     </div>
 
