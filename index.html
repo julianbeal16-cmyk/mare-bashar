@@ -2,24 +2,12 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
-    <title>لعبة ماريو 2024</title>
+    <title>لعبة ماريو 2D - جاهزة</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="manifest" href="manifest.json">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎮</text></svg>">
     <style>
-        /* منع التمرير على الهاتف */
-        body, html {
-            overflow: hidden;
-            position: fixed;
-            width: 100%;
-            height: 100%;
-            margin: 0;
-            padding: 0;
-        }
-        
         /* رسالة الهاتف العمودي */
         #portrait-warning {
             display: none;
@@ -40,51 +28,92 @@
         }
         
         #portrait-warning h1 {
-            font-size: 2.5rem;
+            font-size: 3rem;
             margin-bottom: 30px;
             animation: rotate 2s infinite linear;
         }
         
-        #portrait-warning p {
-            font-size: 1.5rem;
-            margin: 10px 0;
-            color: #fff;
+        @keyframes rotate {
+            0%, 100% { transform: rotate(0deg); }
+            50% { transform: rotate(180deg); }
         }
         
-        @keyframes rotate {
+        @media (orientation: portrait) {
+            #portrait-warning { display: flex; }
+            #game-container { display: none !important; }
+        }
+        
+        @media (orientation: landscape) {
+            #portrait-warning { display: none; }
+        }
+        
+        /* التحميل */
+        #loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            transition: opacity 0.5s;
+        }
+        
+        .spinner {
+            width: 80px;
+            height: 80px;
+            border: 8px solid rgba(255, 255, 255, 0.1);
+            border-top: 8px solid #FFD700;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+        
+        @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
         
-        @media (orientation: portrait) {
-            #portrait-warning {
-                display: flex;
-            }
-            #game-container {
-                display: none !important;
-            }
+        #loading p {
+            color: #FFD700;
+            font-size: 1.5rem;
+            margin: 10px 0;
+        }
+        
+        #loading-progress {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #2ecc71;
         }
     </style>
 </head>
 <body>
-    <!-- رسالة الهاتف العمودي -->
+    <!-- رسالة تدوير الهاتف -->
     <div id="portrait-warning">
-        <h1>↻ 🔄 ↺</h1>
-        <p>اللعبة تعمل في الوضع الأفقي فقط</p>
-        <p>يرجى تدوير هاتفك</p>
-        <p style="margin-top: 40px; font-size: 1rem; color: #aaa;">
-            أو قم بتشغيل "تثبيت الدوران" في إعدادات هاتفك
-        </p>
+        <h1>↻</h1>
+        <p style="font-size: 2rem; margin-bottom: 20px;">اللعبة تعمل في الوضع الأفقي</p>
+        <p style="font-size: 1.2rem;">يرجى تدوير هاتفك</p>
+    </div>
+
+    <!-- شاشة التحميل -->
+    <div id="loading">
+        <div class="spinner"></div>
+        <p>جاري تحميل اللعبة...</p>
+        <p id="loading-progress">0%</p>
     </div>
 
     <!-- حاوية اللعبة الرئيسية -->
-    <div id="game-container">
+    <div id="game-container" style="display: none;">
         <!-- شاشة البداية -->
         <div id="start-screen" class="screen active">
             <div class="logo">
                 <h1>🎮 SUPER MARIO 2D</h1>
                 <div class="character-preview">
-                    <div id="player-preview"></div>
+                    <img id="player-preview-img" src="" alt="شخصية اللعبة" style="width: 80px; height: 120px; border-radius: 10px;">
                 </div>
             </div>
             
@@ -102,16 +131,15 @@
                     <span class="key">🟡</span>
                     <span>اجمع العملات</span>
                 </div>
-                <div class="instruction-item">
-                    <span class="key">⚠️</span>
-                    <span>تجنب الوحوش</span>
-                </div>
             </div>
             
             <div class="settings">
                 <div class="setting-item">
-                    <label for="volume">🔊 مستوى الصوت</label>
-                    <input type="range" id="volume" min="0" max="100" value="70">
+                    <label>🔊 الصوت</label>
+                    <label class="switch">
+                        <input type="checkbox" id="sound-toggle" checked>
+                        <span class="slider"></span>
+                    </label>
                 </div>
                 <div class="setting-item">
                     <label for="difficulty">⚡ الصعوبة</label>
@@ -126,48 +154,40 @@
             <div class="buttons">
                 <button id="start-btn" class="btn-primary">🚀 ابدأ اللعبة</button>
                 <button id="howto-btn" class="btn-secondary">❓ المساعدة</button>
-                <button id="credits-btn" class="btn-secondary">👑 الإنجازات</button>
             </div>
             
             <div class="stats">
                 <div class="stat">
-                    <span>⏱ أفضل وقت:</span>
-                    <span id="best-time">00:00</span>
+                    <span>⭐ أفضل نتيجة:</span>
+                    <span id="high-score">0</span>
                 </div>
                 <div class="stat">
-                    <span>⭐ أعلى نقاط:</span>
-                    <span id="high-score">0</span>
+                    <span>🎮 مستويات:</span>
+                    <span id="total-levels">3</span>
                 </div>
             </div>
         </div>
         
         <!-- شاشة اللعب -->
         <div id="game-screen" class="screen">
-            <!-- معلومات اللعبة العلوية -->
+            <!-- شريط المعلومات -->
             <div class="game-header">
                 <div class="game-info">
                     <div class="info-item">
-                        <span class="icon">⏱</span>
-                        <span id="timer">02:00</span>
+                        <span>⏱ <span id="timer">02:00</span></span>
                     </div>
                     <div class="info-item">
-                        <span class="icon">⭐</span>
-                        <span id="score">0</span>
+                        <span>⭐ <span id="score">0</span></span>
                     </div>
                     <div class="info-item">
-                        <span class="icon">❤️</span>
-                        <span id="lives">3</span>
+                        <span>❤️ <span id="lives">3</span></span>
                     </div>
                     <div class="info-item">
-                        <span class="icon">🎯</span>
-                        <span id="level">1</span>
+                        <span>🎯 <span id="level">1</span></span>
                     </div>
                 </div>
-                
                 <div class="game-controls">
                     <button id="pause-btn" class="control-btn">⏸</button>
-                    <button id="sound-toggle" class="control-btn">🔊</button>
-                    <button id="fullscreen-btn" class="control-btn">⛶</button>
                 </div>
             </div>
             
@@ -177,34 +197,23 @@
                 
                 <!-- أزرار التحكم للهاتف -->
                 <div class="mobile-controls">
-                    <div class="d-pad">
-                        <div class="d-pad-row">
-                            <button class="d-pad-btn" id="up-btn">↑</button>
-                        </div>
-                        <div class="d-pad-row">
-                            <button class="d-pad-btn" id="left-btn">←</button>
-                            <div class="d-pad-center"></div>
-                            <button class="d-pad-btn" id="right-btn">→</button>
-                        </div>
-                        <div class="d-pad-row">
-                            <button class="d-pad-btn" id="down-btn">↓</button>
-                        </div>
+                    <div class="left-controls">
+                        <button id="left-btn" class="control-btn">←</button>
+                        <button id="right-btn" class="control-btn">→</button>
                     </div>
-                    
-                    <div class="action-buttons">
-                        <button class="action-btn" id="jump-btn">قفز</button>
-                        <button class="action-btn" id="action-btn">تشغيل</button>
-                        <button class="action-btn" id="run-btn">جري</button>
+                    <div class="right-controls">
+                        <button id="jump-btn" class="control-btn action-btn">قفز</button>
                     </div>
                 </div>
             </div>
             
             <!-- شريط التقدم -->
-            <div class="progress-bar">
-                <div class="progress-fill" id="level-progress"></div>
-                <div class="progress-label">
+            <div class="progress-container">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="level-progress"></div>
+                </div>
+                <div class="progress-labels">
                     <span>البداية</span>
-                    <span>العلامة</span>
                     <span>الهدف</span>
                 </div>
             </div>
@@ -223,21 +232,11 @@
                         <span>النقاط:</span>
                         <span id="pause-score">0</span>
                     </div>
-                    <div class="stat-box">
-                        <span>المستوى:</span>
-                        <span id="pause-level">1</span>
-                    </div>
                 </div>
-                
                 <div class="pause-buttons">
                     <button id="resume-btn" class="btn-primary">▶ استمرار</button>
                     <button id="restart-btn" class="btn-secondary">🔄 إعادة</button>
-                    <button id="settings-btn" class="btn-secondary">⚙ إعدادات</button>
-                    <button id="quit-btn" class="btn-danger">🚪 خروج</button>
-                </div>
-                
-                <div class="hint">
-                    💡 اضغط ESC أو زر الإيقاف للعودة
+                    <button id="quit-btn" class="btn-danger">🏠 خروج</button>
                 </div>
             </div>
         </div>
@@ -247,36 +246,26 @@
             <div class="end-content">
                 <div id="end-icon">🏆</div>
                 <h2 id="end-title">تهانينا!</h2>
-                <p id="end-message">أحسنت! لقد أكملت المستوى</p>
+                <p id="end-message">لقد أكملت المستوى</p>
                 
                 <div class="end-stats">
                     <div class="end-stat">
-                        <span>الوقت المستغرق:</span>
-                        <span id="end-time">02:00</span>
-                    </div>
-                    <div class="end-stat">
-                        <span>النقاط النهائية:</span>
+                        <span>النتيجة النهائية:</span>
                         <span id="end-score">0</span>
                     </div>
                     <div class="end-stat">
-                        <span>العملات المجموعة:</span>
+                        <span>العملات:</span>
                         <span id="end-coins">0/10</span>
                     </div>
                     <div class="end-stat">
-                        <span>الوحوش المهزومة:</span>
-                        <span id="end-enemies">0</span>
+                        <span>الوقت المتبقي:</span>
+                        <span id="end-time">00:00</span>
                     </div>
                 </div>
                 
                 <div class="end-buttons">
-                    <button id="next-level-btn" class="btn-primary">⏭ المستوى التالي</button>
-                    <button id="play-again-btn" class="btn-secondary">🔄 لعب مجدداً</button>
-                    <button id="main-menu-btn" class="btn-secondary">🏠 القائمة الرئيسية</button>
-                </div>
-                
-                <div class="achievements">
-                    <h3>🏅 الإنجازات</h3>
-                    <div id="achievements-list"></div>
+                    <button id="play-again-btn" class="btn-primary">🔄 لعب مجدداً</button>
+                    <button id="main-menu-btn" class="btn-secondary">🏠 القائمة</button>
                 </div>
             </div>
         </div>
@@ -284,85 +273,28 @@
         <!-- نافذة المساعدة -->
         <div id="help-modal" class="modal">
             <div class="modal-content">
-                <h2>❓ المساعدة والدعم</h2>
-                <div class="help-sections">
-                    <div class="help-section">
-                        <h3>🎮 التحكم</h3>
-                        <p><strong>لوحة المفاتيح:</strong> استخدم الأسهم للحركة، SPACE للقفز</p>
-                        <p><strong>الهاتف:</strong> استخدم الأزرار الافتراضية على الشاشة</p>
-                        <p><strong>الماوس:</strong> اضغط على الأزرار للتحكم</p>
-                    </div>
-                    <div class="help-section">
-                        <h3>🎯 الأهداف</h3>
-                        <ul>
-                            <li>اجمع كل العملات الذهبية 🟡</li>
-                            <li>تجنب الوحوش الحمراء 👾</li>
-                            <li>وصل إلى العلم في نهاية كل مستوى 🏁</li>
-                            <li>لا تسقط من المنصات ⚠️</li>
-                        </ul>
-                    </div>
-                    <div class="help-section">
-                        <h3>💪 القوى الخاصة</h3>
-                        <p><strong>الزهرة 🔥:</strong> تمكنك من إطلاق النار</p>
-                        <strong>الفطر 🍄:</strong> تكبر حجمك وتصبح أقوى</p>
-                        <p><strong>النجمة ⭐:</strong> تجعلك منيعاً لفترة محدودة</p>
-                    </div>
+                <h2>❓ المساعدة</h2>
+                <div class="help-content">
+                    <h3>🎮 التحكم</h3>
+                    <p>• استخدم مفاتيح الأسهم ← → للحركة</p>
+                    <p>• مفتاح SPACE أو زر القفز للقفز</p>
+                    <p>• على الهاتف: استخدم الأزرار الظاهرة</p>
+                    
+                    <h3>🎯 الأهداف</h3>
+                    <p>• اجمع جميع العملات الذهبية 🟡</p>
+                    <p>• تجنب الوقوع من المنصات</p>
+                    <p>• اهزم الوحوش بالقفز عليهم</p>
+                    
+                    <h3>💪 القوى</h3>
+                    <p>• 🍄 الفطر: يزيد حجمك</p>
+                    <p>• ⭐ النجمة: تجعلك منيعاً</p>
                 </div>
                 <button id="close-help" class="btn-primary">فهمت ✓</button>
             </div>
         </div>
-        
-        <!-- نافذة الإنجازات -->
-        <div id="credits-modal" class="modal">
-            <div class="modal-content">
-                <h2>👑 سجل الإنجازات</h2>
-                <div class="credits-list">
-                    <div class="credit-item">
-                        <span class="credit-icon">🥇</span>
-                        <div class="credit-info">
-                            <strong>الفوز لأول مرة</strong>
-                            <span>اكمل المستوى الأول</span>
-                        </div>
-                        <span class="credit-status" id="ach-1">🔒</span>
-                    </div>
-                    <div class="credit-item">
-                        <span class="credit-icon">💰</span>
-                        <div class="credit-info">
-                            <strong>جامع الكنوز</strong>
-                            <span>اجمع 100 عملة</span>
-                        </div>
-                        <span class="credit-status" id="ach-2">🔒</span>
-                    </div>
-                    <div class="credit-item">
-                        <span class="credit-icon">⚡</span>
-                        <div class="credit-info">
-                            <strong>الصاعقة</strong>
-                            <span>انهِ مستوى في أقل من دقيقة</span>
-                        </div>
-                        <span class="credit-status" id="ach-3">🔒</span>
-                    </div>
-                    <div class="credit-item">
-                        <span class="credit-icon">👻</span>
-                        <div class="credit-info">
-                            <strong>صائد الوحوش</strong>
-                            <span>اهزم 20 وحشاً</span>
-                        </div>
-                        <span class="credit-status" id="ach-4">🔒</span>
-                    </div>
-                </div>
-                <button id="close-credits" class="btn-primary">رجوع ←</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- رسالة التحميل -->
-    <div id="loading">
-        <div class="spinner"></div>
-        <p>جاري تحميل اللعبة...</p>
-        <p id="loading-progress">0%</p>
     </div>
 
     <!-- ملف JavaScript -->
-    <script src="script.js"></script>
+    <script src="game.js"></script>
 </body>
 </html>
