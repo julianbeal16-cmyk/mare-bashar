@@ -1,216 +1,263 @@
-/* إعدادات أساسية */
+/* إعدادات الهاتف الأفقي */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    touch-action: manipulation;
+    user-select: none;
 }
 
 body {
-    background: linear-gradient(135deg, #1a1a2e, #16213e);
-    color: #fff;
-    min-height: 100vh;
+    background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+    font-family: 'Arial', sans-serif;
+    overflow: hidden;
+    width: 100vw;
+    height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
-    overflow: hidden;
-    padding: 10px;
+    position: fixed;
 }
 
-.container {
+/* إشعار الهاتف */
+#orientationWarning {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
     width: 100%;
-    max-width: 1000px;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.9);
+    color: #FFD700;
+    font-size: 2rem;
     text-align: center;
-    background: rgba(25, 25, 35, 0.9);
-    border-radius: 20px;
-    padding: 20px;
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
-    border: 2px solid #3498db;
+    padding-top: 40%;
+    z-index: 1000;
 }
 
-/* شاشات اللعبة */
-.screen {
+/* الوضع العمودي - إظهار التحذير */
+@media (orientation: portrait) {
+    #orientationWarning {
+        display: block;
+    }
+    .game-container {
+        display: none !important;
+    }
+}
+
+/* حاوية اللعبة */
+.game-container {
+    width: 100%;
+    max-width: 100%;
+    height: 100vh;
+    max-height: 100vh;
+    position: relative;
+    overflow: hidden;
+    background: #1a1a2e;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+/* معلومات اللعبة */
+.game-info {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    right: 10px;
+    z-index: 10;
     display: flex;
-    flex-direction: column;
+    justify-content: space-between;
     align-items: center;
-    gap: 25px;
-    padding: 30px 20px;
+}
+
+.info-box {
+    background: rgba(0, 0, 0, 0.7);
+    padding: 10px 20px;
+    border-radius: 20px;
+    display: flex;
+    gap: 20px;
+    color: white;
+    font-size: 1.3rem;
+    font-weight: bold;
+    border: 2px solid #FFD700;
+}
+
+#pauseBtn {
+    background: #3498db;
+    color: white;
+    border: none;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    font-size: 1.5rem;
+    cursor: pointer;
+    box-shadow: 0 4px 0 #2980b9;
+}
+
+/* منطقة اللعبة */
+canvas {
+    width: 100%;
+    height: 70vh;
+    display: block;
+    background: linear-gradient(to bottom, #87CEEB 40%, #5DADE2 70%, #3498DB 100%);
+    position: absolute;
+    top: 70px;
+    left: 0;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+}
+
+/* أزرار التحكم */
+.controls {
+    position: absolute;
+    bottom: 20px;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: space-between;
+    padding: 0 20px;
+    z-index: 20;
+}
+
+.left-controls, .right-controls {
+    display: flex;
+    gap: 15px;
+}
+
+.control-btn {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(145deg, #2C3E50, #34495E);
+    border: 4px solid #1C2833;
+    color: white;
+    font-size: 1.8rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 6px 0 #1C2833, inset 0 2px 5px rgba(255,255,255,0.2);
+    transition: all 0.1s;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.control-btn:active {
+    transform: translateY(4px);
+    box-shadow: 0 2px 0 #1C2833;
+}
+
+.jump-btn {
+    background: linear-gradient(145deg, #E74C3C, #C0392B);
+    border-color: #922B21;
+    font-size: 1.3rem;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.jump-btn::before {
+    content: "⬆";
+    font-size: 1.8rem;
+}
+
+/* الشاشات المنبثقة */
+.menu {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(25, 25, 35, 0.95);
+    padding: 30px;
+    border-radius: 20px;
+    border: 3px solid #FFD700;
+    text-align: center;
+    z-index: 100;
+    min-width: 300px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+.menu h2 {
+    color: #FFD700;
+    margin-bottom: 25px;
+    font-size: 2rem;
+}
+
+.menu p {
+    color: #BDC3C7;
+    font-size: 1.3rem;
+    margin: 15px 0;
+}
+
+.menu button {
+    background: linear-gradient(145deg, #2ECC71, #27AE60);
+    color: white;
+    border: none;
+    padding: 15px 30px;
+    margin: 10px;
+    border-radius: 15px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    cursor: pointer;
+    width: 90%;
+    display: block;
+    box-shadow: 0 5px 0 #1E8449;
+}
+
+.menu button:hover {
+    background: linear-gradient(145deg, #27AE60, #219653);
 }
 
 .hidden {
     display: none !important;
 }
 
-h1, h2 {
-    color: #f1c40f;
-    text-shadow: 0 3px 6px rgba(0, 0, 0, 0.4);
-    margin-bottom: 10px;
+/* التأثيرات */
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
 }
 
-p {
-    color: #bdc3c7;
-    font-size: 1.1rem;
-    max-width: 80%;
-    line-height: 1.6;
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
 }
 
-/* الأزرار */
-button {
-    background: linear-gradient(145deg, #2ecc71, #27ae60);
-    color: white;
-    border: none;
-    padding: 14px 30px;
-    font-size: 1.1rem;
-    border-radius: 50px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-weight: bold;
-    box-shadow: 0 6px 0 #1e8449;
-    margin: 8px;
-    min-width: 180px;
-}
-
-button:hover {
-    background: linear-gradient(145deg, #27ae60, #219653);
-    transform: translateY(-3px);
-    box-shadow: 0 9px 0 #1e8449;
-}
-
-button:active {
-    transform: translateY(2px);
-    box-shadow: 0 3px 0 #1e8449;
-}
-
-#horizontalTip {
-    background: linear-gradient(145deg, #e74c3c, #c0392b);
-    box-shadow: 0 6px 0 #922b21;
-    font-size: 0.95rem;
-    padding: 12px 20px;
-}
-
-/* منطقة اللعبة */
-.game-header {
-    display: flex;
-    justify-content: space-around;
-    width: 100%;
-    background: rgba(44, 62, 80, 0.85);
-    padding: 15px;
-    border-radius: 15px;
-    font-size: 1.3rem;
-    font-weight: bold;
-    color: #f1c40f;
-    border: 2px solid #2980b9;
-    margin-bottom: 20px;
-}
-
-.game-container {
-    width: 100%;
-    background: #0c2461;
-    border-radius: 10px;
-    overflow: hidden;
-    position: relative;
-    border: 4px solid #1e3799;
-    box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.6);
-    aspect-ratio: 16 / 9; /* نسبة العرض للأفقي */
-    max-height: 70vh;
-}
-
-#gameCanvas {
-    width: 100%;
-    height: 100%;
-    display: block;
-    background: linear-gradient(to bottom, #87CEEB 60%, #98FB98 100%);
-}
-
-/* أزرار التحكم للهاتف */
-.mobile-controls {
-    display: none; /* ستظهر فقط على الهاتف */
-    justify-content: space-between;
-    width: 100%;
-    max-width: 400px;
-    margin-top: 25px;
-    padding: 0 20px;
-}
-
-.control-btn {
-    width: 75px;
-    height: 75px;
-    border-radius: 50%;
-    font-size: 1.8rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: linear-gradient(145deg, #3498db, #2980b9);
-    box-shadow: 0 8px 0 #1c5a7a;
-    user-select: none;
-}
-
-/* تجاوب مع الهاتف - الأكثر أهمية */
-@media only screen and (max-width: 768px) {
-    /* إجبار المشاهد الأفقي */
-    body:after {
-        content: "↻ يُرجى تدوير الهاتف إلى الوضع الأفقي";
-        display: block;
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0, 0, 0, 0.95);
-        color: #f1c40f;
-        font-size: 2rem;
-        padding-top: 40%;
-        text-align: center;
-        z-index: 1000;
-    }
-
-    /* إخفاء الرسالة عندما يكون الهاتف في الوضع الأفقي */
-    @media (orientation: landscape) {
-        body:after {
-            display: none;
-        }
-        
-        .mobile-controls {
-            display: flex;
-        }
-        
-        .game-header {
-            font-size: 1rem;
-            padding: 10px;
-        }
-        
-        button {
-            padding: 12px 20px;
-            font-size: 1rem;
-            min-width: 150px;
-        }
-        
-        .container {
-            padding: 15px;
-            margin: 5px;
-            border-radius: 15px;
-        }
-    }
-
-    @media (orientation: portrait) {
-        .container {
-            transform: scale(0.9);
-        }
-    }
-}
-
-@media only screen and (max-width: 480px) {
-    h1 {
-        font-size: 1.8rem;
+/* تعديلات للشاشات الصغيرة */
+@media (max-width: 768px) {
+    .control-btn {
+        width: 70px;
+        height: 70px;
+        font-size: 1.5rem;
     }
     
-    p {
-        font-size: 1rem;
+    .info-box {
+        font-size: 1.1rem;
+        padding: 8px 15px;
     }
     
+    canvas {
+        height: 65vh;
+        top: 60px;
+    }
+}
+
+@media (max-width: 480px) {
     .control-btn {
         width: 65px;
         height: 65px;
-        font-size: 1.5rem;
+        font-size: 1.3rem;
+    }
+    
+    .controls {
+        padding: 0 10px;
+    }
+    
+    .left-controls, .right-controls {
+        gap: 10px;
+    }
+    
+    .menu {
+        min-width: 250px;
+        padding: 20px;
     }
 }
