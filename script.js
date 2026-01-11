@@ -1,321 +1,517 @@
-// تهيئة العناصر
-const startScreen = document.getElementById('startScreen');
-const gameScreen = document.getElementById('gameScreen');
-const endScreen = document.getElementById('endScreen');
-const startButton = document.getElementById('startButton');
-const restartButton = document.getElementById('restartButton');
-const pauseButton = document.getElementById('pauseBtn');
+// ========== تهيئة اللعبة ==========
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
-// أزرار التحكم للهاتف
-const leftBtn = document.getElementById('leftBtn');
-const rightBtn = document.getElementById('rightBtn');
-const jumpBtn = document.getElementById('jumpBtn');
+// إعداد حجم اللعبة للهاتف الأفقي
+function setupCanvas() {
+    const isMobile = window.innerWidth <= 768;
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight * 0.7; // 70% من الشاشة للعبة
+}
+setupCanvas();
+window.addEventListener('resize', setupCanvas);
 
-// عناصر العرض
-const scoreElement = document.getElementById('score');
-const timeElement = document.getElementById('time');
-const livesElement = document.getElementById('lives');
-const finalScoreElement = document.getElementById('finalScore');
-const endMessageElement = document.getElementById('endMessage');
+// ========== تحميل الصور ==========
+const images = {
+    player: new Image(),
+    bg: new Image(),
+    ground: new Image(),
+    coin: new Image(),
+    enemy: new Image()
+};
 
-// إعداد اللعبة
-canvas.width = 800;
-canvas.height = 450;
+// المسارات النسبية (اضبطها حسب موقع ملفاتك)
+images.player.src = 'assets/character.png';  // صورتك هنا
+images.bg.src = 'assets/bg.png';
+images.ground.src = 'assets/ground.png';
 
-let gameRunning = false;
-let gamePaused = false;
-let score = 0;
-let timeLeft = 100;
-let lives = 3;
-let keys = {};
+// صور افتراضية إذا لم توجد الصور
+images.player.onerror = () => {
+    images.player.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA0MCA2MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAiIGhlaWdodD0iNjAiIGZpbGw9IiNFNzRDM0MiLz48cmVjdCB4PSIxMCIgeT0iMTAiIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCIgZmlsbD0iIzJDM0U1MCIvPjxjaXJjbGUgY3g9IjIwIiBjeT0iMjUiIHI9IjUiIGZpbGw9IiNGRkZGRkYiLz48L3N2Zz4=';
+};
 
-// الشخصية (سيتم تحميل صورتها لاحقاً)
+images.bg.onerror = () => {
+    // خلفية افتراضية
+    images.bg.loaded = false;
+};
+
+images.ground.onerror = () => {
+    images.ground.loaded = false;
+};
+
+// ========== العناصر الأساسية ==========
 const player = {
     x: 100,
     y: 300,
     width: 40,
     height: 60,
-    speed: 5,
+    speed: 8,
+    velX: 0,
     velY: 0,
-    jumping: false,
+    jumpPower: -20,
     grounded: false,
-    image: new Image()
+    facingRight: true,
+    isJumping: false
 };
 
-// 1. استبدل هذا المسار بمسار صورتك الشخصية على GitHub
-player.image.src = 'assets/mario.png';
+// الأرض والمنصات
+const ground = {
+    y: canvas.height - 50,
+    height: 50
+};
 
-// المنصات (الأرض والعوائق)
 const platforms = [
-    { x: 0, y: 400, width: 800, height: 50 },
-    { x: 200, y: 300, width: 150, height: 20 },
-    { x: 500, y: 250, width: 150, height: 20 },
-    { x: 300, y: 150, width: 150, height: 20 }
+    { x: 300, y: 250, width: 150, height: 20 },
+    { x: 600, y: 200, width: 150, height: 20 },
+    { x: 900, y: 150, width: 150, height: 20 },
+    { x: 1200, y: 300, width: 200, height: 20 }
 ];
 
 // العملات
-const coins = [
-    { x: 250, y: 270, collected: false },
-    { x: 550, y: 220, collected: false },
-    { x: 350, y: 120, collected: false },
-    { x: 450, y: 120, collected: false }
-];
+const coins = [];
+for (let i = 0; i < 20; i++) {
+    coins.push({
+        x: 200 + i * 150,
+        y: 100 + Math.random() * 200,
+        collected: false,
+        radius: 10
+    });
+}
 
-// تحميل الصور
-const images = {
-    background: new Image(),
-    block: new Image()
+// متغيرات اللعبة
+let gameState = {
+    score: 0,
+    lives: 3,
+    timeLeft: 120,
+    gameRunning: true,
+    paused: false,
+    gameOver: false
 };
 
-// 2. استبدل هذه المسارات بصورك على GitHub
-images.background.src = 'assets/background.png';
-images.block.src = 'assets/block.png';
+// الكاميرا
+const camera = {
+    x: 0,
+    y: 0,
+    width: canvas.width,
+    height: canvas.height
+};
 
-// إدارة لوحة المفاتيح
-window.addEventListener('keydown', e => keys[e.code] = true);
-window.addEventListener('keyup', e => keys[e.code] = false);
+// ========== التحكم ==========
+const keys = {};
 
-// أزرار التحكم للهاتف
-leftBtn.addEventListener('touchstart', () => keys['ArrowLeft'] = true);
-leftBtn.addEventListener('touchend', () => keys['ArrowLeft'] = false);
-
-rightBtn.addEventListener('touchstart', () => keys['ArrowRight'] = true);
-rightBtn.addEventListener('touchend', () => keys['ArrowRight'] = false);
-
-jumpBtn.addEventListener('touchstart', () => {
-    if (!player.jumping && player.grounded) {
-        player.velY = -15;
-        player.jumping = true;
-        player.grounded = false;
+window.addEventListener('keydown', (e) => {
+    keys[e.key] = true;
+    if (e.key === ' ') {
+        e.preventDefault();
+        jump();
     }
 });
 
-// بدء اللعبة
-startButton.addEventListener('click', () => {
-    startScreen.classList.add('hidden');
-    gameScreen.classList.remove('hidden');
-    startGame();
+window.addEventListener('keyup', (e) => {
+    keys[e.key] = false;
 });
 
-restartButton.addEventListener('click', () => {
-    endScreen.classList.add('hidden');
-    gameScreen.classList.remove('hidden');
-    resetGame();
-    startGame();
-});
+// أزرار الشاشة
+document.getElementById('leftBtn').addEventListener('touchstart', () => keys['ArrowLeft'] = true);
+document.getElementById('leftBtn').addEventListener('touchend', () => keys['ArrowLeft'] = false);
+document.getElementById('leftBtn').addEventListener('mousedown', () => keys['ArrowLeft'] = true);
+document.getElementById('leftBtn').addEventListener('mouseup', () => keys['ArrowLeft'] = false);
 
-pauseButton.addEventListener('click', () => {
-    gamePaused = !gamePaused;
-    pauseButton.textContent = gamePaused ? 'متابعة' : 'إيقاف مؤقت';
-});
+document.getElementById('rightBtn').addEventListener('touchstart', () => keys['ArrowRight'] = true);
+document.getElementById('rightBtn').addEventListener('touchend', () => keys['ArrowRight'] = false);
+document.getElementById('rightBtn').addEventListener('mousedown', () => keys['ArrowRight'] = true);
+document.getElementById('rightBtn').addEventListener('mouseup', () => keys['ArrowRight'] = false);
 
-function startGame() {
-    gameRunning = true;
-    gameLoop();
-    
-    // عداد الوقت
-    const timer = setInterval(() => {
-        if (!gamePaused && gameRunning) {
-            timeLeft--;
-            timeElement.textContent = timeLeft;
-            
-            if (timeLeft <= 0) {
-                endGame(false);
-                clearInterval(timer);
-            }
-        }
-    }, 1000);
+document.getElementById('jumpBtn').addEventListener('touchstart', jump);
+document.getElementById('jumpBtn').addEventListener('mousedown', jump);
+
+// زر القفز
+function jump() {
+    if (player.grounded && gameState.gameRunning && !gameState.paused) {
+        player.velY = player.jumpPower;
+        player.grounded = false;
+        player.isJumping = true;
+    }
+}
+
+// ========== إدارة واجهة اللعبة ==========
+const elements = {
+    score: document.getElementById('score'),
+    lives: document.getElementById('lives'),
+    timer: document.getElementById('timer'),
+    pauseBtn: document.getElementById('pauseBtn'),
+    resumeBtn: document.getElementById('resumeBtn'),
+    restartBtn: document.getElementById('restartBtn'),
+    playAgainBtn: document.getElementById('playAgainBtn'),
+    pauseMenu: document.getElementById('pauseMenu'),
+    gameOverMenu: document.getElementById('gameOverMenu'),
+    finalScore: document.getElementById('finalScore'),
+    gameOverTitle: document.getElementById('gameOverTitle'),
+    soundBtn: document.getElementById('soundBtn')
+};
+
+// أحداث الأزرار
+elements.pauseBtn.addEventListener('click', togglePause);
+elements.resumeBtn.addEventListener('click', togglePause);
+elements.restartBtn.addEventListener('click', resetGame);
+elements.playAgainBtn.addEventListener('click', resetGame);
+elements.soundBtn.addEventListener('click', toggleSound);
+
+function togglePause() {
+    gameState.paused = !gameState.paused;
+    elements.pauseMenu.classList.toggle('hidden', !gameState.paused);
 }
 
 function resetGame() {
-    score = 0;
-    timeLeft = 100;
-    lives = 3;
+    gameState = {
+        score: 0,
+        lives: 3,
+        timeLeft: 120,
+        gameRunning: true,
+        paused: false,
+        gameOver: false
+    };
     
     player.x = 100;
     player.y = 300;
+    player.velX = 0;
     player.velY = 0;
-    player.jumping = false;
+    player.grounded = true;
     
     coins.forEach(coin => coin.collected = false);
     
-    scoreElement.textContent = score;
-    timeElement.textContent = timeLeft;
-    livesElement.textContent = lives;
+    updateUI();
+    elements.pauseMenu.classList.add('hidden');
+    elements.gameOverMenu.classList.add('hidden');
 }
 
-function gameLoop() {
-    if (!gameRunning) return;
+function toggleSound() {
+    // إدارة الصوت (يمكن إضافة صوت لاحقاً)
+    const isOn = elements.soundBtn.textContent.includes('تشغيل');
+    elements.soundBtn.textContent = isOn ? '🔇 صوت: إيقاف' : '🔊 صوت: تشغيل';
+}
+
+function updateUI() {
+    elements.score.textContent = gameState.score;
+    elements.lives.textContent = gameState.lives;
+    elements.timer.textContent = Math.floor(gameState.timeLeft);
+}
+
+// ========== فيزياء اللعبة ==========
+function updatePlayer() {
+    if (!gameState.gameRunning || gameState.paused) return;
     
-    if (gamePaused) {
-        // رسم شاشة الإيقاف المؤقت
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = 'white';
-        ctx.font = '48px Arial';
-        ctx.fillText('الإيقاف مؤقت', canvas.width/2 - 100, canvas.height/2);
-        requestAnimationFrame(gameLoop);
-        return;
+    // الحركة الأفقية
+    player.velX = 0;
+    if (keys['ArrowLeft'] || keys['a'] || keys['A']) {
+        player.velX = -player.speed;
+        player.facingRight = false;
+    }
+    if (keys['ArrowRight'] || keys['d'] || keys['D']) {
+        player.velX = player.speed;
+        player.facingRight = true;
     }
     
-    // تحديث
-    updatePlayer();
-    updateCoins();
-    
-    // رسم
-    draw();
-    
-    requestAnimationFrame(gameLoop);
-}
-
-function updatePlayer() {
-    // الحركة اليمين/يسار
-    if (keys['ArrowLeft'] || keys['KeyA']) player.x -= player.speed;
-    if (keys['ArrowRight'] || keys['KeyD']) player.x += player.speed;
-    
     // الجاذبية
-    player.velY += 1; // جاذبية
+    player.velY += 1.5;
+    if (player.velY > 15) player.velY = 15;
+    
+    // الحركة
+    player.x += player.velX;
     player.y += player.velY;
     
-    // منع الخروج عن الشاشة
+    // منع الخروج عن الحافة اليسرى
     if (player.x < 0) player.x = 0;
-    if (player.x + player.width > canvas.width) player.x = canvas.width - player.width;
     
-    // الاصطدام مع المنصات
+    // تصادم مع الأرض
+    if (player.y + player.height > ground.y) {
+        player.y = ground.y - player.height;
+        player.velY = 0;
+        player.grounded = true;
+        player.isJumping = false;
+    }
+    
+    // تصادم مع المنصات
     player.grounded = false;
     for (const platform of platforms) {
         if (player.x < platform.x + platform.width &&
             player.x + player.width > platform.x &&
             player.y + player.height > platform.y &&
-            player.y + player.height < platform.y + platform.height + player.velY) {
+            player.y + player.height < platform.y + platform.height + player.velY &&
+            player.velY > 0) {
             
-            player.jumping = false;
-            player.grounded = true;
-            player.velY = 0;
             player.y = platform.y - player.height;
+            player.velY = 0;
+            player.grounded = true;
+            player.isJumping = false;
         }
     }
     
-    // السقوط
-    if (player.y > canvas.height) {
-        lives--;
-        livesElement.textContent = lives;
-        
-        if (lives <= 0) {
-            endGame(false);
-        } else {
-            player.x = 100;
-            player.y = 300;
-            player.velY = 0;
-        }
-    }
-}
-
-function updateCoins() {
-    for (const coin of coins) {
-        if (!coin.collected &&
-            player.x < coin.x + 20 &&
-            player.x + player.width > coin.x &&
-            player.y < coin.y + 20 &&
-            player.y + player.height > coin.y) {
+    // جمع العملات
+    coins.forEach(coin => {
+        if (!coin.collected) {
+            const dx = player.x + player.width/2 - (coin.x - camera.x);
+            const dy = player.y + player.height/2 - (coin.y - camera.y);
+            const distance = Math.sqrt(dx * dx + dy * dy);
             
-            coin.collected = true;
-            score += 100;
-            scoreElement.textContent = score;
-            
-            // فحص الفوز
-            if (coins.every(c => c.collected)) {
-                endGame(true);
+            if (distance < player.width/2 + coin.radius) {
+                coin.collected = true;
+                gameState.score += 100;
+                updateUI();
             }
         }
-    }
+    });
+    
+    // تحديث الكاميرا
+    camera.x = player.x - canvas.width/2 + player.width/2;
+    if (camera.x < 0) camera.x = 0;
 }
 
+// ========== الرسم ==========
 function draw() {
+    // مسح الشاشة
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
     // الخلفية
-    if (images.background.complete) {
-        ctx.drawImage(images.background, 0, 0, canvas.width, canvas.height);
+    if (images.bg.loaded !== false) {
+        ctx.drawImage(images.bg, -camera.x * 0.5, 0, canvas.width, canvas.height);
     } else {
-        ctx.fillStyle = '#87CEEB';
+        // خلفية افتراضية
+        const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+        gradient.addColorStop(0, '#87CEEB');
+        gradient.addColorStop(0.7, '#5DADE2');
+        gradient.addColorStop(1, '#3498DB');
+        ctx.fillStyle = gradient;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        // سحب بسيطة
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+        for (let i = 0; i < 5; i++) {
+            const x = (i * 200 - camera.x * 0.3) % (canvas.width + 200);
+            ctx.beginPath();
+            ctx.arc(x, 50, 30, 0, Math.PI * 2);
+            ctx.arc(x + 40, 50, 40, 0, Math.PI * 2);
+            ctx.arc(x + 90, 50, 30, 0, Math.PI * 2);
+            ctx.fill();
+        }
+    }
+    
+    // الأرض
+    if (images.ground.loaded !== false) {
+        const groundTiles = Math.ceil(canvas.width / 100) + 1;
+        for (let i = 0; i < groundTiles; i++) {
+            ctx.drawImage(
+                images.ground,
+                i * 100 - camera.x % 100,
+                ground.y,
+                100,
+                ground.height
+            );
+        }
+    } else {
+        // أرض افتراضية
+        ctx.fillStyle = '#8B4513';
+        ctx.fillRect(0, ground.y, canvas.width, ground.height);
+        
+        ctx.fillStyle = '#A0522D';
+        for (let i = 0; i < canvas.width; i += 40) {
+            ctx.fillRect(i - camera.x % 40, ground.y, 20, 10);
+        }
     }
     
     // المنصات
-    for (const platform of platforms) {
-        if (images.block.complete) {
-            ctx.drawImage(images.block, platform.x, platform.y, platform.width, platform.height);
-        } else {
+    ctx.fillStyle = '#8B4513';
+    platforms.forEach(platform => {
+        if (platform.x - camera.x > -100 && platform.x - camera.x < canvas.width + 100) {
+            ctx.fillRect(
+                platform.x - camera.x,
+                platform.y,
+                platform.width,
+                platform.height
+            );
+            
+            // تفاصيل المنصة
+            ctx.fillStyle = '#A0522D';
+            for (let i = 0; i < platform.width; i += 20) {
+                ctx.fillRect(
+                    platform.x - camera.x + i,
+                    platform.y,
+                    10,
+                    5
+                );
+            }
             ctx.fillStyle = '#8B4513';
-            ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
         }
-    }
+    });
     
     // العملات
-    for (const coin of coins) {
-        if (!coin.collected) {
+    coins.forEach(coin => {
+        if (!coin.collected && coin.x - camera.x > -50 && coin.x - camera.x < canvas.width + 50) {
             ctx.fillStyle = '#FFD700';
             ctx.beginPath();
-            ctx.arc(coin.x + 10, coin.y + 10, 10, 0, Math.PI * 2);
+            ctx.arc(coin.x - camera.x, coin.y, coin.radius, 0, Math.PI * 2);
             ctx.fill();
             
             ctx.fillStyle = '#FFA500';
             ctx.beginPath();
-            ctx.arc(coin.x + 10, coin.y + 10, 6, 0, Math.PI * 2);
+            ctx.arc(coin.x - camera.x, coin.y, coin.radius * 0.6, 0, Math.PI * 2);
             ctx.fill();
+            
+            // تأثير بريق
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+            ctx.beginPath();
+            ctx.arc(coin.x - camera.x - 3, coin.y - 3, 3, 0, Math.PI * 2);
+            ctx.fill();
+        }
+    });
+    
+    // الشخصية
+    if (images.player.complete) {
+        // قلب الصورة إذا تحرك لليسار
+        if (!player.facingRight) {
+            ctx.save();
+            ctx.scale(-1, 1);
+            ctx.drawImage(
+                images.player,
+                -(player.x - camera.x + player.width),
+                player.y,
+                player.width,
+                player.height
+            );
+            ctx.restore();
+        } else {
+            ctx.drawImage(
+                images.player,
+                player.x - camera.x,
+                player.y,
+                player.width,
+                player.height
+            );
+        }
+    } else {
+        // رسم افتراضي
+        ctx.fillStyle = '#E74C3C';
+        ctx.fillRect(player.x - camera.x, player.y, player.width, player.height);
+        
+        ctx.fillStyle = '#2C3E50';
+        ctx.fillRect(player.x - camera.x + 10, player.y + 10, 20, 20);
+        
+        ctx.fillStyle = 'white';
+        ctx.beginPath();
+        ctx.arc(player.x - camera.x + 20, player.y + 25, 5, 0, Math.PI * 2);
+        ctx.fill();
+    }
+    
+    // تأثير القفز
+    if (player.isJumping) {
+        ctx.fillStyle = 'rgba(52, 152, 219, 0.3)';
+        ctx.beginPath();
+        ctx.arc(
+            player.x - camera.x + player.width/2,
+            player.y + player.height,
+            15,
+            0,
+            Math.PI * 2
+        );
+        ctx.fill();
+    }
+}
+
+// ========== دورة اللعبة ==========
+let lastTime = 0;
+let coinSpawnTime = 0;
+
+function gameLoop(timestamp) {
+    const deltaTime = timestamp - lastTime || 0;
+    lastTime = timestamp;
+    
+    if (!gameState.paused && gameState.gameRunning) {
+        updatePlayer();
+        
+        // تحديث المؤقت
+        if (timestamp - coinSpawnTime > 1000) {
+            gameState.timeLeft--;
+            coinSpawnTime = timestamp;
+            updateUI();
+            
+            if (gameState.timeLeft <= 0) {
+                endGame(false);
+            }
         }
     }
     
-    // الشخصية
-    if (player.image.complete) {
-        ctx.drawImage(player.image, player.x, player.y, player.width, player.height);
-    } else {
-        // رسم بديل إذا لم تحمل الصورة
-        ctx.fillStyle = '#E74C3C';
-        ctx.fillRect(player.x, player.y, player.width, player.height);
+    draw();
+    
+    // الفحص المستمر للنهاية
+    if (player.y > canvas.height + 100) {
+        gameState.lives--;
+        updateUI();
         
-        ctx.fillStyle = '#2C3E50';
-        ctx.fillRect(player.x + 10, player.y + 10, 20, 20);
+        if (gameState.lives <= 0) {
+            endGame(false);
+        } else {
+            player.x = camera.x + 100;
+            player.y = 300;
+            player.velY = 0;
+        }
     }
     
-    // معلومات التصحيح
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
-    ctx.fillRect(10, 10, 200, 60);
-    ctx.fillStyle = 'white';
-    ctx.font = '14px Arial';
-    ctx.fillText(`الموقع: (${Math.round(player.x)}, ${Math.round(player.y)})`, 20, 30);
-    ctx.fillText(`السرعة: ${Math.round(player.velY)}`, 20, 50);
-    ctx.fillText(`على الأرض: ${player.grounded}`, 20, 70);
+    if (gameState.gameRunning) {
+        requestAnimationFrame(gameLoop);
+    }
 }
 
 function endGame(isWin) {
-    gameRunning = false;
-    gameScreen.classList.add('hidden');
-    endScreen.classList.remove('hidden');
+    gameState.gameRunning = false;
+    gameState.gameOver = true;
     
-    if (isWin) {
-        endMessageElement.textContent = '!🎉 فزت 🎉';
-        endMessageElement.style.color = '#2ecc71';
-    } else {
-        endMessageElement.textContent = '!💀 انتهت اللعبة 💀';
-        endMessageElement.style.color = '#e74c3c';
-    }
-    
-    finalScoreElement.textContent = score;
+    elements.finalScore.textContent = gameState.score;
+    elements.gameOverTitle.textContent = isWin ? '🎉 فزت! 🎉' : '💀 انتهت اللعبة';
+    elements.gameOverTitle.style.color = isWin ? '#2ECC71' : '#E74C3C';
+    elements.gameOverMenu.classList.remove('hidden');
 }
 
-// تأكد من تحميل الصور قبل البدء
-window.onload = function() {
-    console.log('!اللعبة جاهزة للتحميل');
+// ========== بدء اللعبة ==========
+// تهيئة الصور قبل البدء
+let imagesLoaded = 0;
+const totalImages = Object.keys(images).length;
+
+function checkImagesLoaded() {
+    imagesLoaded++;
+    if (imagesLoaded >= totalImages) {
+        startGame();
+    }
+}
+
+Object.values(images).forEach(img => {
+    img.onload = checkImagesLoaded;
+    img.onerror = checkImagesLoaded;
+});
+
+function startGame() {
+    updateUI();
+    gameLoop();
+    console.log('🚀 اللعبة بدأت!');
     
-    // إذا فشل تحميل صورة الشخصية، عرض رسالة
-    player.image.onerror = function() {
-        console.error('تعذر تحميل صورة الشخصية. تأكد من المسار: ' + player.image.src);
-        alert('⚠️ لم يتم العثور على صورة الشخصية في assets/mario.png. استبدل الملف أو عدل المسار في script.js');
-    };
-    
-    images.background.onerror = function() {
-        console.log('سيتم استخدام لون بديل للخلفية');
-    };
-};
+    // بدء المؤقت
+    setInterval(() => {
+        if (gameState.gameRunning && !gameState.paused) {
+            gameState.timeLeft--;
+            updateUI();
+            
+            if (gameState.timeLeft <= 0) {
+                endGame(false);
+            }
+        }
+    }, 1000);
+}
+
+// بدء اللعبة فور تحميل الصفحة
+window.addEventListener('load', () => {
+    setTimeout(startGame, 500);
+});
+
+// إعادة الحجم عند تدوير الهاتف
+window.addEventListener('orientationchange', () => {
+    setTimeout(setupCanvas, 100);
+});
