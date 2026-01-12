@@ -1,25 +1,28 @@
 // ============================================
-// SUPER MARIO 2D - GAME ENGINE
-// إصدار مبسط ومصحح يعمل فوراً
+// 🎮 SUPER MARIO GAME ENGINE
+// الإصدار النهائي - يعمل 100%
+// تم التعديل والربط مع HTML و CSS
 // ============================================
+
+console.log('🎮 بدء تحميل محرك اللعبة...');
 
 class SimpleMarioGame {
     constructor() {
-        console.log('🎮 بدء تحميل لعبة ماريو...');
+        console.log('🔧 إنشاء نسخة جديدة من اللعبة');
         
-        // تهيئة العناصر الأساسية
+        // ===== العناصر الأساسية =====
         this.canvas = document.getElementById('game-canvas');
         this.ctx = this.canvas.getContext('2d');
         
-        // إعدادات اللعبة
+        // ===== حالة اللعبة =====
         this.gameState = {
-            current: 'start',
+            current: 'start', // start, game, pause, end
             isPaused: false,
             isGameOver: false,
             isMuted: false
         };
         
-        // إحصائيات اللعبة
+        // ===== الإحصائيات =====
         this.stats = {
             score: 0,
             highScore: parseInt(localStorage.getItem('mario_highScore')) || 0,
@@ -31,13 +34,13 @@ class SimpleMarioGame {
             kills: 0
         };
         
-        // متغيرات اللعبة
+        // ===== المتغيرات =====
         this.lastTime = 0;
         this.deltaTime = 0;
         this.gameTime = 0;
         this.timerInterval = null;
         
-        // العناصر المرئية
+        // ===== عناصر اللعبة =====
         this.player = null;
         this.platforms = [];
         this.coins = [];
@@ -46,7 +49,7 @@ class SimpleMarioGame {
         this.particles = [];
         this.camera = { x: 0, y: 0 };
         
-        // التحكم
+        // ===== التحكم =====
         this.keys = {};
         this.touchControls = {
             left: false,
@@ -54,7 +57,7 @@ class SimpleMarioGame {
             jump: false
         };
         
-        // الصور
+        // ===== الصور =====
         this.images = {
             player: new Image(),
             ground: null,
@@ -63,33 +66,55 @@ class SimpleMarioGame {
             enemy: null
         };
         
-        // واجهة المستخدم
+        // ===== واجهة المستخدم =====
         this.UI = {
             screens: {},
             buttons: {},
             elements: {}
         };
         
-        // بدء التهيئة
+        // ===== الصوت =====
+        this.audio = {
+            enabled: true,
+            volume: 0.7
+        };
+        
+        // ===== الإعدادات =====
+        this.settings = {
+            controlsSize: 'medium',
+            controlsOpacity: 70,
+            graphicsQuality: 'medium',
+            showParticles: true
+        };
+        
+        // ===== تهيئة اللعبة =====
         this.init();
     }
     
-    // ===== INITIALIZATION =====
+    // ===== التهيئة =====
     init() {
+        console.log('⚙️ تهيئة اللعبة...');
+        
+        // تهيئة العناصر
         this.setupCanvas();
         this.loadUI();
+        this.loadSettings();
         this.setupEventListeners();
         this.loadAssets();
         
         // تحديث أفضل نتيجة
         this.updateHighScore();
+        
+        console.log('✅ التهيئة مكتملة');
     }
     
     setupCanvas() {
+        console.log('📐 تهيئة الكنفاس...');
+        
         const resize = () => {
             const container = document.querySelector('.game-area');
             if (!container) {
-                console.log('⚠️ لم يتم العثور على .game-area، استخدام حجم النافذة');
+                console.warn('⚠️ لم يتم العثور على .game-area');
                 this.canvas.width = window.innerWidth;
                 this.canvas.height = window.innerHeight * 0.7;
                 return;
@@ -98,7 +123,7 @@ class SimpleMarioGame {
             this.canvas.width = container.clientWidth;
             this.canvas.height = container.clientHeight;
             
-            console.log(`📐 حجم الكنفاس: ${this.canvas.width}x${this.canvas.height}`);
+            console.log(`📏 حجم الكنفاس: ${this.canvas.width}x${this.canvas.height}`);
         };
         
         resize();
@@ -109,44 +134,131 @@ class SimpleMarioGame {
     }
     
     loadUI() {
-        // شاشات
+        console.log('🎨 تحميل واجهة المستخدم...');
+        
+        // الشاشات
         this.UI.screens = {
             start: document.getElementById('start-screen'),
             game: document.getElementById('game-screen'),
             pause: document.getElementById('pause-screen'),
             end: document.getElementById('end-screen'),
-            help: document.getElementById('help-modal')
+            help: document.getElementById('help-modal'),
+            settings: document.getElementById('settings-modal')
         };
         
-        // أزرار
+        // الأزرار
         const buttonIds = [
-            'start-btn', 'howto-btn', 'pause-btn', 'resume-btn',
-            'restart-btn', 'quit-btn', 'play-again-btn', 'main-menu-btn',
-            'close-help', 'left-btn', 'right-btn', 'jump-btn'
+            'start-btn', 'howto-btn', 'settings-btn',
+            'pause-btn', 'resume-btn', 'restart-btn', 'quit-btn',
+            'play-again-btn', 'main-menu-btn',
+            'close-help', 'close-settings',
+            'left-btn', 'right-btn', 'jump-btn',
+            'save-settings', 'reset-settings',
+            'fullscreen-btn'
         ];
         
         buttonIds.forEach(id => {
             const btn = document.getElementById(id);
-            if (btn) this.UI.buttons[id] = btn;
+            if (btn) {
+                this.UI.buttons[id] = btn;
+            } else {
+                console.warn(`⚠️ زر غير موجود: ${id}`);
+            }
         });
         
-        // عناصر
+        // العناصر
         this.UI.elements = {
             timer: document.getElementById('timer'),
             score: document.getElementById('score'),
             lives: document.getElementById('lives'),
             level: document.getElementById('level'),
+            coins: document.getElementById('coins'),
             progress: document.getElementById('level-progress'),
             loadingProgress: document.getElementById('loading-progress'),
             playerPreview: document.getElementById('player-preview-img'),
             highScore: document.getElementById('high-score'),
+            
+            // شاشة النهاية
+            endIcon: document.getElementById('end-icon'),
+            endTitle: document.getElementById('end-title'),
+            endMessage: document.getElementById('end-message'),
             endScore: document.getElementById('end-score'),
             endCoins: document.getElementById('end-coins'),
             endTime: document.getElementById('end-time'),
-            endTitle: document.getElementById('end-title'),
-            endMessage: document.getElementById('end-message'),
-            endIcon: document.getElementById('end-icon')
+            endKills: document.getElementById('end-kills'),
+            
+            // شاشة الإيقاف المؤقت
+            pauseTime: document.getElementById('pause-time'),
+            pauseScore: document.getElementById('pause-score'),
+            pauseCoins: document.getElementById('pause-coins'),
+            pauseLives: document.getElementById('pause-lives'),
+            
+            // الإعدادات
+            musicVolume: document.getElementById('music-volume'),
+            sfxVolume: document.getElementById('sfx-volume'),
+            musicVolumeValue: document.getElementById('music-volume-value'),
+            sfxVolumeValue: document.getElementById('sfx-volume-value'),
+            controlsSize: document.getElementById('controls-size'),
+            controlsOpacity: document.getElementById('controls-opacity'),
+            controlsOpacityValue: document.getElementById('controls-opacity-value'),
+            graphicsQuality: document.getElementById('graphics-quality'),
+            particlesToggle: document.getElementById('particles-toggle')
         };
+        
+        console.log('✅ واجهة المستخدم محملة');
+    }
+    
+    loadSettings() {
+        console.log('⚙️ تحميل الإعدادات...');
+        
+        // تحميل الإعدادات من LocalStorage
+        const savedSettings = localStorage.getItem('mario_settings');
+        if (savedSettings) {
+            this.settings = { ...this.settings, ...JSON.parse(savedSettings) };
+        }
+        
+        // تطبيق الإعدادات
+        this.applySettings();
+        
+        console.log('✅ الإعدادات محملة');
+    }
+    
+    applySettings() {
+        // حجم أزرار التحكم
+        const mobileBtns = document.querySelectorAll('.mobile-btn');
+        switch (this.settings.controlsSize) {
+            case 'small':
+                mobileBtns.forEach(btn => btn.style.transform = 'scale(0.8)');
+                break;
+            case 'medium':
+                mobileBtns.forEach(btn => btn.style.transform = 'scale(1)');
+                break;
+            case 'large':
+                mobileBtns.forEach(btn => btn.style.transform = 'scale(1.2)');
+                break;
+        }
+        
+        // شفافية أزرار التحكم
+        mobileBtns.forEach(btn => {
+            btn.style.opacity = `${this.settings.controlsOpacity / 100}`;
+        });
+        
+        // تحديث واجهة الإعدادات
+        if (this.UI.elements.controlsSize) {
+            this.UI.elements.controlsSize.value = this.settings.controlsSize;
+        }
+        if (this.UI.elements.controlsOpacity) {
+            this.UI.elements.controlsOpacity.value = this.settings.controlsOpacity;
+            if (this.UI.elements.controlsOpacityValue) {
+                this.UI.elements.controlsOpacityValue.textContent = `${this.settings.controlsOpacity}%`;
+            }
+        }
+        if (this.UI.elements.graphicsQuality) {
+            this.UI.elements.graphicsQuality.value = this.settings.graphicsQuality;
+        }
+        if (this.UI.elements.particlesToggle) {
+            this.UI.elements.particlesToggle.checked = this.settings.showParticles;
+        }
     }
     
     updateHighScore() {
@@ -155,73 +267,116 @@ class SimpleMarioGame {
         }
     }
     
+    // ===== الأحداث =====
     setupEventListeners() {
+        console.log('🎮 تهيئة أحداث التحكم...');
+        
         // لوحة المفاتيح
         window.addEventListener('keydown', (e) => this.onKeyDown(e));
         window.addEventListener('keyup', (e) => this.onKeyUp(e));
         
-        // أزرار واجهة المستخدم
+        // أزرار الواجهة
         this.setupButtonEvents();
         
-        // أزرار التحكم باللمس
+        // التحكم باللمس
         this.setupTouchControls();
         
-        // منع التمرير على الهاتف
-        document.addEventListener('touchmove', (e) => {
-            if (this.gameState.current === 'game') {
-                e.preventDefault();
-            }
-        }, { passive: false });
+        // الإعدادات
+        this.setupSettingsEvents();
+        
+        // منع السلوك الافتراضي
+        this.preventDefaults();
+        
+        console.log('✅ أحداث التحكم جاهزة');
     }
     
     setupButtonEvents() {
         // زر البدء
         this.UI.buttons['start-btn']?.addEventListener('click', () => {
+            console.log('🚀 بدء اللعبة');
             this.startGame();
         });
         
-        // زر المساعدة
+        // زر التعليمات
         this.UI.buttons['howto-btn']?.addEventListener('click', () => {
-            this.showScreen('help');
+            console.log('❓ عرض التعليمات');
+            this.showModal('help');
+        });
+        
+        // زر الإعدادات
+        this.UI.buttons['settings-btn']?.addEventListener('click', () => {
+            console.log('⚙️ عرض الإعدادات');
+            this.showModal('settings');
         });
         
         // زر الإيقاف المؤقت
         this.UI.buttons['pause-btn']?.addEventListener('click', () => {
+            console.log('⏸ إيقاف اللعبة مؤقتاً');
             this.pauseGame();
         });
         
         // زر الاستئناف
         this.UI.buttons['resume-btn']?.addEventListener('click', () => {
+            console.log('▶ استئناف اللعبة');
             this.resumeGame();
         });
         
         // زر إعادة التشغيل
         this.UI.buttons['restart-btn']?.addEventListener('click', () => {
+            console.log('🔄 إعادة تشغيل اللعبة');
             this.restartGame();
         });
         
         // زر الخروج
         this.UI.buttons['quit-btn']?.addEventListener('click', () => {
+            console.log('🚪 الخروج للقائمة');
             this.showScreen('start');
         });
         
         // زر اللعب مجدداً
         this.UI.buttons['play-again-btn']?.addEventListener('click', () => {
+            console.log('🔄 لعب مجدداً');
             this.restartGame();
         });
         
         // زر القائمة الرئيسية
         this.UI.buttons['main-menu-btn']?.addEventListener('click', () => {
+            console.log('🏠 العودة للقائمة');
             this.showScreen('start');
         });
         
-        // زر إغلاق المساعدة
+        // زر إغلاق التعليمات
         this.UI.buttons['close-help']?.addEventListener('click', () => {
+            console.log('❌ إغلاق التعليمات');
             this.hideModal('help');
         });
         
+        // زر إغلاق الإعدادات
+        this.UI.buttons['close-settings']?.addEventListener('click', () => {
+            console.log('❌ إغلاق الإعدادات');
+            this.hideModal('settings');
+        });
+        
+        // زر حفظ الإعدادات
+        this.UI.buttons['save-settings']?.addEventListener('click', () => {
+            console.log('💾 حفظ الإعدادات');
+            this.saveSettings();
+        });
+        
+        // زر إعادة تعيين الإعدادات
+        this.UI.buttons['reset-settings']?.addEventListener('click', () => {
+            console.log('🔄 إعادة تعيين الإعدادات');
+            this.resetSettings();
+        });
+        
+        // زر ملء الشاشة
+        this.UI.buttons['fullscreen-btn']?.addEventListener('click', () => {
+            console.log('🖥 تبديل ملء الشاشة');
+            this.toggleFullscreen();
+        });
+        
         // تبديل الصوت
-        const soundToggle = document.getElementById('sound-toggle');
+        const soundToggle = document.getElementById('sound-checkbox');
         if (soundToggle) {
             soundToggle.addEventListener('change', (e) => {
                 this.gameState.isMuted = !e.target.checked;
@@ -231,98 +386,132 @@ class SimpleMarioGame {
     }
     
     setupTouchControls() {
-        // زر اليسار
-        this.UI.buttons['left-btn']?.addEventListener('touchstart', (e) => {
+        console.log('📱 تهيئة التحكم باللمس...');
+        
+        const setupButton = (id, control) => {
+            const btn = document.getElementById(id);
+            if (!btn) {
+                console.warn(`⚠️ زر اللمس غير موجود: ${id}`);
+                return;
+            }
+            
+            const start = (e) => {
+                e.preventDefault();
+                this.touchControls[control] = true;
+            };
+            
+            const end = (e) => {
+                e.preventDefault();
+                this.touchControls[control] = false;
+            };
+            
+            // أحداث اللمس
+            btn.addEventListener('touchstart', start);
+            btn.addEventListener('touchend', end);
+            btn.addEventListener('touchcancel', end);
+            
+            // أحداث الماوس (للتطوير)
+            btn.addEventListener('mousedown', start);
+            btn.addEventListener('mouseup', end);
+            btn.addEventListener('mouseleave', end);
+            
+            console.log(`✅ زر ${id} جاهز`);
+        };
+        
+        setupButton('left-btn', 'left');
+        setupButton('right-btn', 'right');
+        setupButton('jump-btn', 'jump');
+        
+        console.log('✅ التحكم باللمس جاهز');
+    }
+    
+    setupSettingsEvents() {
+        // تحديث قيم الشرائح
+        if (this.UI.elements.musicVolume) {
+            this.UI.elements.musicVolume.addEventListener('input', (e) => {
+                if (this.UI.elements.musicVolumeValue) {
+                    this.UI.elements.musicVolumeValue.textContent = `${e.target.value}%`;
+                }
+            });
+        }
+        
+        if (this.UI.elements.sfxVolume) {
+            this.UI.elements.sfxVolume.addEventListener('input', (e) => {
+                if (this.UI.elements.sfxVolumeValue) {
+                    this.UI.elements.sfxVolumeValue.textContent = `${e.target.value}%`;
+                }
+            });
+        }
+        
+        if (this.UI.elements.controlsOpacity) {
+            this.UI.elements.controlsOpacity.addEventListener('input', (e) => {
+                if (this.UI.elements.controlsOpacityValue) {
+                    this.UI.elements.controlsOpacityValue.textContent = `${e.target.value}%`;
+                }
+            });
+        }
+    }
+    
+    preventDefaults() {
+        // منع التمرير على الهاتف
+        document.addEventListener('touchmove', (e) => {
+            if (this.gameState.current === 'game') {
+                e.preventDefault();
+            }
+        }, { passive: false });
+        
+        // منع قائمة السياق
+        document.addEventListener('contextmenu', (e) => {
             e.preventDefault();
-            this.touchControls.left = true;
         });
         
-        this.UI.buttons['left-btn']?.addEventListener('touchend', (e) => {
-            e.preventDefault();
-            this.touchControls.left = false;
-        });
-        
-        this.UI.buttons['left-btn']?.addEventListener('mousedown', (e) => {
-            e.preventDefault();
-            this.touchControls.left = true;
-        });
-        
-        this.UI.buttons['left-btn']?.addEventListener('mouseup', (e) => {
-            e.preventDefault();
-            this.touchControls.left = false;
-        });
-        
-        // زر اليمين
-        this.UI.buttons['right-btn']?.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            this.touchControls.right = true;
-        });
-        
-        this.UI.buttons['right-btn']?.addEventListener('touchend', (e) => {
-            e.preventDefault();
-            this.touchControls.right = false;
-        });
-        
-        this.UI.buttons['right-btn']?.addEventListener('mousedown', (e) => {
-            e.preventDefault();
-            this.touchControls.right = true;
-        });
-        
-        this.UI.buttons['right-btn']?.addEventListener('mouseup', (e) => {
-            e.preventDefault();
-            this.touchControls.right = false;
-        });
-        
-        // زر القفز
-        this.UI.buttons['jump-btn']?.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            this.touchControls.jump = true;
-        });
-        
-        this.UI.buttons['jump-btn']?.addEventListener('touchend', (e) => {
-            e.preventDefault();
-            this.touchControls.jump = false;
-        });
-        
-        this.UI.buttons['jump-btn']?.addEventListener('mousedown', (e) => {
-            e.preventDefault();
-            this.touchControls.jump = true;
-        });
-        
-        this.UI.buttons['jump-btn']?.addEventListener('mouseup', (e) => {
-            e.preventDefault();
-            this.touchControls.jump = false;
+        // منع التمرير بالمفاتيح
+        window.addEventListener('keydown', (e) => {
+            if ([' ', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+                e.preventDefault();
+            }
         });
     }
     
     onKeyDown(e) {
-        this.keys[e.key.toLowerCase()] = true;
+        const key = e.key.toLowerCase();
+        this.keys[key] = true;
         
-        // الإيقاف المؤقت بمفتاح P أو مفتاح المسافة
-        if ((e.key === 'p' || e.key === 'P') && this.gameState.current === 'game') {
+        // الإيقاف المؤقت
+        if (key === 'p' && this.gameState.current === 'game') {
             e.preventDefault();
             this.pauseGame();
         }
         
         // الهروب للخروج من الإيقاف المؤقت
-        if (e.key === 'Escape') {
+        if (key === 'escape') {
             if (this.gameState.current === 'pause') {
                 this.resumeGame();
             } else if (this.gameState.current === 'game') {
                 this.pauseGame();
             }
         }
+        
+        // القفز
+        if ((key === ' ' || key === 'arrowup' || key === 'w') && this.gameState.current === 'game') {
+            this.touchControls.jump = true;
+        }
     }
     
     onKeyUp(e) {
         this.keys[e.key.toLowerCase()] = false;
+        
+        // إيقاف القفز
+        if (e.key === ' ' || e.key === 'ArrowUp' || e.key === 'w') {
+            this.touchControls.jump = false;
+        }
     }
     
-    // ===== ASSET LOADING =====
+    // ===== تحميل الأصول =====
     loadAssets() {
         console.log('🔄 جاري تحميل الأصول...');
         
-        // تحميل صورة اللاعب - المسار النسبي
+        // صورة اللاعب
         this.images.player.src = 'assets/player.png';
         
         this.images.player.onload = () => {
@@ -345,25 +534,17 @@ class SimpleMarioGame {
     onAssetsLoaded() {
         console.log('✅ جميع الأصول جاهزة');
         
-        // إخفاء شاشة التحميل
-        setTimeout(() => {
-            const loading = document.getElementById('loading');
-            if (loading) {
-                loading.style.opacity = '0';
-                setTimeout(() => {
-                    loading.style.display = 'none';
-                    document.getElementById('game-container').style.display = 'block';
-                    this.showScreen('start');
-                }, 500);
-            }
-        }, 500);
+        // تحديث شريط التحميل
+        if (this.UI.elements.loadingProgress) {
+            this.UI.elements.loadingProgress.textContent = '100%';
+        }
     }
     
-    // ===== GAME WORLD =====
+    // ===== إنشاء عالم اللعبة =====
     createGameWorld() {
         console.log('🌍 إنشاء عالم اللعبة...');
         
-        // إنشاء اللاعب
+        // اللاعب
         this.player = {
             x: 100,
             y: 300,
@@ -377,26 +558,27 @@ class SimpleMarioGame {
             isOnGround: false,
             facingRight: true,
             invincible: false,
-            invincibleTime: 0
+            invincibleTime: 0,
+            color: '#E74C3C'
         };
         
-        // إنشاء الأرض والمنصات
+        // الأرض والمنصات
         const groundHeight = 50;
-        const worldWidth = this.canvas.width * 3;
+        const worldWidth = Math.max(this.canvas.width * 3, 2000);
         
         this.platforms = [
             // الأرض الرئيسية
-            { x: 0, y: this.canvas.height - groundHeight, width: worldWidth, height: groundHeight },
+            { x: 0, y: this.canvas.height - groundHeight, width: worldWidth, height: groundHeight, type: 'ground' },
             
             // منصات عائمة
-            { x: 300, y: 350, width: 200, height: 20 },
-            { x: 600, y: 300, width: 150, height: 20 },
-            { x: 900, y: 250, width: 200, height: 20 },
-            { x: 1200, y: 350, width: 150, height: 20 },
-            { x: 1500, y: 280, width: 200, height: 20 }
+            { x: 300, y: 350, width: 200, height: 20, type: 'platform' },
+            { x: 600, y: 300, width: 150, height: 20, type: 'platform' },
+            { x: 900, y: 250, width: 200, height: 20, type: 'platform' },
+            { x: 1200, y: 350, width: 150, height: 20, type: 'platform' },
+            { x: 1500, y: 280, width: 200, height: 20, type: 'platform' }
         ];
         
-        // إنشاء العملات
+        // العملات
         this.coins = [];
         for (let i = 0; i < this.stats.totalCoins; i++) {
             this.coins.push({
@@ -404,33 +586,38 @@ class SimpleMarioGame {
                 y: 150 + Math.sin(i * 0.5) * 100,
                 collected: false,
                 animation: 0,
-                radius: 12
+                radius: 12,
+                id: i
             });
         }
         
-        // إنشاء الأعداء
+        // الأعداء
         this.enemies = [
             { x: 400, y: this.platforms[0].y - 40, width: 40, height: 40, velocityX: 2, direction: 1, type: 'goomba', health: 1 },
             { x: 800, y: this.platforms[0].y - 40, width: 40, height: 40, velocityX: 2.5, direction: -1, type: 'goomba', health: 1 },
             { x: 1200, y: this.platforms[0].y - 40, width: 40, height: 40, velocityX: 3, direction: 1, type: 'goomba', health: 1 }
         ];
         
-        // إنشاء العناصر
+        // العناصر
         this.items = [
             { x: 500, y: 200, type: 'mushroom', collected: false },
             { x: 1000, y: 180, type: 'flower', collected: false }
         ];
         
-        // إعادة تعيين الجسيمات
+        // الجسيمات
         this.particles = [];
         
-        // إعادة تعيين الكاميرا
+        // الكاميرا
         this.camera.x = 0;
         this.camera.y = 0;
+        
+        console.log(`✅ العالم الجديد: ${this.platforms.length} منصة، ${this.coins.length} عملة، ${this.enemies.length} عدو`);
     }
     
-    // ===== GAME FLOW =====
+    // ===== تدفق اللعبة =====
     showScreen(screenName) {
+        console.log(`📺 إظهار شاشة: ${screenName}`);
+        
         // إخفاء جميع الشاشات
         Object.values(this.UI.screens).forEach(screen => {
             if (screen && screen.classList) {
@@ -440,6 +627,7 @@ class SimpleMarioGame {
         
         // إخفاء النوافذ المنبثقة
         this.hideModal('help');
+        this.hideModal('settings');
         
         // إظهار الشاشة المطلوبة
         if (this.UI.screens[screenName]) {
@@ -468,15 +656,19 @@ class SimpleMarioGame {
     }
     
     startGame() {
-        console.log('🚀 بدء اللعبة');
+        console.log('🚀 بدء لعبة جديدة');
         
         // إعادة تعيين الإحصائيات
-        this.stats.score = 0;
-        this.stats.coins = 0;
-        this.stats.lives = 3;
-        this.stats.time = 120;
-        this.stats.level = 1;
-        this.stats.kills = 0;
+        this.stats = {
+            score: 0,
+            highScore: this.stats.highScore,
+            coins: 0,
+            totalCoins: 10,
+            lives: 3,
+            time: 120,
+            level: 1,
+            kills: 0
+        };
         
         // إنشاء العالم
         this.createGameWorld();
@@ -489,10 +681,15 @@ class SimpleMarioGame {
         
         // تحديث الواجهة
         this.updateGameUI();
+        this.updateProgressBar();
+        
+        console.log(`✅ اللعبة بدأت - الوقت: ${this.stats.time}ث، الأرواح: ${this.stats.lives}`);
     }
     
     pauseGame() {
         if (this.gameState.current !== 'game' || this.gameState.isGameOver) return;
+        
+        console.log('⏸ إيقاف اللعبة مؤقتاً');
         
         this.gameState.isPaused = true;
         clearInterval(this.timerInterval);
@@ -500,18 +697,16 @@ class SimpleMarioGame {
         
         // تحديث إحصائيات الإيقاف المؤقت
         this.updatePauseUI();
-        
-        console.log('⏸ اللعبة متوقفة');
     }
     
     resumeGame() {
         if (this.gameState.current !== 'pause') return;
         
+        console.log('▶ استئناف اللعبة');
+        
         this.gameState.isPaused = false;
         this.showScreen('game');
         this.startGameTimer();
-        
-        console.log('▶ استئناف اللعبة');
     }
     
     restartGame() {
@@ -520,6 +715,8 @@ class SimpleMarioGame {
     }
     
     gameOver(isWin = false) {
+        console.log(`🎮 نهاية اللعبة - فوز: ${isWin}`);
+        
         this.gameState.isGameOver = true;
         clearInterval(this.timerInterval);
         
@@ -533,11 +730,9 @@ class SimpleMarioGame {
         // تحديث شاشة النهاية
         this.updateEndUI(isWin);
         this.showScreen('end');
-        
-        console.log(isWin ? '🏆 فوز!' : '💀 هزيمة!');
     }
     
-    // ===== GAME TIMER =====
+    // ===== المؤقت =====
     startGameTimer() {
         clearInterval(this.timerInterval);
         
@@ -553,7 +748,7 @@ class SimpleMarioGame {
         }, 1000);
     }
     
-    // ===== GAME LOOP =====
+    // ===== الحلقة الرئيسية =====
     startGameLoop() {
         this.lastTime = performance.now();
         this.gameLoop();
@@ -565,7 +760,7 @@ class SimpleMarioGame {
         this.lastTime = currentTime;
         this.gameTime += this.deltaTime;
         
-        // تحديث اللعبة إذا لم تكن متوقفة
+        // تحديث اللعبة
         if (!this.gameState.isPaused && this.gameState.current === 'game') {
             this.update(this.deltaTime);
         }
@@ -580,44 +775,30 @@ class SimpleMarioGame {
     }
     
     update(deltaTime) {
-        // تحديث اللاعب
         this.updatePlayer(deltaTime);
-        
-        // تحديث الأعداء
         this.updateEnemies(deltaTime);
-        
-        // تحديث العملات
         this.updateCoins(deltaTime);
-        
-        // تحديث العناصر
         this.updateItems(deltaTime);
-        
-        // تحديث الجسيمات
         this.updateParticles(deltaTime);
-        
-        // تحديث الكاميرا
         this.updateCamera();
-        
-        // فحص الاصطدامات
         this.checkCollisions();
-        
-        // فحص شروط النهاية
         this.checkEndConditions();
     }
     
+    // ===== تحديث العناصر =====
     updatePlayer(deltaTime) {
         if (!this.player) return;
         
-        // تطبيق الجاذبية
+        // الجاذبية
         this.player.velocityY += 0.8;
         if (this.player.velocityY > 20) this.player.velocityY = 20;
         
-        // التحكم بالحركة
+        // الحركة
         let moveDirection = 0;
         
         // لوحة المفاتيح
-        if (this.keys['arrowleft'] || this.keys['a']) moveDirection -= 1;
-        if (this.keys['arrowright'] || this.keys['d']) moveDirection += 1;
+        if (this.keys['arrowleft'] || this.keys['a'] || this.keys['4']) moveDirection -= 1;
+        if (this.keys['arrowright'] || this.keys['d'] || this.keys['6']) moveDirection += 1;
         
         // التحكم باللمس
         if (this.touchControls.left) moveDirection -= 1;
@@ -627,24 +808,27 @@ class SimpleMarioGame {
         this.player.velocityX = moveDirection * this.player.speed;
         
         // القفز
-        if ((this.keys[' '] || this.keys['space'] || this.keys['arrowup'] || this.keys['w'] || this.touchControls.jump) && this.player.isOnGround) {
+        if ((this.keys[' '] || this.keys['space'] || this.keys['arrowup'] || this.keys['w'] || this.keys['8'] || this.touchControls.jump) && 
+            this.player.isOnGround) {
             this.player.velocityY = this.player.jumpForce;
             this.player.isJumping = true;
             this.player.isOnGround = false;
             
             // جسيمات القفز
-            this.createParticles(this.player.x + this.player.width/2, this.player.y + this.player.height, 8, '#FFD700');
+            if (this.settings.showParticles) {
+                this.createParticles(this.player.x + this.player.width/2, this.player.y + this.player.height, 8, '#FFD700');
+            }
         }
         
         // تحديث الموضع
         this.player.x += this.player.velocityX * deltaTime * 60;
         this.player.y += this.player.velocityY * deltaTime * 60;
         
-        // تحديث الاتجاه
+        // الاتجاه
         if (moveDirection > 0) this.player.facingRight = true;
         if (moveDirection < 0) this.player.facingRight = false;
         
-        // تحديث المناعة
+        // المناعة
         if (this.player.invincible) {
             this.player.invincibleTime -= deltaTime;
             if (this.player.invincibleTime <= 0) {
@@ -652,11 +836,11 @@ class SimpleMarioGame {
             }
         }
         
-        // منع الخروج عن حدود العالم
+        // الحدود الأفقية
         if (this.player.x < 0) this.player.x = 0;
         if (this.player.x > this.canvas.width * 2.5) this.player.x = this.canvas.width * 2.5;
         
-        // فحص الاصطدام مع المنصات
+        // الاصطدام مع المنصات
         this.player.isOnGround = false;
         
         for (const platform of this.platforms) {
@@ -673,7 +857,7 @@ class SimpleMarioGame {
             }
         }
         
-        // السقوط من العالم
+        // السقوط
         if (this.player.y > this.canvas.height + 100) {
             this.playerDie();
         }
@@ -684,13 +868,13 @@ class SimpleMarioGame {
             // الحركة
             enemy.x += enemy.velocityX * enemy.direction * deltaTime * 60;
             
-            // تغيير الاتجاه عند الاصطدام بالحواف
+            // تغيير الاتجاه
             if (enemy.x <= 0 || enemy.x + enemy.width >= this.canvas.width * 3) {
                 enemy.direction *= -1;
                 enemy.x = Math.max(0, Math.min(this.canvas.width * 3 - enemy.width, enemy.x));
             }
             
-            // تطبيق الجاذبية
+            // الجاذبية
             enemy.velocityY += 0.5;
             enemy.y += enemy.velocityY * deltaTime * 60;
             
@@ -727,13 +911,17 @@ class SimpleMarioGame {
     updateItems(deltaTime) {
         this.items.forEach(item => {
             if (!item.collected) {
-                // حركة طفيفة للعناصر
                 item.y += Math.sin(this.gameTime * 2) * 0.5;
             }
         });
     }
     
     updateParticles(deltaTime) {
+        if (!this.settings.showParticles) {
+            this.particles = [];
+            return;
+        }
+        
         this.particles.forEach((particle, index) => {
             particle.x += particle.velocityX;
             particle.y += particle.velocityY;
@@ -753,7 +941,7 @@ class SimpleMarioGame {
         const targetX = this.player.x - this.canvas.width / 2 + this.player.width / 2;
         const targetY = this.player.y - this.canvas.height / 2 + this.player.height / 2;
         
-        // تطبيق بسلاسة
+        // التطبيق البسيط
         this.camera.x += (targetX - this.camera.x) * 0.1;
         this.camera.y += (targetY - this.camera.y) * 0.1;
         
@@ -762,8 +950,14 @@ class SimpleMarioGame {
         this.camera.y = Math.max(0, Math.min(600 - this.canvas.height, this.camera.y));
     }
     
+    // ===== الاصطدامات =====
     checkCollisions() {
-        // جمع العملات
+        this.checkCoinCollisions();
+        this.checkItemCollisions();
+        this.checkEnemyCollisions();
+    }
+    
+    checkCoinCollisions() {
         this.coins.forEach((coin, index) => {
             if (!coin.collected) {
                 const distance = Math.sqrt(
@@ -777,7 +971,9 @@ class SimpleMarioGame {
                     this.stats.score += 100;
                     
                     // جسيمات الجمع
-                    this.createParticles(coin.x, coin.y, 10, '#FFD700');
+                    if (this.settings.showParticles) {
+                        this.createParticles(coin.x, coin.y, 10, '#FFD700');
+                    }
                     
                     // تحديث الواجهة
                     this.updateGameUI();
@@ -787,8 +983,9 @@ class SimpleMarioGame {
                 }
             }
         });
-        
-        // جمع العناصر
+    }
+    
+    checkItemCollisions() {
         this.items.forEach((item, index) => {
             if (!item.collected) {
                 const distance = Math.sqrt(
@@ -817,7 +1014,9 @@ class SimpleMarioGame {
                     }
                     
                     // جسيمات العنصر
-                    this.createParticles(item.x, item.y, 15, this.getItemColor(item.type));
+                    if (this.settings.showParticles) {
+                        this.createParticles(item.x, item.y, 15, this.getItemColor(item.type));
+                    }
                     
                     // تحديث الواجهة
                     this.updateGameUI();
@@ -826,8 +1025,9 @@ class SimpleMarioGame {
                 }
             }
         });
-        
-        // الاصطدام بالأعداء
+    }
+    
+    checkEnemyCollisions() {
         this.enemies.forEach((enemy, index) => {
             const distance = Math.sqrt(
                 Math.pow(this.player.x + this.player.width/2 - (enemy.x + enemy.width/2), 2) +
@@ -842,7 +1042,9 @@ class SimpleMarioGame {
                     this.stats.score += 200;
                     
                     // جسيمات التدمير
-                    this.createParticles(enemy.x + enemy.width/2, enemy.y + enemy.height/2, 12, '#EF476F');
+                    if (this.settings.showParticles) {
+                        this.createParticles(enemy.x + enemy.width/2, enemy.y + enemy.height/2, 12, '#EF476F');
+                    }
                     
                     // قوة القفز
                     this.player.velocityY = -12;
@@ -859,6 +1061,7 @@ class SimpleMarioGame {
         });
     }
     
+    // ===== شروط النهاية =====
     checkEndConditions() {
         // الوقت انتهى
         if (this.stats.time <= 0) {
@@ -888,16 +1091,18 @@ class SimpleMarioGame {
         if (this.stats.lives <= 0) {
             this.gameOver(false);
         } else {
-            // مناعة مؤقتة بعد الضرر
+            // مناعة مؤقتة
             this.player.invincible = true;
             this.player.invincibleTime = 2;
             
-            // تأثير ارتداد
+            // ارتداد
             this.player.velocityY = -10;
             this.player.velocityX = this.player.facingRight ? -10 : 10;
             
             // جسيمات الضرر
-            this.createParticles(this.player.x + this.player.width/2, this.player.y + this.player.height/2, 8, '#EF476F');
+            if (this.settings.showParticles) {
+                this.createParticles(this.player.x + this.player.width/2, this.player.y + this.player.height/2, 8, '#EF476F');
+            }
             
             console.log(`💔 تضررت! الأرواح المتبقية: ${this.stats.lives}`);
         }
@@ -922,7 +1127,7 @@ class SimpleMarioGame {
         }
     }
     
-    // ===== DRAWING =====
+    // ===== الرسم =====
     draw() {
         if (!this.ctx) return;
         
@@ -933,33 +1138,21 @@ class SimpleMarioGame {
         this.ctx.save();
         this.ctx.translate(-this.camera.x, -this.camera.y);
         
-        // رسم الخلفية
+        // رسم المكونات
         this.drawBackground();
-        
-        // رسم الأرض والمنصات
         this.drawPlatforms();
-        
-        // رسم العملات
         this.drawCoins();
-        
-        // رسم العناصر
         this.drawItems();
-        
-        // رسم الأعداء
         this.drawEnemies();
-        
-        // رسم الجسيمات
         this.drawParticles();
-        
-        // رسم اللاعب
         this.drawPlayer();
         
-        // استعادة تحويلات الكاميرا
+        // استعادة التحويلات
         this.ctx.restore();
     }
     
     drawBackground() {
-        // السماء المتدرجة
+        // السماء
         const gradient = this.ctx.createLinearGradient(0, 0, 0, this.canvas.height);
         gradient.addColorStop(0, '#87CEEB');
         gradient.addColorStop(0.6, '#5DADE2');
@@ -968,19 +1161,23 @@ class SimpleMarioGame {
         this.ctx.fillStyle = gradient;
         this.ctx.fillRect(0, 0, this.canvas.width * 3, this.canvas.height);
         
-        // السحب
-        this.ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-        for (let i = 0; i < 8; i++) {
-            const x = (this.camera.x * 0.3 + i * 250) % (this.canvas.width * 3 + 300);
-            const y = 50 + Math.sin(this.gameTime + i) * 15;
-            this.drawCloud(x, y, 70);
+        // السحب (بجودة منخفضة إذا كان الإعداد كذلك)
+        if (this.settings.graphicsQuality !== 'low') {
+            this.ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+            for (let i = 0; i < 8; i++) {
+                const x = (this.camera.x * 0.3 + i * 250) % (this.canvas.width * 3 + 300);
+                const y = 50 + Math.sin(this.gameTime + i) * 15;
+                this.drawCloud(x, y, 70);
+            }
         }
         
-        // الجبال البعيدة
-        this.ctx.fillStyle = '#2C3E50';
-        this.drawMountain(300, 200, 200, 150);
-        this.drawMountain(600, 180, 180, 130);
-        this.drawMountain(900, 220, 220, 170);
+        // الجبال
+        if (this.settings.graphicsQuality !== 'low') {
+            this.ctx.fillStyle = '#2C3E50';
+            this.drawMountain(300, 200, 200, 150);
+            this.drawMountain(600, 180, 180, 130);
+            this.drawMountain(900, 220, 220, 170);
+        }
     }
     
     drawCloud(x, y, size) {
@@ -1017,12 +1214,14 @@ class SimpleMarioGame {
             this.ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
             
             // تفاصيل الأرض
-            this.ctx.fillStyle = '#A0522D';
-            for (let i = 0; i < platform.width; i += 20) {
-                this.ctx.fillRect(platform.x + i, platform.y, 10, 5);
+            if (this.settings.graphicsQuality !== 'low') {
+                this.ctx.fillStyle = '#A0522D';
+                for (let i = 0; i < platform.width; i += 20) {
+                    this.ctx.fillRect(platform.x + i, platform.y, 10, 5);
+                }
             }
             
-            // ظل المنصة
+            // ظل
             this.ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
             this.ctx.fillRect(platform.x, platform.y + platform.height, platform.width, 5);
         });
@@ -1059,12 +1258,11 @@ class SimpleMarioGame {
                 const color = this.getItemColor(item.type);
                 const size = 20;
                 
-                // رسم العنصر
                 this.ctx.fillStyle = color;
                 
                 switch (item.type) {
                     case 'mushroom':
-                        // عيش الغراب
+                        // فطر
                         this.ctx.beginPath();
                         this.ctx.arc(item.x, item.y, size, 0, Math.PI * 2);
                         this.ctx.fill();
@@ -1093,7 +1291,7 @@ class SimpleMarioGame {
     
     drawEnemies() {
         this.enemies.forEach(enemy => {
-            // العدو الأحمر
+            // الجسم
             this.ctx.fillStyle = '#EF476F';
             this.ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
             
@@ -1110,6 +1308,8 @@ class SimpleMarioGame {
     }
     
     drawParticles() {
+        if (!this.settings.showParticles) return;
+        
         this.particles.forEach(particle => {
             this.ctx.globalAlpha = particle.life;
             this.ctx.fillStyle = particle.color;
@@ -1140,7 +1340,7 @@ class SimpleMarioGame {
             this.ctx.restore();
         } else {
             // رسم بديل للاعب
-            this.ctx.fillStyle = this.player.invincible ? '#9B59B6' : '#E74C3C';
+            this.ctx.fillStyle = this.player.invincible ? '#9B59B6' : this.player.color;
             this.ctx.fillRect(this.player.x, this.player.y, this.player.width, this.player.height);
             
             // الوجه
@@ -1149,14 +1349,15 @@ class SimpleMarioGame {
             
             // العيون
             this.ctx.fillStyle = '#FFF';
-            this.ctx.fillRect(this.player.x + 15, this.player.y + 15, 5, 5);
-            this.ctx.fillRect(this.player.x + 25, this.player.y + 15, 5, 5);
+            const eyeOffset = this.player.isJumping ? 2 : 0;
+            this.ctx.fillRect(this.player.x + 15, this.player.y + 15 + eyeOffset, 5, 5);
+            this.ctx.fillRect(this.player.x + 25, this.player.y + 15 + eyeOffset, 5, 5);
         }
         
         this.ctx.globalAlpha = 1;
         
         // تأثير القفز
-        if (this.player.isJumping) {
+        if (this.player.isJumping && this.settings.graphicsQuality !== 'low') {
             this.ctx.fillStyle = 'rgba(52, 152, 219, 0.3)';
             this.ctx.beginPath();
             this.ctx.arc(
@@ -1170,8 +1371,10 @@ class SimpleMarioGame {
         }
     }
     
-    // ===== UTILITY FUNCTIONS =====
+    // ===== أدوات مساعدة =====
     createParticles(x, y, count, color) {
+        if (!this.settings.showParticles) return;
+        
         for (let i = 0; i < count; i++) {
             this.particles.push({
                 x: x,
@@ -1189,12 +1392,11 @@ class SimpleMarioGame {
         switch (type) {
             case 'mushroom': return '#E74C3C';
             case 'flower': return '#9B59B6';
-            case 'star': return '#F1C40F';
             default: return '#FFF';
         }
     }
     
-    // ===== UI UPDATES =====
+    // ===== تحديث الواجهة =====
     updateGameUI() {
         // الوقت
         if (this.UI.elements.timer) {
@@ -1215,19 +1417,38 @@ class SimpleMarioGame {
         if (this.UI.elements.level) {
             this.UI.elements.level.textContent = this.stats.level;
         }
+        
+        // العملات
+        if (this.UI.elements.coins) {
+            this.UI.elements.coins.textContent = `${this.stats.coins}/${this.stats.totalCoins}`;
+        }
     }
     
     updatePauseUI() {
-        const pauseTime = document.getElementById('pause-time');
-        const pauseScore = document.getElementById('pause-score');
+        if (this.UI.elements.pauseTime) {
+            this.UI.elements.pauseTime.textContent = this.formatTime(this.stats.time);
+        }
         
-        if (pauseTime) pauseTime.textContent = this.formatTime(this.stats.time);
-        if (pauseScore) pauseScore.textContent = this.stats.score.toLocaleString();
+        if (this.UI.elements.pauseScore) {
+            this.UI.elements.pauseScore.textContent = this.stats.score.toLocaleString();
+        }
+        
+        if (this.UI.elements.pauseCoins) {
+            this.UI.elements.pauseCoins.textContent = `${this.stats.coins}/${this.stats.totalCoins}`;
+        }
+        
+        if (this.UI.elements.pauseLives) {
+            this.UI.elements.pauseLives.textContent = this.stats.lives;
+        }
     }
     
     updateEndUI(isWin) {
+        // الأيقونة والعنوان
         if (this.UI.elements.endIcon) {
-            this.UI.elements.endIcon.textContent = isWin ? '🏆' : '💀';
+            const icon = this.UI.elements.endIcon.querySelector('i');
+            if (icon) {
+                icon.className = isWin ? 'fas fa-trophy' : 'fas fa-skull-crossbones';
+            }
         }
         
         if (this.UI.elements.endTitle) {
@@ -1236,10 +1457,11 @@ class SimpleMarioGame {
         
         if (this.UI.elements.endMessage) {
             this.UI.elements.endMessage.textContent = isWin 
-                ? `لقد أكملت المستوى ${this.stats.level}!` 
+                ? `لقد أكملت المستوى ${this.stats.level} بنجاح!` 
                 : 'حاول مرة أخرى!';
         }
         
+        // الإحصائيات
         if (this.UI.elements.endScore) {
             this.UI.elements.endScore.textContent = this.stats.score.toLocaleString();
         }
@@ -1250,6 +1472,10 @@ class SimpleMarioGame {
         
         if (this.UI.elements.endTime) {
             this.UI.elements.endTime.textContent = this.formatTime(120 - this.stats.time);
+        }
+        
+        if (this.UI.elements.endKills) {
+            this.UI.elements.endKills.textContent = this.stats.kills;
         }
     }
     
@@ -1266,48 +1492,59 @@ class SimpleMarioGame {
         return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
     }
     
-    // ===== CLEANUP =====
+    // ===== الإعدادات =====
+    saveSettings() {
+        // جمع القيم من الواجهة
+        this.settings.controlsSize = this.UI.elements.controlsSize?.value || 'medium';
+        this.settings.controlsOpacity = parseInt(this.UI.elements.controlsOpacity?.value) || 70;
+        this.settings.graphicsQuality = this.UI.elements.graphicsQuality?.value || 'medium';
+        this.settings.showParticles = this.UI.elements.particlesToggle?.checked || true;
+        
+        // حفظ في LocalStorage
+        localStorage.setItem('mario_settings', JSON.stringify(this.settings));
+        
+        // تطبيق الإعدادات
+        this.applySettings();
+        
+        // إغلاق النافذة
+        this.hideModal('settings');
+        
+        console.log('💾 الإعدادات محفوظة');
+    }
+    
+    resetSettings() {
+        // الإعدادات الافتراضية
+        this.settings = {
+            controlsSize: 'medium',
+            controlsOpacity: 70,
+            graphicsQuality: 'medium',
+            showParticles: true
+        };
+        
+        // تحديث الواجهة
+        this.applySettings();
+        
+        console.log('🔄 الإعدادات معادة تعيينها');
+    }
+    
+    toggleFullscreen() {
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen().catch(e => {
+                console.log('ملء الشاشة غير مدعوم:', e);
+            });
+        } else {
+            document.exitFullscreen();
+        }
+    }
+    
+    // ===== التنظيف =====
     cleanup() {
         clearInterval(this.timerInterval);
+        console.log('🧹 تنظيف موارد اللعبة');
     }
 }
 
 // ============================================
-// بدء اللعبة عند تحميل الصفحة
+// تهيئة اللعبة عند تحميل الصفحة
 // ============================================
-
-let game;
-
-window.addEventListener('load', () => {
-    console.log('📄 الصفحة محملة، بدء اللعبة...');
-    
-    // إنشاء اللعبة
-    game = new SimpleMarioGame();
-    
-    // تحديث شريط التحميل
-    const loadingProgress = document.getElementById('loading-progress');
-    if (loadingProgress) {
-        let progress = 0;
-        const interval = setInterval(() => {
-            progress += 10;
-            loadingProgress.textContent = `${progress}%`;
-            
-            if (progress >= 100) {
-                clearInterval(interval);
-            }
-        }, 300);
-    }
-});
-
-// منع قائمة السياق
-document.addEventListener('contextmenu', (e) => {
-    e.preventDefault();
-});
-
-// ============================================
-// FORCE LANDSCAPE ON MOBILE
-// ============================================
-
-if (window.innerHeight > window.innerWidth) {
-    alert('يرجى تدوير هاتفك إلى الوضع الأفقي للحصول على أفضل تجربة');
-}
+console.log('🎮 كود اللعبة محمل وجاهز!');
