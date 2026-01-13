@@ -1,51 +1,103 @@
-/* ===== الأساسيات وإعادة التعيين ===== */
+/* الأساسيات */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    -webkit-tap-highlight-color: transparent;
     user-select: none;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
+    -webkit-tap-highlight-color: transparent;
 }
 
 body {
-    font-family: 'Cairo', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, #1A1A2E, #16213E);
-    color: #F8F9FA;
+    font-family: 'Cairo', sans-serif;
+    background: linear-gradient(135deg, #1a1a2e, #16213e);
+    color: white;
     width: 100vw;
     height: 100vh;
     overflow: hidden;
     position: fixed;
-    touch-action: manipulation;
-    line-height: 1.6;
     direction: rtl;
 }
 
-/* ===== حاوية اللعبة ===== */
-#game-container {
-    width: 100vw;
-    height: 100vh;
-    position: relative;
-    overflow: hidden;
-}
-
-/* ===== الشاشات ===== */
-.screen {
-    position: absolute;
+/* شاشة التحميل */
+#loading {
+    position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    padding: 20px;
+    background: linear-gradient(135deg, #1a1a2e, #16213e);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    transition: opacity 0.5s;
+}
+
+.loading-content {
+    text-align: center;
+}
+
+.loader {
+    width: 60px;
+    height: 60px;
+    border: 5px solid rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    border-top-color: #FFD700;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 20px;
+}
+
+#loading h2 {
+    color: #FFD700;
+    margin-bottom: 15px;
+}
+
+#loading-progress {
+    font-size: 1.2rem;
+    color: #4ECDC4;
+    font-weight: bold;
+}
+
+/* زر ملء الشاشة */
+#fullscreen-btn {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.7);
+    border: 2px solid #FFD700;
+    color: #FFD700;
+    font-size: 1.2rem;
+    cursor: pointer;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s;
+}
+
+#fullscreen-btn:hover {
+    background: #FFD700;
+    color: #1a1a2e;
+    transform: scale(1.1);
+}
+
+/* الشاشات */
+.screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
     display: none;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    background: linear-gradient(135deg, #1A1A2E, #16213E);
-    z-index: 10;
-    overflow-y: auto;
+    padding: 20px;
+    background: linear-gradient(135deg, #1a1a2e, #16213e);
+    z-index: 100;
 }
 
 .screen.active {
@@ -56,57 +108,50 @@ body {
     max-width: 800px;
     width: 100%;
     padding: 20px;
-    animation: slideUp 0.5s ease;
+    animation: fadeIn 0.5s;
 }
 
-/* ===== شاشة البداية ===== */
+/* شاشة البداية */
 .logo {
     text-align: center;
-    margin-bottom: 40px;
-    animation: fadeInDown 0.8s ease;
+    margin-bottom: 30px;
 }
 
 .logo h1 {
-    font-size: clamp(2rem, 5vw, 3.5rem);
-    background: linear-gradient(45deg, #FF6B6B, #FFD166);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-    margin-bottom: 15px;
-    text-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    font-size: 2.5rem;
+    color: #FFD700;
+    margin-bottom: 10px;
 }
 
 .logo .subtitle {
     color: #4ECDC4;
-    font-size: 1.2rem;
-    opacity: 0.9;
+    font-size: 1.1rem;
 }
 
 .character-preview {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 30px;
-    margin: 40px 0;
-    background: rgba(255, 255, 255, 0.05);
-    padding: 30px;
-    border-radius: 20px;
-    border: 3px solid #FFD166;
-    box-shadow: 0 10px 30px rgba(255, 209, 102, 0.2);
-    animation: fadeIn 1s ease;
-}
-
-.character-img {
     width: 150px;
     height: 200px;
-    background: #E74C3C;
+    margin: 30px auto;
     border-radius: 15px;
-    border: 4px solid #FF6B6B;
+    border: 4px solid #FFD700;
+    overflow: hidden;
     position: relative;
-    box-shadow: 0 8px 25px rgba(239, 71, 111, 0.4);
+    background: #E74C3C;
 }
 
-.character-img::before {
+#player-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.default-character {
+    width: 100%;
+    height: 100%;
+    position: relative;
+}
+
+.default-character::before {
     content: '';
     position: absolute;
     top: 15px;
@@ -117,7 +162,7 @@ body {
     border-radius: 5px;
 }
 
-.character-img::after {
+.default-character::after {
     content: '';
     position: absolute;
     top: 20px;
@@ -129,221 +174,135 @@ body {
     box-shadow: 15px 0 0 white;
 }
 
-.character-info {
-    text-align: right;
-    flex: 1;
-}
-
-.character-info h3 {
-    color: #FFD166;
-    font-size: 2rem;
-    margin-bottom: 10px;
-}
-
-.character-info p {
-    color: #F8F9FA;
-    font-size: 1.1rem;
-    opacity: 0.9;
-}
-
 .start-stats {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 20px;
-    margin: 40px 0;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    margin: 30px 0;
 }
 
 .stat-card {
-    background: rgba(255, 255, 255, 0.05);
-    padding: 20px;
-    border-radius: 15px;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 15px;
+    border-radius: 10px;
     display: flex;
     align-items: center;
-    gap: 20px;
-    transition: all 0.3s;
-    border: 2px solid transparent;
-}
-
-.stat-card:hover {
-    transform: translateY(-5px);
-    border-color: #FFD166;
-    box-shadow: 0 10px 20px rgba(255, 209, 102, 0.2);
+    gap: 15px;
 }
 
 .stat-card i {
-    font-size: 2.5rem;
-    color: #FFD166;
+    font-size: 2rem;
+    color: #FFD700;
 }
 
 .stat-card h4 {
-    color: #F8F9FA;
-    font-size: 1rem;
+    font-size: 0.9rem;
+    color: #aaa;
     margin-bottom: 5px;
-    opacity: 0.8;
 }
 
 .stat-card p {
-    color: #FFD166;
-    font-size: 1.8rem;
+    font-size: 1.5rem;
     font-weight: bold;
+    color: #FFD700;
 }
 
 .buttons {
     display: flex;
     flex-direction: column;
-    gap: 20px;
-    margin: 40px 0;
-    max-width: 400px;
-    margin-right: auto;
-    margin-left: auto;
+    gap: 15px;
+    margin: 30px 0;
 }
 
-.btn-primary, .btn-secondary, .btn-danger {
-    padding: 18px 30px;
+.btn {
+    padding: 15px;
+    border: none;
+    border-radius: 10px;
     font-size: 1.2rem;
     font-weight: bold;
-    border: none;
-    border-radius: 15px;
     cursor: pointer;
-    transition: all 0.3s;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 15px;
-    width: 100%;
-    text-align: center;
+    gap: 10px;
+    transition: 0.3s;
     font-family: 'Cairo', sans-serif;
 }
 
 .btn-primary {
-    background: linear-gradient(135deg, #FF6B6B, #EF476F);
+    background: linear-gradient(135deg, #FF6B6B, #E74C3C);
     color: white;
-    box-shadow: 0 6px 20px rgba(239, 71, 111, 0.4);
-}
-
-.btn-primary:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 10px 25px rgba(239, 71, 111, 0.6);
-}
-
-.btn-primary:active {
-    transform: translateY(1px);
 }
 
 .btn-secondary {
-    background: linear-gradient(135deg, #4ECDC4, #118AB2);
-    color: white;
-    box-shadow: 0 6px 20px rgba(78, 205, 196, 0.4);
-}
-
-.btn-secondary:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 10px 25px rgba(78, 205, 196, 0.6);
-}
-
-.btn-danger {
-    background: linear-gradient(135deg, #EF476F, #FF0000);
+    background: linear-gradient(135deg, #4ECDC4, #2ECC71);
     color: white;
 }
 
-.btn-danger:hover {
+.btn:hover {
     transform: translateY(-3px);
-    box-shadow: 0 10px 25px rgba(239, 71, 111, 0.6);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
 }
 
-.instructions-preview {
+.instructions {
     background: rgba(255, 255, 255, 0.05);
-    padding: 25px;
-    border-radius: 15px;
-    margin-top: 40px;
-    border: 2px solid rgba(255, 255, 255, 0.1);
+    padding: 20px;
+    border-radius: 10px;
+    margin-top: 20px;
 }
 
-.instructions-preview h3 {
-    color: #FFD166;
-    margin-bottom: 20px;
-    font-size: 1.5rem;
+.instructions h3 {
+    color: #FFD700;
+    margin-bottom: 15px;
     display: flex;
     align-items: center;
     gap: 10px;
 }
 
-.controls-preview {
-    display: flex;
-    flex-wrap: wrap;
+.controls-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
     gap: 15px;
-    justify-content: center;
 }
 
 .control-item {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 10px;
-    min-width: 100px;
+    gap: 8px;
 }
 
 .control-item .key {
-    background: #1A1A2E;
-    padding: 10px 20px;
+    width: 60px;
+    height: 60px;
+    background: rgba(255, 255, 255, 0.1);
     border-radius: 10px;
-    border: 2px solid #FFD166;
-    font-size: 1.5rem;
-    min-width: 80px;
-    text-align: center;
-}
-
-.control-item span:last-child {
-    color: #F8F9FA;
-    font-size: 1rem;
-}
-
-/* ===== شاشة اللعب ===== */
-#game-screen {
-    padding: 0;
-    display: flex;
-    flex-direction: column;
-    background: #000;
-}
-
-#fullscreen-btn {
-    position: absolute;
-    top: 20px;
-    left: 20px;
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    background: rgba(0, 0, 0, 0.7);
-    border: 2px solid #FFD166;
-    color: #FFD166;
-    font-size: 1.2rem;
-    cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.3s;
-    z-index: 100;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    font-size: 1.5rem;
+    border: 2px solid #FFD700;
 }
 
-#fullscreen-btn:hover {
-    background: #FFD166;
-    color: #1A1A2E;
-    transform: scale(1.1);
+.control-item span {
+    font-size: 0.9rem;
+    color: #aaa;
+}
+
+/* شاشة اللعب */
+#game-screen {
+    background: #000;
+    padding: 0;
 }
 
 .game-header {
-    background: linear-gradient(90deg, rgba(26, 26, 46, 0.95), rgba(22, 33, 62, 0.95));
-    padding: 15px 25px;
+    background: rgba(0, 0, 0, 0.9);
+    padding: 10px 20px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 3px solid #FFD166;
+    border-bottom: 2px solid #FFD700;
     width: 100%;
-    position: relative;
-    z-index: 20;
-    flex-wrap: wrap;
-    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
 }
 
 .game-info {
@@ -354,48 +313,29 @@ body {
 
 .info-item {
     background: rgba(255, 255, 255, 0.1);
-    padding: 10px 20px;
-    border-radius: 50px;
-    font-weight: bold;
-    font-size: 1.1rem;
-    border: 2px solid transparent;
-    transition: all 0.3s;
+    padding: 8px 15px;
+    border-radius: 20px;
     display: flex;
     align-items: center;
-    gap: 10px;
-    min-width: 120px;
-    justify-content: center;
-}
-
-.info-item:hover {
-    border-color: #FFD166;
-    background: rgba(255, 255, 255, 0.15);
+    gap: 8px;
+    font-size: 0.9rem;
 }
 
 .info-item i {
-    color: #FFD166;
-    font-size: 1.2rem;
+    color: #FFD700;
 }
 
 .control-btn {
-    width: 50px;
-    height: 50px;
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
-    border: 2px solid #FFD166;
     background: rgba(255, 255, 255, 0.1);
+    border: 2px solid #FFD700;
     color: white;
-    font-size: 1.2rem;
     cursor: pointer;
-    transition: all 0.3s;
     display: flex;
     align-items: center;
     justify-content: center;
-}
-
-.control-btn:hover {
-    background: #FFD166;
-    color: #1A1A2E;
-    transform: scale(1.1);
 }
 
 .game-area {
@@ -409,10 +349,10 @@ body {
     width: 100%;
     height: 100%;
     display: block;
-    background: linear-gradient(to bottom, #87CEEB, #5DADE2) !important;
+    background: linear-gradient(to bottom, #87CEEB, #5DADE2);
 }
 
-/* ===== أزرار التحكم للجوال ===== */
+/* أزرار التحكم للجوال */
 .mobile-controls {
     position: absolute;
     bottom: 30px;
@@ -420,8 +360,7 @@ body {
     right: 0;
     display: flex;
     justify-content: space-between;
-    padding: 0 25px;
-    z-index: 30;
+    padding: 0 20px;
     pointer-events: none;
 }
 
@@ -439,122 +378,96 @@ body {
 }
 
 .mobile-btn {
-    width: 80px;
-    height: 80px;
+    width: 70px;
+    height: 70px;
     border-radius: 50%;
     background: rgba(0, 0, 0, 0.7);
-    border: 4px solid #3498db;
+    border: 3px solid #3498db;
     color: white;
-    font-size: 2rem;
+    font-size: 1.5rem;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.1s;
-    opacity: 0.9;
+    transition: 0.1s;
 }
 
 .mobile-btn:active {
     transform: scale(0.9);
     background: #3498db;
-    color: #1A1A2E;
 }
 
 .jump-btn {
-    background: rgba(231, 76, 60, 0.9) !important;
-    border-color: #E74C3C !important;
+    background: rgba(231, 76, 60, 0.9);
+    border-color: #E74C3C;
 }
 
 .jump-btn:active {
-    background: #E74C3C !important;
-    color: white !important;
+    background: #E74C3C;
 }
 
-/* ===== شاشة الإيقاف المؤقت ===== */
-.pause-content, .end-content {
-    background: linear-gradient(135deg, rgba(26, 26, 46, 0.95), rgba(22, 33, 62, 0.95));
+/* شاشة النهاية */
+.end-content {
+    background: rgba(26, 26, 46, 0.95);
     padding: 40px;
-    border-radius: 25px;
-    border: 4px solid #FFD166;
-    max-width: 600px;
-    width: 90%;
+    border-radius: 20px;
+    border: 4px solid #FFD700;
     text-align: center;
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.7);
-    animation: fadeIn 0.5s ease;
+    max-width: 500px;
+    width: 100%;
 }
 
-.pause-content h2, .end-content h2 {
-    color: #FFD166;
-    font-size: 2.5rem;
-    margin-bottom: 30px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 15px;
-}
-
-.pause-stats, .end-stats {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 20px;
-    margin: 30px 0;
-}
-
-.stat-box, .end-stat {
-    background: rgba(255, 255, 255, 0.1);
-    padding: 20px;
-    border-radius: 15px;
-    border: 2px solid transparent;
-    transition: all 0.3s;
-}
-
-.stat-box:hover, .end-stat:hover {
-    border-color: #FFD166;
-    transform: translateY(-5px);
-    box-shadow: 0 10px 20px rgba(255, 209, 102, 0.2);
-}
-
-.stat-box span:first-child, .end-stat span:first-child {
-    display: block;
-    color: #FFD166;
-    font-size: 1rem;
-    margin-bottom: 10px;
-    font-weight: 600;
-}
-
-.stat-box span:last-child, .end-stat span:last-child {
-    display: block;
-    font-size: 2rem;
-    font-weight: bold;
-    color: white;
-}
-
-.pause-buttons, .end-buttons {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-    margin-top: 30px;
-}
-
-/* ===== شاشة النهاية ===== */
 .end-icon {
-    font-size: 5rem;
+    font-size: 4rem;
+    color: #FFD700;
     margin-bottom: 20px;
-    animation: bounce 1s infinite alternate;
-    color: #FFD166;
+}
+
+#end-title {
+    color: #FFD700;
+    margin-bottom: 15px;
 }
 
 .end-message {
-    font-size: 1.3rem;
-    color: #F8F9FA;
-    margin: 20px 0;
-    padding: 15px;
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 10px;
-    border-right: 4px solid #FFD166;
+    color: #aaa;
+    margin-bottom: 30px;
+    font-size: 1.1rem;
 }
 
-/* ===== النوافذ المنبثقة ===== */
+.end-stats {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    margin: 30px 0;
+}
+
+.end-stat {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 15px;
+    border-radius: 10px;
+}
+
+.end-stat span:first-child {
+    display: block;
+    color: #FFD700;
+    font-size: 0.9rem;
+    margin-bottom: 5px;
+}
+
+.end-stat span:last-child {
+    display: block;
+    font-size: 1.8rem;
+    font-weight: bold;
+}
+
+.end-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-top: 30px;
+}
+
+/* نافذة المساعدة */
 .modal {
     display: none;
     position: fixed;
@@ -562,43 +475,35 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.85);
+    background: rgba(0, 0, 0, 0.9);
     z-index: 1000;
     justify-content: center;
     align-items: center;
     padding: 20px;
-    animation: fadeIn 0.3s ease;
-}
-
-.modal.active {
-    display: flex;
 }
 
 .modal-content {
-    background: linear-gradient(135deg, #1A1A2E, #16213E);
+    background: linear-gradient(135deg, #1a1a2e, #16213e);
     padding: 30px;
-    border-radius: 20px;
-    border: 4px solid #FFD166;
-    max-width: 700px;
-    width: 95%;
-    max-height: 85vh;
+    border-radius: 15px;
+    border: 3px solid #FFD700;
+    max-width: 600px;
+    width: 100%;
+    max-height: 80vh;
     overflow-y: auto;
-    animation: slideUp 0.4s ease;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
 }
 
 .modal-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 25px;
+    margin-bottom: 20px;
     padding-bottom: 15px;
-    border-bottom: 2px solid #FFD166;
+    border-bottom: 2px solid #FFD700;
 }
 
 .modal-header h2 {
-    color: #FFD166;
-    font-size: 2rem;
+    color: #FFD700;
     display: flex;
     align-items: center;
     gap: 10px;
@@ -607,7 +512,7 @@ body {
 .close-btn {
     background: none;
     border: none;
-    color: #F8F9FA;
+    color: white;
     font-size: 1.5rem;
     cursor: pointer;
     width: 40px;
@@ -616,177 +521,75 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.3s;
 }
 
 .close-btn:hover {
-    background: #EF476F;
-    color: white;
-    transform: rotate(90deg);
+    background: rgba(255, 255, 255, 0.1);
 }
 
-.modal-body {
-    padding: 10px 0;
-}
-
-.help-section {
-    margin-bottom: 30px;
-    padding-bottom: 20px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.help-section:last-child {
-    border-bottom: none;
-    margin-bottom: 0;
-    padding-bottom: 0;
-}
-
-.help-section h3 {
-    color: #FFD166;
-    font-size: 1.5rem;
-    margin-bottom: 15px;
+.modal-body h3 {
+    color: #FFD700;
+    margin: 20px 0 10px;
     display: flex;
     align-items: center;
     gap: 10px;
 }
 
-.help-section p {
-    color: #F8F9FA;
+.modal-body p {
+    color: #aaa;
     margin-bottom: 15px;
-    line-height: 1.7;
+    line-height: 1.6;
 }
 
-.controls-list {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 15px;
+.help-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 15px 0;
 }
 
-.control-item {
+.help-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 15px;
+    padding: 10px;
     background: rgba(255, 255, 255, 0.05);
-    border-radius: 10px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    transition: all 0.3s;
-}
-
-.control-item:hover {
-    background: rgba(255, 255, 255, 0.1);
-    border-color: #FFD166;
-    transform: translateX(-5px);
-}
-
-.control-item .key {
-    background: #1A1A2E;
-    padding: 8px 15px;
     border-radius: 8px;
-    border: 2px solid #FFD166;
-    font-weight: bold;
-    min-width: 100px;
-    text-align: center;
-    font-size: 1.1rem;
 }
 
-.help-section ul {
+.help-key {
+    background: rgba(0, 0, 0, 0.5);
+    padding: 5px 10px;
+    border-radius: 5px;
+    border: 1px solid #FFD700;
+    min-width: 80px;
+    text-align: center;
+}
+
+.points-list {
     list-style: none;
     padding-right: 20px;
 }
 
-.help-section li {
-    margin-bottom: 12px;
-    padding: 10px;
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 8px;
+.points-list li {
+    padding: 8px 0;
     display: flex;
     align-items: center;
-    gap: 15px;
+    gap: 10px;
 }
 
-/* ===== التجاوب مع الشاشات المختلفة ===== */
+/* التجاوب مع الشاشات المختلفة */
 @media (max-width: 768px) {
-    html {
-        font-size: 14px;
-    }
-    
     .logo h1 {
-        font-size: 2.2rem;
-    }
-    
-    .character-preview {
-        flex-direction: column;
-        text-align: center;
-        padding: 20px;
-    }
-    
-    .buttons {
-        max-width: 100%;
-    }
-    
-    .btn-primary, .btn-secondary, .btn-danger {
-        padding: 15px 20px;
-        font-size: 1.1rem;
-    }
-    
-    .game-header {
-        padding: 10px 15px;
-    }
-    
-    .info-item {
-        min-width: 100px;
-        padding: 8px 15px;
-        font-size: 1rem;
-    }
-    
-    .mobile-controls {
-        bottom: 20px;
-        padding: 0 15px;
-    }
-    
-    .mobile-controls .mobile-btn {
-        width: 70px;
-        height: 70px;
-        font-size: 1.8rem;
-    }
-    
-    .pause-stats, .end-stats {
-        grid-template-columns: repeat(2, 1fr);
-    }
-    
-    .modal-content {
-        padding: 20px;
-    }
-    
-    .controls-list {
-        grid-template-columns: 1fr;
-    }
-}
-
-@media (max-width: 480px) {
-    .logo h1 {
-        font-size: 1.8rem;
-    }
-    
-    .character-preview {
-        margin: 20px 0;
-        padding: 15px;
-    }
-    
-    .character-img {
-        width: 120px;
-        height: 160px;
+        font-size: 2rem;
     }
     
     .start-stats {
         grid-template-columns: 1fr;
     }
     
-    .game-header {
-        flex-direction: column;
-        gap: 10px;
-        padding: 10px;
+    .controls-grid {
+        grid-template-columns: 1fr;
     }
     
     .game-info {
@@ -794,79 +597,59 @@ body {
     }
     
     .info-item {
-        min-width: 80px;
         padding: 6px 12px;
-        font-size: 0.9rem;
+        font-size: 0.8rem;
     }
     
-    .mobile-controls {
-        bottom: 15px;
-        padding: 0 10px;
-    }
-    
-    .mobile-controls .mobile-btn {
+    .mobile-btn {
         width: 60px;
         height: 60px;
-        font-size: 1.5rem;
+        font-size: 1.3rem;
     }
     
-    .pause-stats, .end-stats {
+    .end-stats {
         grid-template-columns: 1fr;
     }
 }
 
-/* تصحيح للهواتف في الوضع الأفقي */
-@media (orientation: landscape) and (max-height: 500px) {
-    .game-header {
-        padding: 8px 15px;
+@media (max-width: 480px) {
+    .screen-content {
+        padding: 10px;
     }
     
-    .info-item {
-        min-width: 70px;
-        padding: 5px 10px;
-        font-size: 0.9rem;
+    .character-preview {
+        width: 120px;
+        height: 160px;
     }
     
     .mobile-controls {
-        bottom: 10px;
+        bottom: 20px;
+        padding: 0 15px;
     }
     
-    .mobile-controls .mobile-btn {
+    .mobile-btn {
         width: 50px;
         height: 50px;
-        font-size: 1.2rem;
+        font-size: 1.1rem;
     }
 }
 
-/* ===== الرسوم المتحركة ===== */
+/* الرسوم المتحركة */
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
 @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-
-@keyframes fadeInDown {
-    from {
-        opacity: 0;
-        transform: translateY(-30px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-@keyframes slideUp {
-    from {
-        opacity: 0;
-        transform: translateY(50px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes bounce {
     0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-15px); }
+    50% { transform: translateY(-10px); }
+}
+
+.bounce {
+    animation: bounce 0.5s infinite;
 }
