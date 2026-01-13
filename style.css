@@ -53,7 +53,7 @@ body {
 }
 
 #loading-progress {
-    font-size: 1.2rem;
+    font-size: 1.5rem;
     color: #4ECDC4;
     font-weight: bold;
 }
@@ -136,7 +136,8 @@ body {
     border: 4px solid #FFD700;
     overflow: hidden;
     position: relative;
-    background: #E74C3C;
+    background: linear-gradient(135deg, #E74C3C, #FF6B6B);
+    box-shadow: 0 10px 30px rgba(231, 76, 60, 0.3);
 }
 
 #player-img {
@@ -149,29 +150,14 @@ body {
     width: 100%;
     height: 100%;
     position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .default-character::before {
-    content: '';
-    position: absolute;
-    top: 15px;
-    left: 15px;
-    right: 15px;
-    height: 30px;
-    background: #2C3E50;
-    border-radius: 5px;
-}
-
-.default-character::after {
-    content: '';
-    position: absolute;
-    top: 20px;
-    left: 25px;
-    width: 8px;
-    height: 8px;
-    background: white;
-    border-radius: 50%;
-    box-shadow: 15px 0 0 white;
+    content: '🎮';
+    font-size: 3rem;
 }
 
 .start-stats {
@@ -188,6 +174,12 @@ body {
     display: flex;
     align-items: center;
     gap: 15px;
+    transition: transform 0.3s;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    background: rgba(255, 255, 255, 0.15);
 }
 
 .stat-card i {
@@ -249,6 +241,7 @@ body {
     padding: 20px;
     border-radius: 10px;
     margin-top: 20px;
+    border: 1px solid rgba(255, 215, 0, 0.2);
 }
 
 .instructions h3 {
@@ -282,6 +275,12 @@ body {
     justify-content: center;
     font-size: 1.5rem;
     border: 2px solid #FFD700;
+    transition: all 0.2s;
+}
+
+.control-item .key:hover {
+    background: rgba(255, 215, 0, 0.1);
+    transform: scale(1.1);
 }
 
 .control-item span {
@@ -319,6 +318,8 @@ body {
     align-items: center;
     gap: 8px;
     font-size: 0.9rem;
+    min-width: 80px;
+    justify-content: center;
 }
 
 .info-item i {
@@ -336,6 +337,13 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
+    transition: all 0.3s;
+}
+
+.control-btn:hover {
+    background: #FFD700;
+    color: #000;
+    transform: scale(1.1);
 }
 
 .game-area {
@@ -415,23 +423,27 @@ body {
     text-align: center;
     max-width: 500px;
     width: 100%;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
 }
 
 .end-icon {
     font-size: 4rem;
     color: #FFD700;
     margin-bottom: 20px;
+    animation: bounce 1s infinite;
 }
 
 #end-title {
     color: #FFD700;
     margin-bottom: 15px;
+    font-size: 2.5rem;
 }
 
 .end-message {
     color: #aaa;
     margin-bottom: 30px;
     font-size: 1.1rem;
+    line-height: 1.6;
 }
 
 .end-stats {
@@ -445,6 +457,12 @@ body {
     background: rgba(255, 255, 255, 0.1);
     padding: 15px;
     border-radius: 10px;
+    transition: transform 0.3s;
+}
+
+.end-stat:hover {
+    transform: translateY(-5px);
+    background: rgba(255, 255, 255, 0.15);
 }
 
 .end-stat span:first-child {
@@ -480,6 +498,7 @@ body {
     justify-content: center;
     align-items: center;
     padding: 20px;
+    animation: fadeIn 0.3s;
 }
 
 .modal-content {
@@ -491,6 +510,7 @@ body {
     width: 100%;
     max-height: 80vh;
     overflow-y: auto;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
 }
 
 .modal-header {
@@ -521,6 +541,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
+    transition: background 0.3s;
 }
 
 .close-btn:hover {
@@ -533,6 +554,8 @@ body {
     display: flex;
     align-items: center;
     gap: 10px;
+    border-bottom: 1px solid rgba(255, 215, 0, 0.3);
+    padding-bottom: 5px;
 }
 
 .modal-body p {
@@ -555,6 +578,11 @@ body {
     padding: 10px;
     background: rgba(255, 255, 255, 0.05);
     border-radius: 8px;
+    transition: background 0.3s;
+}
+
+.help-item:hover {
+    background: rgba(255, 255, 255, 0.1);
 }
 
 .help-key {
@@ -564,6 +592,8 @@ body {
     border: 1px solid #FFD700;
     min-width: 80px;
     text-align: center;
+    font-family: monospace;
+    font-weight: bold;
 }
 
 .points-list {
@@ -576,6 +606,11 @@ body {
     display: flex;
     align-items: center;
     gap: 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.points-list li:last-child {
+    border-bottom: none;
 }
 
 /* التجاوب مع الشاشات المختلفة */
@@ -584,8 +619,16 @@ body {
         font-size: 2rem;
     }
     
+    .logo .subtitle {
+        font-size: 1rem;
+    }
+    
     .start-stats {
         grid-template-columns: 1fr;
+    }
+    
+    .stat-card {
+        padding: 12px;
     }
     
     .controls-grid {
@@ -594,11 +637,13 @@ body {
     
     .game-info {
         justify-content: center;
+        gap: 10px;
     }
     
     .info-item {
         padding: 6px 12px;
         font-size: 0.8rem;
+        min-width: 70px;
     }
     
     .mobile-btn {
@@ -609,6 +654,14 @@ body {
     
     .end-stats {
         grid-template-columns: 1fr;
+    }
+    
+    .end-content {
+        padding: 20px;
+    }
+    
+    #end-title {
+        font-size: 2rem;
     }
 }
 
@@ -632,6 +685,14 @@ body {
         height: 50px;
         font-size: 1.1rem;
     }
+    
+    .modal-content {
+        padding: 20px;
+    }
+    
+    .game-header {
+        padding: 8px 15px;
+    }
 }
 
 /* الرسوم المتحركة */
@@ -652,4 +713,41 @@ body {
 
 .bounce {
     animation: bounce 0.5s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+.pulse {
+    animation: pulse 1s infinite;
+}
+
+/* تخصيص شريط التمرير */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #FFD700;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #FFA500;
+}
+
+/* تأثيرات إضافية */
+.btn-primary:hover {
+    background: linear-gradient(135deg, #FF4757, #E84118);
+}
+
+.btn-secondary:hover {
+    background: linear-gradient(135deg, #2ECC71, #27AE60);
 }
