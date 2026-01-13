@@ -9,44 +9,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
 </head>
 <body>
-    <!-- ===== شاشة التحميل ===== -->
-    <div id="loading">
-        <div class="loading-content">
-            <div class="loader"></div>
-            <h2>جاري تحميل اللعبة...</h2>
-            <div id="loading-progress">0%</div>
-        </div>
-    </div>
-
-    <!-- ===== إشعار الدوران ===== -->
-    <div id="rotate-warning">
-        <div class="rotate-icon">↻</div>
-        <h2>اللعبة تعمل في الوضع الأفقي</h2>
-        <p>يرجى تدوير هاتفك للحصول على أفضل تجربة</p>
-        <div class="phone-mockup">
-            <div class="phone">
-                <div class="screen">↻</div>
-            </div>
-            <div class="arrow">→</div>
-            <div class="phone">
-                <div class="screen">━</div>
-            </div>
-        </div>
-    </div>
-
     <!-- ===== حاوية اللعبة ===== -->
     <div id="game-container">
-        <!-- ===== أزرار التحكم العامة ===== -->
-        <button id="fullscreen-btn" title="ملء الشاشة">
-            <i class="fas fa-expand"></i>
-        </button>
-
-        <input type="checkbox" id="sound-checkbox" checked>
-        <label for="sound-checkbox" class="sound-btn" title="الصوت">
-            <i class="fas fa-volume-up"></i>
-            <i class="fas fa-volume-mute"></i>
-        </label>
-
         <!-- ===== شاشة البداية ===== -->
         <div id="start-screen" class="screen active">
             <div class="screen-content">
@@ -56,7 +20,7 @@
                 </div>
 
                 <div class="character-preview">
-                    <img id="player-preview-img" src="assets/player.png" alt="شخصية ماريو" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 150\"><rect width=\"100\" height=\"150\" fill=\"%23E74C3C\"/><rect x=\"20\" y=\"20\" width=\"60\" height=\"40\" fill=\"%232C3E50\"/><circle cx=\"35\" cy=\"35\" r=\"8\" fill=\"white\"/><circle cx=\"65\" cy=\"35\" r=\"8\" fill=\"white\"/></svg>'">
+                    <div class="character-img" id="player-preview"></div>
                     <div class="character-info">
                         <h3>المغامر ماريو</h3>
                         <p>الشخصية الرئيسية في المغامرة، قم بجمعه العملات وتجنب الأعداء!</p>
@@ -101,9 +65,6 @@
                     <button id="howto-btn" class="btn-secondary">
                         <i class="fas fa-question-circle"></i> كيفية اللعب
                     </button>
-                    <button id="settings-btn" class="btn-secondary">
-                        <i class="fas fa-cog"></i> الإعدادات
-                    </button>
                 </div>
 
                 <div class="instructions-preview">
@@ -121,10 +82,6 @@
                             <div class="key">P</div>
                             <span>إيقاف</span>
                         </div>
-                        <div class="control-item">
-                            <div class="key">F</div>
-                            <span>ملء الشاشة</span>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -132,6 +89,11 @@
 
         <!-- ===== شاشة اللعب ===== -->
         <div id="game-screen" class="screen">
+            <!-- زر ملء الشاشة -->
+            <button id="fullscreen-btn" class="control-btn" title="ملء الشاشة">
+                <i class="fas fa-expand"></i>
+            </button>
+
             <div class="game-header">
                 <div class="game-info">
                     <div class="info-item">
@@ -150,10 +112,6 @@
                         <i class="fas fa-coins"></i>
                         <span id="coins">0/10</span>
                     </div>
-                    <div class="info-item">
-                        <i class="fas fa-flag"></i>
-                        <span id="level">1</span>
-                    </div>
                 </div>
                 <button id="pause-btn" class="control-btn" title="إيقاف مؤقت">
                     <i class="fas fa-pause"></i>
@@ -164,32 +122,22 @@
                 <canvas id="game-canvas"></canvas>
             </div>
 
-            <div class="progress-container">
-                <div class="progress-bar">
-                    <div id="level-progress" class="progress-fill"></div>
-                </div>
-                <div class="progress-labels">
-                    <span>البداية</span>
-                    <span>الهدف: جمع 10 عملات</span>
-                </div>
-            </div>
-
             <!-- أزرار التحكم للجوال -->
             <div class="mobile-controls">
+                <!-- أزرار اليسار (التقدم والرجوع) -->
                 <div class="left-controls">
                     <button id="left-btn" class="mobile-btn action-btn">
                         <i class="fas fa-arrow-left"></i>
-                        <span>يسار</span>
                     </button>
                     <button id="right-btn" class="mobile-btn action-btn">
                         <i class="fas fa-arrow-right"></i>
-                        <span>يمين</span>
                     </button>
                 </div>
+                
+                <!-- زر القفز على اليمين -->
                 <div class="right-controls">
-                    <button id="jump-btn" class="mobile-btn action-btn">
+                    <button id="jump-btn" class="mobile-btn jump-btn">
                         <i class="fas fa-arrow-up"></i>
-                        <span>قفز</span>
                     </button>
                 </div>
             </div>
@@ -213,10 +161,6 @@
                         <div class="stat-box">
                             <span>العملات</span>
                             <span id="pause-coins">0/10</span>
-                        </div>
-                        <div class="stat-box">
-                            <span>الأرواح</span>
-                            <span id="pause-lives">3</span>
                         </div>
                     </div>
 
@@ -259,10 +203,6 @@
                             <span>الوقت المستغرق</span>
                             <span id="end-time">00:00</span>
                         </div>
-                        <div class="end-stat">
-                            <span>الأعداء المقهورين</span>
-                            <span id="end-kills">0</span>
-                        </div>
                     </div>
 
                     <div class="end-buttons">
@@ -290,7 +230,7 @@
             <div class="modal-body">
                 <div class="help-section">
                     <h3><i class="fas fa-bullseye"></i> 🎯 هدف اللعبة</h3>
-                    <p>اجمع 10 عملات ذهبية في الوقت المحدد (دقيقتان) وتجنب الأعداء والفخاخ.</p>
+                    <p>اجمع 10 عملات ذهبية في الوقت المحدد (دقيقتان) وتجنب الأعداء.</p>
                 </div>
 
                 <div class="help-section">
@@ -305,152 +245,52 @@
                             <span>التحرك لليمين</span>
                         </div>
                         <div class="control-item">
-                            <span class="key">⬆️ سهم أعلى / مسافة / W</span>
+                            <span class="key">⬆️ سهم أعلى / مسافة</span>
                             <span>القفز</span>
                         </div>
                         <div class="control-item">
                             <span class="key">P</span>
                             <span>إيقاف/متابعة اللعبة</span>
                         </div>
-                        <div class="control-item">
-                            <span class="key">F</span>
-                            <span>ملء/خروج من الشاشة</span>
-                        </div>
-                        <div class="control-item">
-                            <span class="key">ESC</span>
-                            <span>الخروج من الإيقاف المؤقت</span>
-                        </div>
                     </div>
                 </div>
 
                 <div class="help-section">
                     <h3><i class="fas fa-mobile-alt"></i> 📱 التحكم على الهاتف</h3>
-                    <p>استخدم الأزرار الظاهرة على الشاشة للتحكم بالشخصية.</p>
+                    <div style="display: flex; justify-content: space-around; margin: 20px 0;">
+                        <div style="text-align: center;">
+                            <div style="width: 60px; height: 60px; background: #3498db; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; font-size: 24px;">
+                                ←
+                            </div>
+                            <span>يسار</span>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="width: 60px; height: 60px; background: #3498db; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; font-size: 24px;">
+                                →
+                            </div>
+                            <span>يمين</span>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="width: 60px; height: 60px; background: #E74C3C; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; font-size: 24px;">
+                                ⬆
+                            </div>
+                            <span>قفز</span>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="help-section">
                     <h3><i class="fas fa-star"></i> ⭐ جمع النقاط</h3>
                     <ul>
-                        <li><i class="fas fa-coins gold"></i> العملة الذهبية: <strong>100 نقطة</strong></li>
-                        <li><i class="fas fa-shield-alt red"></i> الفطر: <strong>500 نقطة + مناعة</strong></li>
-                        <li><i class="fas fa-fire purple"></i> الزهرة: <strong>1000 نقطة + سرعة</strong></li>
+                        <li><i class="fas fa-coins" style="color: #FFD700;"></i> العملة الذهبية: <strong>100 نقطة</strong></li>
                         <li><i class="fas fa-skull-crossbones"></i> هزيمة العدو: <strong>200 نقطة</strong></li>
                     </ul>
                 </div>
-
-                <div class="help-section">
-                    <h3><i class="fas fa-lightbulb"></i> 💡 نصائح مهمة</h3>
-                    <ul>
-                        <li><i class="fas fa-check-circle"></i> حاول القفز على رؤوس الأعداء لهزيمتهم</li>
-                        <li><i class="fas fa-check-circle"></i> استخدم المنصات للوصول للأماكن العالية</li>
-                        <li><i class="fas fa-check-circle"></i> اجمع العناصر الخاصة لتحسين قدراتك</li>
-                        <li><i class="fas fa-check-circle"></i> راقب الوقت باستمرار</li>
-                    </ul>
-                </div>
             </div>
         </div>
     </div>
 
-    <!-- ===== نافذة الإعدادات ===== -->
-    <div id="settings-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2><i class="fas fa-cog"></i> الإعدادات</h2>
-                <button class="close-btn" id="close-settings">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div class="modal-body">
-                <div class="setting-section">
-                    <h3><i class="fas fa-gamepad"></i> إعدادات التحكم</h3>
-                    
-                    <div class="setting-item">
-                        <label for="controls-size">حجم أزرار التحكم:</label>
-                        <select id="controls-size">
-                            <option value="small">صغير</option>
-                            <option value="medium" selected>متوسط</option>
-                            <option value="large">كبير</option>
-                        </select>
-                    </div>
-                    
-                    <div class="setting-item">
-                        <label for="controls-opacity">شفافية الأزرار:</label>
-                        <input type="range" id="controls-opacity" min="30" max="100" value="70">
-                        <span id="opacity-value">70%</span>
-                    </div>
-                </div>
-
-                <div class="setting-section">
-                    <h3><i class="fas fa-paint-brush"></i> إعدادات الرسومات</h3>
-                    
-                    <div class="setting-item">
-                        <label for="graphics-quality">جودة الرسومات:</label>
-                        <select id="graphics-quality">
-                            <option value="low">منخفضة</option>
-                            <option value="medium" selected>متوسطة</option>
-                            <option value="high">عالية</option>
-                        </select>
-                    </div>
-                    
-                    <div class="setting-item">
-                        <label for="show-particles">عرض المؤثرات:</label>
-                        <input type="checkbox" id="show-particles" checked>
-                    </div>
-                </div>
-
-                <div class="setting-section">
-                    <h3><i class="fas fa-volume-up"></i> إعدادات الصوت</h3>
-                    
-                    <div class="setting-item">
-                        <label for="sound-volume">مستوى الصوت:</label>
-                        <input type="range" id="sound-volume" min="0" max="100" value="70">
-                        <span id="volume-value">70%</span>
-                    </div>
-                    
-                    <div class="setting-item">
-                        <label for="enable-sound">تفعيل الصوت:</label>
-                        <input type="checkbox" id="enable-sound" checked>
-                    </div>
-                </div>
-
-                <div class="setting-buttons">
-                    <button id="save-settings" class="btn-primary">
-                        <i class="fas fa-save"></i> حفظ الإعدادات
-                    </button>
-                    <button id="reset-settings" class="btn-secondary">
-                        <i class="fas fa-undo"></i> إعادة تعيين
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- ===== ملفات JavaScript ===== -->
+    <!-- ===== ملف JavaScript ===== -->
     <script src="game.js"></script>
-    <script>
-        // تهيئة سريعة عند تحميل الصفحة
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('🎮 صفحة اللعبة جاهزة!');
-            
-            // إخفاء شاشة التحميل بعد 2 ثانية
-            setTimeout(() => {
-                document.getElementById('loading').style.opacity = '0';
-                setTimeout(() => {
-                    document.getElementById('loading').style.display = 'none';
-                }, 500);
-            }, 2000);
-            
-            // محاكاة تحميل الملفات
-            let progress = 0;
-            const interval = setInterval(() => {
-                progress += 10;
-                document.getElementById('loading-progress').textContent = progress + '%';
-                
-                if (progress >= 100) {
-                    clearInterval(interval);
-                }
-            }, 150);
-        });
-    </script>
 </body>
 </html>
