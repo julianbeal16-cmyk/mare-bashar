@@ -52,6 +52,11 @@
             </label>
         </div>
 
+        <!-- زر الإصلاح السريع -->
+        <button id="quick-fix-btn" class="quick-fix-btn" title="إصلاح سريع">
+            <i class="fas fa-wrench"></i>
+        </button>
+
         <!-- شاشة البداية -->
         <div id="start-screen" class="screen active">
             <div class="screen-content">
@@ -62,7 +67,7 @@
 
                 <div class="character-preview">
                     <img id="player-preview-img" src="assets/player.png" alt="شخصيتك" 
-                         onerror="this.src='https://via.placeholder.com/100x150/FF6B6B/FFFFFF?text=شخصيتك'">
+                         onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"100\" height=\"150\"><rect width=\"100\" height=\"150\" fill=\"%23E74C3C\"/><rect x=\"25\" y=\"25\" width=\"50\" height=\"50\" fill=\"%232C3E50\"/><rect x=\"35\" y=\"35\" width=\"10\" height=\"10\" fill=\"%23FFF\"/><rect x=\"55\" y=\"35\" width=\"10\" height=\"10\" fill=\"%23FFF\"/></svg>'">
                     <div class="character-info">
                         <h3>شخصيتك</h3>
                         <p>جاهزة للمغامرة!</p>
@@ -109,18 +114,21 @@
                     <h3><i class="fas fa-info-circle"></i> التعليمات السريعة</h3>
                     <div class="controls-preview">
                         <div class="control-item">
-                            <span class="key">⬅️ ➡️</span>
-                            <span>الحركة يمين/يسار</span>
+                            <span class="key">⬅️</span>
+                            <span>اليسار</span>
                         </div>
                         <div class="control-item">
-                            <span class="key">⬆️ / مسافة</span>
-                            <span>القفز</span>
+                            <span class="key">➡️</span>
+                            <span>اليمين</span>
                         </div>
                         <div class="control-item">
-                            <span class="key">P</span>
-                            <span>إيقاف مؤقت</span>
+                            <span class="key">⬆️</span>
+                            <span>قفز</span>
                         </div>
                     </div>
+                    <p style="margin-top: 15px; color: #FFD700; font-size: 1.1rem;">
+                        <i class="fas fa-mobile-alt"></i> استخدم الأزرار على الشاشة للتحكم
+                    </p>
                 </div>
             </div>
         </div>
@@ -312,7 +320,27 @@
                 
                 <div class="help-section">
                     <h3><i class="fas fa-mobile-alt"></i> التحكم على الهاتف</h3>
-                    <p>استخدم الأزرار الظاهرة على الشاشة للتحكم بالشخصية.</p>
+                    <p>استخدم الأزرار الظاهرة على الشاشة للتحكم بالشخصية:</p>
+                    <div style="display: flex; justify-content: center; gap: 20px; margin: 15px 0;">
+                        <div style="text-align: center;">
+                            <div style="width: 50px; height: 50px; background: #3498db; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px;">
+                                <i class="fas fa-arrow-left"></i>
+                            </div>
+                            <span>يسار</span>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="width: 50px; height: 50px; background: #3498db; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px;">
+                                <i class="fas fa-arrow-right"></i>
+                            </div>
+                            <span>يمين</span>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="width: 50px; height: 50px; background: #E74C3C; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px;">
+                                <i class="fas fa-arrow-up"></i>
+                            </div>
+                            <span>قفز</span>
+                        </div>
+                    </div>
                 </div>
                 
                 <div class="help-section">
@@ -412,46 +440,160 @@
     <!-- ربط ملف JavaScript -->
     <script src="game.js"></script>
     
-    <!-- تهيئة اللعبة -->
+    <!-- الإصلاحات الفورية -->
     <script>
-        // منع قائمة السياق
-        document.addEventListener('contextmenu', function(e) {
-            e.preventDefault();
-        });
-
-        // إخفاء شاشة التحميل بعد تحميل الصفحة
+        // ============================================
+        // 🔧 الإصلاحات الفورية - تعمل مباشرة
+        // ============================================
+        
+        console.log('⚡ تحميل الإصلاحات الفورية...');
+        
+        let gameInstance = null;
+        
+        // عند تحميل الصفحة
         window.addEventListener('load', function() {
-            setTimeout(function() {
-                document.getElementById('loading').style.opacity = '0';
-                setTimeout(function() {
-                    document.getElementById('loading').style.display = 'none';
-                    document.getElementById('game-container').classList.remove('hidden');
+            console.log('📄 الصفحة محملة - إنشاء اللعبة...');
+            
+            // تحديث شريط التحميل
+            let progress = 0;
+            const progressInterval = setInterval(function() {
+                progress += 10;
+                const progressElement = document.getElementById('loading-progress');
+                if (progressElement) {
+                    progressElement.textContent = `${progress}%`;
+                }
+                
+                if (progress >= 100) {
+                    clearInterval(progressInterval);
                     
-                    // إنشاء اللعبة
-                    window.game = new SimpleMarioGame();
-                }, 500);
-            }, 1000);
+                    // إخفاء شاشة التحميل
+                    setTimeout(function() {
+                        const loading = document.getElementById('loading');
+                        if (loading) {
+                            loading.style.opacity = '0';
+                            setTimeout(function() {
+                                loading.style.display = 'none';
+                                const gameContainer = document.getElementById('game-container');
+                                if (gameContainer) {
+                                    gameContainer.classList.remove('hidden');
+                                }
+                                
+                                // إنشاء اللعبة
+                                try {
+                                    gameInstance = new SimpleMarioGame();
+                                    console.log('✅ اللعبة تم إنشاؤها بنجاح');
+                                    
+                                    // تحديث العداد مباشرة
+                                    updateTimerDisplay('02:00');
+                                    updateScoreDisplay('0');
+                                    updateLivesDisplay('3');
+                                    updateCoinsDisplay('0/10');
+                                    
+                                } catch (error) {
+                                    console.error('❌ خطأ في إنشاء اللعبة:', error);
+                                }
+                                
+                                console.log('🎮 اللعبة جاهزة! اضغط زر "🚀 ابدأ اللعب"');
+                                
+                            }, 500);
+                        }
+                    }, 500);
+                }
+            }, 200);
+            
+            // إدارة إشعار الدوران
+            checkOrientation();
+            window.addEventListener('resize', checkOrientation);
+            window.addEventListener('orientationchange', function() {
+                setTimeout(checkOrientation, 300);
+            });
         });
-
-        // إدارة إشعار الدوران
+        
         function checkOrientation() {
             const warning = document.getElementById('rotate-warning');
             const gameContainer = document.getElementById('game-container');
             
             if (window.innerHeight > window.innerWidth) {
-                warning.style.display = 'flex';
+                if (warning) warning.style.display = 'flex';
                 if (gameContainer) gameContainer.classList.add('hidden');
             } else {
-                warning.style.display = 'none';
+                if (warning) warning.style.display = 'none';
                 if (gameContainer) gameContainer.classList.remove('hidden');
             }
         }
         
-        window.addEventListener('resize', checkOrientation);
-        window.addEventListener('orientationchange', checkOrientation);
+        // تحديث العداد مباشرة
+        function updateTimerDisplay(time) {
+            const timerElement = document.getElementById('timer');
+            const pauseTimeElement = document.getElementById('pause-time');
+            
+            if (timerElement) timerElement.textContent = time;
+            if (pauseTimeElement) pauseTimeElement.textContent = time;
+        }
         
-        // التحقق عند التحميل
-        setTimeout(checkOrientation, 100);
+        function updateScoreDisplay(score) {
+            const scoreElement = document.getElementById('score');
+            const pauseScoreElement = document.getElementById('pause-score');
+            const endScoreElement = document.getElementById('end-score');
+            const highScoreElement = document.getElementById('high-score');
+            
+            if (scoreElement) scoreElement.textContent = score;
+            if (pauseScoreElement) pauseScoreElement.textContent = score;
+            if (endScoreElement) endScoreElement.textContent = score;
+            if (highScoreElement) highScoreElement.textContent = score;
+        }
+        
+        function updateLivesDisplay(lives) {
+            const livesElement = document.getElementById('lives');
+            const pauseLivesElement = document.getElementById('pause-lives');
+            
+            if (livesElement) livesElement.textContent = lives;
+            if (pauseLivesElement) pauseLivesElement.textContent = lives;
+        }
+        
+        function updateCoinsDisplay(coins) {
+            const coinsElement = document.getElementById('coins');
+            const pauseCoinsElement = document.getElementById('pause-coins');
+            const endCoinsElement = document.getElementById('end-coins');
+            
+            if (coinsElement) coinsElement.textContent = coins;
+            if (pauseCoinsElement) pauseCoinsElement.textContent = coins;
+            if (endCoinsElement) endCoinsElement.textContent = coins;
+        }
+        
+        // زر الإصلاح السريع
+        const quickFixBtn = document.getElementById('quick-fix-btn');
+        if (quickFixBtn) {
+            quickFixBtn.addEventListener('click', function() {
+                console.log('🔧 تطبيق إصلاح سريع...');
+                
+                // إعادة تعيين كل العروض
+                updateTimerDisplay('02:00');
+                updateScoreDisplay('0');
+                updateLivesDisplay('3');
+                updateCoinsDisplay('0/10');
+                
+                // إعادة تشغيل اللعبة إذا كانت موجودة
+                if (gameInstance) {
+                    gameInstance.startGame();
+                }
+                
+                alert('✅ تم تطبيق الإصلاحات! اضغط زر "🚀 ابدأ اللعب" الآن.');
+            });
+        }
+        
+        // منع السلوك الافتراضي
+        document.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+        });
+        
+        document.addEventListener('keydown', function(e) {
+            if ([' ', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+                e.preventDefault();
+            }
+        });
+        
+        console.log('⚡ الإصلاحات الفورية جاهزة!');
     </script>
 </body>
 </html>
