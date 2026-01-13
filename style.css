@@ -184,6 +184,7 @@ body {
     height: 100vh;
     position: relative;
     overflow: hidden;
+    display: block;
 }
 
 #game-container.hidden {
@@ -191,7 +192,7 @@ body {
 }
 
 /* ===== الأزرار العائمة ===== */
-#fullscreen-btn, .sound-btn {
+#fullscreen-btn, .sound-btn, .quick-fix-btn {
     position: fixed;
     top: 20px;
     z-index: 1000;
@@ -218,7 +219,14 @@ body {
     right: 20px;
 }
 
-#fullscreen-btn:hover, .sound-btn:hover {
+.quick-fix-btn {
+    top: 80px;
+    left: 20px;
+    background: rgba(239, 71, 111, 0.8);
+    border-color: #FFD700;
+}
+
+#fullscreen-btn:hover, .sound-btn:hover, .quick-fix-btn:hover {
     background: var(--accent);
     color: var(--dark);
     transform: scale(1.1);
@@ -590,7 +598,13 @@ body {
     width: 100%;
     height: 100%;
     display: block;
-    background: linear-gradient(to bottom, #87CEEB, #5DADE2);
+    background: linear-gradient(to bottom, #87CEEB, #5DADE2) !important;
+}
+
+/* ===== إصلاح: تأكيد ظهور الكنفاس ===== */
+#game-canvas {
+    visibility: visible !important;
+    opacity: 1 !important;
 }
 
 .progress-container {
@@ -672,12 +686,16 @@ body {
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
 }
 
-.mobile-controls .control-btn:hover {
-    transform: scale(1.05);
+/* ===== إصلاح: جعل الأزرار تستجيب ===== */
+.mobile-btn {
+    opacity: 0.9 !important;
+    transition: all 0.1s !important;
 }
 
-.mobile-controls .control-btn:active {
-    transform: scale(0.95);
+.mobile-btn:active {
+    transform: scale(0.9) !important;
+    background: var(--accent) !important;
+    color: var(--dark) !important;
 }
 
 .action-btn {
