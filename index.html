@@ -2,311 +2,271 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>🎮 لعبة ماريو - المغامرة الكاملة</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لعبة ماريو - احترافية</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
 </head>
 <body>
-    <!-- ===== حاوية اللعبة ===== -->
-    <div id="game-container">
-        <!-- ===== شاشة البداية ===== -->
-        <div id="start-screen" class="screen active">
-            <div class="screen-content">
-                <div class="logo">
-                    <h1><i class="fas fa-gamepad"></i> لعبة ماريو</h1>
-                    <p class="subtitle">مغامرة مثيرة في عالم الألعاب الكلاسيكية</p>
-                </div>
+    <!-- شاشة التحميل -->
+    <div id="loading">
+        <div class="loading-content">
+            <div class="loader"></div>
+            <h2>جاري تحميل اللعبة</h2>
+            <div id="loading-progress">100%</div>
+        </div>
+    </div>
 
-                <div class="character-preview">
-                    <div class="character-img" id="player-preview">
-                        <!-- سيتم رسم اللاعب بالكود -->
-                    </div>
-                    <div class="character-info">
-                        <h3>المغامر ماريو</h3>
-                        <p>الشخصية الرئيسية في المغامرة، قم بجمعه العملات وتجنب الأعداء!</p>
-                    </div>
-                </div>
+    <!-- زر ملء الشاشة -->
+    <button id="fullscreen-btn" title="ملء الشاشة">
+        <i class="fas fa-expand"></i>
+    </button>
 
-                <div class="start-stats">
-                    <div class="stat-card">
-                        <i class="fas fa-trophy"></i>
-                        <div>
-                            <h4>أفضل نتيجة</h4>
-                            <p id="high-score">0</p>
-                        </div>
-                    </div>
-                    <div class="stat-card">
-                        <i class="fas fa-clock"></i>
-                        <div>
-                            <h4>الوقت</h4>
-                            <p>02:00</p>
-                        </div>
-                    </div>
-                    <div class="stat-card">
-                        <i class="fas fa-heart"></i>
-                        <div>
-                            <h4>الأرواح</h4>
-                            <p>3</p>
-                        </div>
-                    </div>
-                    <div class="stat-card">
-                        <i class="fas fa-coins"></i>
-                        <div>
-                            <h4>العملات</h4>
-                            <p>15</p>
-                        </div>
+    <!-- شاشة البداية -->
+    <div id="start-screen" class="screen active">
+        <div class="screen-content">
+            <div class="logo">
+                <h1><i class="fas fa-gamepad"></i> لعبة ماريو</h1>
+                <p class="subtitle">مغامرة حقيقية مع شخصيتك المفضلة</p>
+            </div>
+
+            <div class="character-preview">
+                <img id="player-img" src="assets/player.png" alt="شخصية ماريو" 
+                     onerror="this.style.display='none'; document.getElementById('default-char').style.display='block';">
+                <div id="default-char" class="default-character" style="display: none;">
+                    <!-- سيتم رسم شخصية افتراضية -->
+                </div>
+            </div>
+
+            <div class="start-stats">
+                <div class="stat-card">
+                    <i class="fas fa-trophy"></i>
+                    <div>
+                        <h4>أفضل نتيجة</h4>
+                        <p id="high-score">0</p>
                     </div>
                 </div>
-
-                <div class="buttons">
-                    <button id="start-btn" class="btn-primary">
-                        <i class="fas fa-play"></i> بدء اللعبة
-                    </button>
-                    <button id="howto-btn" class="btn-secondary">
-                        <i class="fas fa-question-circle"></i> كيفية اللعب
-                    </button>
+                <div class="stat-card">
+                    <i class="fas fa-clock"></i>
+                    <div>
+                        <h4>الوقت</h4>
+                        <p>02:00</p>
+                    </div>
                 </div>
-
-                <div class="instructions-preview">
-                    <h3><i class="fas fa-gamepad"></i> طريقة التحكم</h3>
-                    <div class="controls-preview">
-                        <div class="control-item">
-                            <div class="key">← →</div>
-                            <span>التحريك</span>
-                        </div>
-                        <div class="control-item">
-                            <div class="key">⬆ SPACE</div>
-                            <span>القفز</span>
-                        </div>
-                        <div class="control-item">
-                            <div class="key">P</div>
-                            <span>إيقاف</span>
-                        </div>
+                <div class="stat-card">
+                    <i class="fas fa-heart"></i>
+                    <div>
+                        <h4>الأرواح</h4>
+                        <p>3</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-coins"></i>
+                    <div>
+                        <h4>العملات</h4>
+                        <p>10</p>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- ===== شاشة اللعب ===== -->
-        <div id="game-screen" class="screen">
-            <!-- زر ملء الشاشة -->
-            <button id="fullscreen-btn" class="control-btn" title="ملء الشاشة">
-                <i class="fas fa-expand"></i>
-            </button>
-
-            <div class="game-header">
-                <div class="game-info">
-                    <div class="info-item">
-                        <i class="fas fa-clock"></i>
-                        <span id="timer">02:00</span>
-                    </div>
-                    <div class="info-item">
-                        <i class="fas fa-star"></i>
-                        <span id="score">0</span>
-                    </div>
-                    <div class="info-item">
-                        <i class="fas fa-heart"></i>
-                        <span id="lives">3</span>
-                    </div>
-                    <div class="info-item">
-                        <i class="fas fa-coins"></i>
-                        <span id="coins">0/15</span>
-                    </div>
-                </div>
-                <button id="pause-btn" class="control-btn" title="إيقاف مؤقت">
-                    <i class="fas fa-pause"></i>
+            <div class="buttons">
+                <button id="start-btn" class="btn btn-primary">
+                    <i class="fas fa-play"></i> ابدأ اللعب
+                </button>
+                <button id="help-btn" class="btn btn-secondary">
+                    <i class="fas fa-question-circle"></i> كيفية اللعب
                 </button>
             </div>
 
-            <div class="game-area">
-                <canvas id="game-canvas"></canvas>
-            </div>
-
-            <!-- أزرار التحكم للجوال -->
-            <div class="mobile-controls">
-                <!-- أزرار اليسار (التقدم والرجوع) -->
-                <div class="left-controls">
-                    <button id="left-btn" class="mobile-btn action-btn">
-                        <i class="fas fa-arrow-left"></i>
-                    </button>
-                    <button id="right-btn" class="mobile-btn action-btn">
-                        <i class="fas fa-arrow-right"></i>
-                    </button>
-                </div>
-                
-                <!-- زر القفز على اليمين -->
-                <div class="right-controls">
-                    <button id="jump-btn" class="mobile-btn jump-btn">
-                        <i class="fas fa-arrow-up"></i>
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- ===== شاشة الإيقاف المؤقت ===== -->
-        <div id="pause-screen" class="screen">
-            <div class="screen-content">
-                <div class="pause-content">
-                    <h2><i class="fas fa-pause"></i> اللعبة متوقفة</h2>
-                    
-                    <div class="pause-stats">
-                        <div class="stat-box">
-                            <span>الوقت المتبقي</span>
-                            <span id="pause-time">02:00</span>
-                        </div>
-                        <div class="stat-box">
-                            <span>النتيجة</span>
-                            <span id="pause-score">0</span>
-                        </div>
-                        <div class="stat-box">
-                            <span>العملات</span>
-                            <span id="pause-coins">0/15</span>
-                        </div>
+            <div class="instructions">
+                <h3><i class="fas fa-gamepad"></i> طريقة التحكم</h3>
+                <div class="controls-grid">
+                    <div class="control-item">
+                        <div class="key"><i class="fas fa-arrow-left"></i></div>
+                        <span>التحرك لليسار</span>
                     </div>
-
-                    <div class="pause-buttons">
-                        <button id="resume-btn" class="btn-primary">
-                            <i class="fas fa-play"></i> متابعة اللعب
-                        </button>
-                        <button id="restart-btn" class="btn-secondary">
-                            <i class="fas fa-redo"></i> إعادة تشغيل
-                        </button>
-                        <button id="quit-btn" class="btn-danger">
-                            <i class="fas fa-home"></i> العودة للقائمة
-                        </button>
+                    <div class="control-item">
+                        <div class="key"><i class="fas fa-arrow-right"></i></div>
+                        <span>التحرك لليمين</span>
                     </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- ===== شاشة النهاية ===== -->
-        <div id="end-screen" class="screen">
-            <div class="screen-content">
-                <div class="end-content">
-                    <div class="end-icon">
-                        <i id="end-icon" class="fas fa-trophy"></i>
+                    <div class="control-item">
+                        <div class="key"><i class="fas fa-arrow-up"></i></div>
+                        <span>القفز</span>
                     </div>
-                    
-                    <h2 id="end-title">تهانينا!</h2>
-                    <p id="end-message" class="end-message">لقد أكملت المستوى بنجاح!</p>
-                    
-                    <div class="end-stats">
-                        <div class="end-stat">
-                            <span>النتيجة النهائية</span>
-                            <span id="end-score">0</span>
-                        </div>
-                        <div class="end-stat">
-                            <span>العملات المجموعة</span>
-                            <span id="end-coins">0/15</span>
-                        </div>
-                        <div class="end-stat">
-                            <span>الوقت المستغرق</span>
-                            <span id="end-time">00:00</span>
-                        </div>
-                        <div class="end-stat">
-                            <span>الأعداء المقهورين</span>
-                            <span id="end-kills">0</span>
-                        </div>
-                    </div>
-
-                    <div class="end-buttons">
-                        <button id="play-again-btn" class="btn-primary">
-                            <i class="fas fa-redo"></i> لعب مجدداً
-                        </button>
-                        <button id="main-menu-btn" class="btn-secondary">
-                            <i class="fas fa-home"></i> القائمة الرئيسية
-                        </button>
+                    <div class="control-item">
+                        <div class="key">P</div>
+                        <span>إيقاف/متابعة</span>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- ===== نافذة التعليمات ===== -->
+    <!-- شاشة اللعب -->
+    <div id="game-screen" class="screen">
+        <div class="game-header">
+            <div class="game-info">
+                <div class="info-item">
+                    <i class="fas fa-clock"></i>
+                    <span id="timer">02:00</span>
+                </div>
+                <div class="info-item">
+                    <i class="fas fa-star"></i>
+                    <span id="score">0</span>
+                </div>
+                <div class="info-item">
+                    <i class="fas fa-heart"></i>
+                    <span id="lives">3</span>
+                </div>
+                <div class="info-item">
+                    <i class="fas fa-coins"></i>
+                    <span id="coins">0/10</span>
+                </div>
+            </div>
+            <button id="pause-btn" class="control-btn">
+                <i class="fas fa-pause"></i>
+            </button>
+        </div>
+
+        <div class="game-area">
+            <canvas id="game-canvas"></canvas>
+        </div>
+
+        <!-- أزرار التحكم للجوال -->
+        <div class="mobile-controls">
+            <div class="left-controls">
+                <button id="left-btn" class="mobile-btn">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <button id="right-btn" class="mobile-btn">
+                    <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+            <div class="right-controls">
+                <button id="jump-btn" class="mobile-btn jump-btn">
+                    <i class="fas fa-arrow-up"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- شاشة النهاية -->
+    <div id="end-screen" class="screen">
+        <div class="screen-content">
+            <div class="end-content">
+                <div class="end-icon">
+                    <i id="end-icon" class="fas fa-trophy"></i>
+                </div>
+                
+                <h2 id="end-title">تهانينا!</h2>
+                <p id="end-message" class="end-message">لقد أكملت المستوى بنجاح!</p>
+                
+                <div class="end-stats">
+                    <div class="end-stat">
+                        <span>النتيجة النهائية</span>
+                        <span id="final-score">0</span>
+                    </div>
+                    <div class="end-stat">
+                        <span>العملات المجموعة</span>
+                        <span id="final-coins">0/10</span>
+                    </div>
+                    <div class="end-stat">
+                        <span>الوقت المستغرق</span>
+                        <span id="final-time">00:00</span>
+                    </div>
+                    <div class="end-stat">
+                        <span>الأعداء المقهورين</span>
+                        <span id="final-kills">0</span>
+                    </div>
+                </div>
+
+                <div class="end-buttons">
+                    <button id="play-again-btn" class="btn btn-primary">
+                        <i class="fas fa-redo"></i> لعب مجدداً
+                    </button>
+                    <button id="menu-btn" class="btn btn-secondary">
+                        <i class="fas fa-home"></i> القائمة الرئيسية
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة المساعدة -->
     <div id="help-modal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
                 <h2><i class="fas fa-question-circle"></i> كيفية اللعب</h2>
-                <button class="close-btn" id="close-help">
+                <button id="close-help" class="close-btn">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
             <div class="modal-body">
-                <div class="help-section">
-                    <h3><i class="fas fa-bullseye"></i> 🎯 هدف اللعبة</h3>
-                    <p>اجمع 15 عملة ذهبية في الوقت المحدد (دقيقتان) وتجنب الأعداء والفخاخ.</p>
-                </div>
-
-                <div class="help-section">
-                    <h3><i class="fas fa-keyboard"></i> ⌨️ التحكم بلوحة المفاتيح</h3>
-                    <div class="controls-list">
-                        <div class="control-item">
-                            <span class="key">⬅️ سهم يسار / A</span>
-                            <span>التحرك لليسار</span>
-                        </div>
-                        <div class="control-item">
-                            <span class="key">➡️ سهم يمين / D</span>
-                            <span>التحرك لليمين</span>
-                        </div>
-                        <div class="control-item">
-                            <span class="key">⬆️ سهم أعلى / مسافة</span>
-                            <span>القفز</span>
-                        </div>
-                        <div class="control-item">
-                            <span class="key">P</span>
-                            <span>إيقاف/متابعة اللعبة</span>
-                        </div>
+                <h3><i class="fas fa-bullseye"></i> هدف اللعبة</h3>
+                <p>اجمع 10 عملات ذهبية في غضون دقيقتين وتجنب الأعداء والفخاخ.</p>
+                
+                <h3><i class="fas fa-keyboard"></i> التحكم بلوحة المفاتيح</h3>
+                <div class="help-controls">
+                    <div class="help-item">
+                        <span class="help-key">← أو A</span>
+                        <span>التحرك لليسار</span>
+                    </div>
+                    <div class="help-item">
+                        <span class="help-key">→ أو D</span>
+                        <span>التحرك لليمين</span>
+                    </div>
+                    <div class="help-item">
+                        <span class="help-key">↑ أو مسافة</span>
+                        <span>القفز</span>
+                    </div>
+                    <div class="help-item">
+                        <span class="help-key">P</span>
+                        <span>إيقاف/متابعة اللعبة</span>
+                    </div>
+                    <div class="help-item">
+                        <span class="help-key">F</span>
+                        <span>ملء الشاشة</span>
                     </div>
                 </div>
-
-                <div class="help-section">
-                    <h3><i class="fas fa-mobile-alt"></i> 📱 التحكم على الهاتف</h3>
-                    <div style="display: flex; justify-content: space-around; margin: 20px 0;">
-                        <div style="text-align: center;">
-                            <div style="width: 60px; height: 60px; background: #3498db; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; font-size: 24px;">
-                                ←
-                            </div>
-                            <span>يسار</span>
-                        </div>
-                        <div style="text-align: center;">
-                            <div style="width: 60px; height: 60px; background: #3498db; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; font-size: 24px;">
-                                →
-                            </div>
-                            <span>يمين</span>
-                        </div>
-                        <div style="text-align: center;">
-                            <div style="width: 60px; height: 60px; background: #E74C3C; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; font-size: 24px;">
-                                ⬆
-                            </div>
-                            <span>قفز</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="help-section">
-                    <h3><i class="fas fa-star"></i> ⭐ جمع النقاط</h3>
-                    <ul>
-                        <li><i class="fas fa-coins" style="color: #FFD700;"></i> العملة الذهبية: <strong>100 نقطة</strong></li>
-                        <li><i class="fas fa-skull-crossbones"></i> هزيمة العدو: <strong>200 نقطة</strong></li>
-                        <li><i class="fas fa-mushroom" style="color: #E74C3C;"></i> الفطر: <strong>500 نقطة + مناعة</strong></li>
-                    </ul>
-                </div>
-
-                <div class="help-section">
-                    <h3><i class="fas fa-exclamation-triangle"></i> ⚠️ تحذيرات</h3>
-                    <ul>
-                        <li><i class="fas fa-fire"></i> تجنب الفخاخ النارية!</li>
-                        <li><i class="fas fa-tint"></i> الحفر مميتة!</li>
-                        <li><i class="fas fa-ghost"></i> لا تلمس الأعداء!</li>
-                    </ul>
-                </div>
+                
+                <h3><i class="fas fa-mobile-alt"></i> التحكم على الهاتف</h3>
+                <p>استخدم الأزرار الظاهرة على الشاشة للتحكم بالشخصية.</p>
+                
+                <h3><i class="fas fa-star"></i> جمع النقاط</h3>
+                <ul class="points-list">
+                    <li><i class="fas fa-coins" style="color: #FFD700;"></i> العملة الذهبية: 100 نقطة</li>
+                    <li><i class="fas fa-skull-crossbones"></i> هزيمة العدو: 200 نقطة</li>
+                    <li><i class="fas fa-mushroom" style="color: #E74C3C;"></i> الفطر: 500 نقطة + مناعة مؤقتة</li>
+                </ul>
             </div>
         </div>
     </div>
 
-    <!-- ===== ملف JavaScript ===== -->
     <script src="game.js"></script>
+    <script>
+        // إخفاء شاشة التحميل
+        setTimeout(() => {
+            document.getElementById('loading').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('loading').style.display = 'none';
+            }, 500);
+        }, 1000);
+
+        // نافذة المساعدة
+        document.getElementById('help-btn').addEventListener('click', () => {
+            document.getElementById('help-modal').style.display = 'block';
+        });
+
+        document.getElementById('close-help').addEventListener('click', () => {
+            document.getElementById('help-modal').style.display = 'none';
+        });
+
+        window.addEventListener('click', (e) => {
+            if (e.target === document.getElementById('help-modal')) {
+                document.getElementById('help-modal').style.display = 'none';
+            }
+        });
+    </script>
 </body>
 </html>
