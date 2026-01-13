@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لعبة ماريو - احترافية</title>
+    <title>لعبة ماريو - مغامرة حقيقية</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
-    <link rel="icon" type="image/x-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎮</text></svg>">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎮</text></svg>">
 </head>
 <body>
     <!-- شاشة التحميل -->
@@ -33,10 +33,10 @@
             </div>
 
             <div class="character-preview">
-                <img id="player-img" src="assets/player.png" alt="شخصية ماريو" 
-                     onerror="this.style.display='none'; document.getElementById('default-char').style.display='block';">
-                <div id="default-char" class="default-character" style="display: none;">
-                    <!-- سيتم رسم شخصية افتراضية -->
+                <img id="player-img" src="assets/player.png" alt="شخصية اللاعب" 
+                     onerror="this.style.display='none'; document.getElementById('default-char').style.display='flex';">
+                <div id="default-char" class="default-character">
+                    <div class="char-placeholder">🎮</div>
                 </div>
             </div>
 
@@ -135,7 +135,9 @@
         </div>
 
         <div class="game-area">
-            <canvas id="game-canvas"></canvas>
+            <canvas id="game-canvas" width="800" height="600">
+                متصفحك لا يدعم Canvas. الرجاء استخدام Chrome أو Firefox.
+            </canvas>
         </div>
 
         <!-- أزرار التحكم للجوال -->
@@ -238,10 +240,6 @@
                         <span class="help-key">F</span>
                         <span>ملء الشاشة</span>
                     </div>
-                    <div class="help-item">
-                        <span class="help-key">ESC</span>
-                        <span>الخروج من الإيقاف المؤقت</span>
-                    </div>
                 </div>
                 
                 <h3><i class="fas fa-mobile-alt"></i> التحكم على الهاتف</h3>
@@ -269,90 +267,204 @@
         </div>
     </div>
 
+    <!-- رسالة الخطأ -->
+    <div id="error-container" class="error-container">
+        <div class="error-message">
+            <h3><i class="fas fa-exclamation-triangle"></i> خطأ في اللعبة</h3>
+            <p id="error-details">حدث خطأ غير معروف</p>
+            <button onclick="location.reload()" class="refresh-btn">
+                <i class="fas fa-redo"></i> تحديث الصفحة
+            </button>
+        </div>
+    </div>
+
     <script src="game.js"></script>
     <script>
-        // 🔥 تحميل تقدمي حقيقي
-        window.addEventListener('load', () => {
+        // تحميل تقدمي محسن
+        window.addEventListener('load', function() {
+            console.log('📄 الصفحة محملة');
+            
             const loading = document.getElementById('loading');
             const progress = document.getElementById('loading-progress');
+            const errorContainer = document.getElementById('error-container');
             
-            // المحاكاة الأولية
+            // إخفاء رسالة الخطأ
+            errorContainer.style.display = 'none';
+            
             let percent = 0;
-            const fakeLoad = setInterval(() => {
-                percent += 5;
-                progress.textContent = `${percent}%`;
-                if (percent >= 50) {
-                    clearInterval(fakeLoad);
-                    startRealLoad();
+            const loadInterval = setInterval(function() {
+                percent += 10;
+                if (progress) {
+                    progress.textContent = percent + '%';
                 }
-            }, 100);
-            
-            function startRealLoad() {
-                const assets = ['assets/player.png'];
-                let loaded = 0;
                 
-                // تحميل كل الصور
-                assets.forEach(src => {
-                    const img = new Image();
-                    img.onload = () => {
-                        loaded++;
-                        const currentPercent = 50 + Math.round((loaded / assets.length) * 50);
-                        progress.textContent = `${currentPercent}%`;
-                        
-                        if (loaded === assets.length) {
-                            // كل الصور محملة
-                            setTimeout(() => {
-                                loading.style.opacity = '0';
-                                setTimeout(() => {
-                                    loading.style.display = 'none';
-                                    console.log('📄 الصفحة محملة - إنشاء اللعبة...');
-                                    game = new MarioGame();
-                                    console.log('✅ اللعبة جاهزة للعب!');
-                                }, 500);
-                            }, 500);
-                        }
-                    };
-                    img.onerror = () => {
-                        loaded++;
-                        const currentPercent = 50 + Math.round((loaded / assets.length) * 50);
-                        progress.textContent = `${currentPercent}%`;
-                    };
-                    img.src = src;
-                });
-                
-                // تأمين إذا لم تتحمل الصور
-                setTimeout(() => {
-                    if (loading.style.display !== 'none') {
-                        progress.textContent = '100%';
+                if (percent >= 100) {
+                    clearInterval(loadInterval);
+                    if (loading) {
                         loading.style.opacity = '0';
-                        setTimeout(() => {
+                        setTimeout(function() {
                             loading.style.display = 'none';
-                            game = new MarioGame();
-                        }, 500);
+                            
+                            // تهيئة اللعبة بعد إخفاء شاشة التحميل
+                            setTimeout(function() {
+                                try {
+                                    if (typeof MarioGame !== 'undefined') {
+                                        window.game = new MarioGame();
+                                        console.log('🎮 اللعبة جاهزة');
+                                    } else {
+                                        throw new Error('لم يتم تحميل game.js');
+                                    }
+                                } catch (error) {
+                                    console.error('❌ خطأ في تهيئة اللعبة:', error);
+                                    showError('فشل تحميل اللعبة: ' + error.message);
+                                }
+                            }, 100);
+                        }, 300);
                     }
-                }, 5000);
-            }
+                }
+            }, 150);
         });
 
         // نافذة المساعدة
-        document.getElementById('help-btn').addEventListener('click', () => {
-            document.getElementById('help-modal').style.display = 'block';
+        document.getElementById('help-btn').addEventListener('click', function() {
+            document.getElementById('help-modal').style.display = 'flex';
         });
 
-        document.getElementById('close-help').addEventListener('click', () => {
+        document.getElementById('close-help').addEventListener('click', function() {
             document.getElementById('help-modal').style.display = 'none';
         });
 
-        window.addEventListener('click', (e) => {
+        window.addEventListener('click', function(e) {
             if (e.target === document.getElementById('help-modal')) {
                 document.getElementById('help-modal').style.display = 'none';
             }
         });
-        
-        // اختبار الصورة عند النقر على المعاينة
-        document.getElementById('player-img').addEventListener('error', () => {
-            console.log('❌ لم يتم تحميل صورة اللاعب - سيتم استخدام رسم بديل');
+
+        // معالجة أخطاء الصور
+        const playerImg = document.getElementById('player-img');
+        if (playerImg) {
+            playerImg.onerror = function() {
+                console.log('⚠️ صورة اللاعب غير موجودة، سيتم استخدام البديل');
+                this.style.display = 'none';
+                const defaultChar = document.getElementById('default-char');
+                if (defaultChar) {
+                    defaultChar.style.display = 'flex';
+                }
+            };
+            
+            playerImg.onload = function() {
+                console.log('✅ صورة اللاعب محملة');
+                const defaultChar = document.getElementById('default-char');
+                if (defaultChar) {
+                    defaultChar.style.display = 'none';
+                }
+            };
+        }
+
+        // دالة عرض الخطأ
+        function showError(message) {
+            console.error('❌ خطأ:', message);
+            const errorContainer = document.getElementById('error-container');
+            const errorDetails = document.getElementById('error-details');
+            
+            if (errorContainer && errorDetails) {
+                errorDetails.textContent = message;
+                errorContainer.style.display = 'flex';
+            }
+            
+            // إخفاء شاشة التحميل إذا كانت ظاهرة
+            const loading = document.getElementById('loading');
+            if (loading) {
+                loading.style.display = 'none';
+            }
+        }
+
+        // اختبار Font Awesome
+        setTimeout(function() {
+            if (!document.querySelector('.fa-gamepad')) {
+                console.log('⚠️ Font Awesome غير محمل، استبدال الأيقونات');
+                replaceIcons();
+            }
+        }, 2000);
+
+        // استبدال الأيقونات في حالة فشل Font Awesome
+        function replaceIcons() {
+            const iconMap = {
+                'fa-gamepad': '🎮',
+                'fa-play': '▶️',
+                'fa-question-circle': '❓',
+                'fa-trophy': '🏆',
+                'fa-clock': '⏰',
+                'fa-heart': '❤️',
+                'fa-coins': '💰',
+                'fa-pause': '⏸️',
+                'fa-expand': '⛶',
+                'fa-compress': '🗖',
+                'fa-arrow-left': '←',
+                'fa-arrow-right': '→',
+                'fa-arrow-up': '↑',
+                'fa-times': '✕',
+                'fa-redo': '↻',
+                'fa-home': '⌂',
+                'fa-skull-crossbones': '💀',
+                'fa-exclamation-triangle': '⚠️'
+            };
+            
+            document.querySelectorAll('i').forEach(icon => {
+                for (const className in iconMap) {
+                    if (icon.classList.contains(className)) {
+                        const text = document.createTextNode(iconMap[className]);
+                        icon.parentNode.replaceChild(text, icon);
+                        break;
+                    }
+                }
+            });
+        }
+
+        // اختبار Canvas
+        document.addEventListener('DOMContentLoaded', function() {
+            const canvas = document.getElementById('game-canvas');
+            if (!canvas) {
+                showError('عنصر Canvas غير موجود في الصفحة');
+                return;
+            }
+            
+            // تعيين حجم افتراضي
+            canvas.width = 800;
+            canvas.height = 600;
+            
+            // اختبار دعم Canvas
+            if (!canvas.getContext) {
+                showError('متصفحك لا يدعم Canvas. الرجاء استخدام Chrome أو Firefox.');
+                return;
+            }
+            
+            const ctx = canvas.getContext('2d');
+            if (!ctx) {
+                showError('فشل في الحصول على سياق الرسم Canvas');
+                return;
+            }
+            
+            // اختبار رسم بسيط
+            try {
+                ctx.fillStyle = 'rgba(0,0,0,0)';
+                ctx.fillRect(0, 0, 1, 1);
+            } catch (error) {
+                showError('فشل اختبار Canvas: ' + error.message);
+            }
         });
+
+        // إضافة إشعار التحكم
+        document.addEventListener('keydown', function(e) {
+            if (e.key === '?' || e.key === '؟') {
+                document.getElementById('help-modal').style.display = 'flex';
+            }
+        });
+
+        // تلميح للمستخدم
+        setTimeout(function() {
+            console.log('💡 تلميح: اضغط على ? لفتح نافذة المساعدة');
+        }, 3000);
     </script>
 </body>
 </html>
