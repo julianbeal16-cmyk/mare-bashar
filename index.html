@@ -23,6 +23,32 @@
             position: fixed;
         }
         
+        /* ===== زر ملء الشاشة ===== */
+        #fullscreen-btn {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            width: 50px;
+            height: 50px;
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid #FFD700;
+            color: #FFD700;
+            border-radius: 50%;
+            font-size: 1.2rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            transition: all 0.3s;
+        }
+        
+        #fullscreen-btn:hover {
+            background: #FFD700;
+            color: #000;
+            transform: scale(1.1);
+        }
+        
         /* ===== شاشة البداية ===== */
         #start-screen {
             position: absolute;
@@ -36,6 +62,7 @@
             justify-content: center;
             align-items: center;
             padding: 20px;
+            z-index: 10;
         }
         
         #start-screen h1 {
@@ -114,6 +141,7 @@
             display: none;
             flex-direction: column;
             background: #000;
+            z-index: 20;
         }
         
         .game-header {
@@ -156,7 +184,7 @@
             display: flex;
             justify-content: space-between;
             padding: 0 20px;
-            z-index: 100;
+            z-index: 30;
         }
         
         .left-controls {
@@ -207,6 +235,7 @@
             justify-content: center;
             align-items: center;
             padding: 20px;
+            z-index: 40;
         }
         
         .end-content {
@@ -321,6 +350,9 @@
     </style>
 </head>
 <body>
+    <!-- زر ملء الشاشة -->
+    <button id="fullscreen-btn" title="ملء الشاشة">⛶</button>
+
     <!-- إشعار الدوران -->
     <div id="rotate-warning">
         <h1 style="font-size: 3rem;">↻</h1>
@@ -436,6 +468,10 @@
                     <span class="key">P</span>
                     <span>إيقاف/متابعة</span>
                 </div>
+                <div class="control-item">
+                    <span class="key">F</span>
+                    <span>ملء الشاشة</span>
+                </div>
             </div>
             
             <h3 style="color: #FFD700; margin: 15px 0 10px;">📱 التحكم على الهاتف</h3>
@@ -465,6 +501,7 @@
             <div style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 5px;">
                 <p>🟡 العملة الذهبية: 100 نقطة</p>
                 <p>🍄 الفطر: 500 نقطة + مناعة</p>
+                <p>🌺 الزهرة: 1000 نقطة + سرعة</p>
                 <p>👾 هزيمة العدو: 200 نقطة</p>
             </div>
             
@@ -475,7 +512,7 @@
     <!-- ===== محرك اللعبة ===== -->
     <script>
         // ============================================
-        // 🎮 MARIO GAME - الإصدار النهائي 100% يعمل
+        // 🎮 MARIO GAME - الإصدار النهائي الكامل
         // ============================================
         
         console.log('🎮 بدء تحميل لعبة ماريو...');
@@ -487,6 +524,9 @@
                 // 🔥 العناصر الأساسية
                 this.canvas = document.getElementById('game-canvas');
                 this.ctx = this.canvas.getContext('2d');
+                
+                // 🔥 زر ملء الشاشة
+                this.setupFullscreen();
                 
                 // 🔥 حجم الكنفاس
                 this.resizeCanvas();
@@ -527,6 +567,34 @@
                 this.setupControls();
                 
                 console.log('✅ اللعبة مهيأة - جاهزة للعب');
+            }
+            
+            setupFullscreen() {
+                const fullscreenBtn = document.getElementById('fullscreen-btn');
+                if (fullscreenBtn) {
+                    fullscreenBtn.addEventListener('click', () => {
+                        this.toggleFullscreen();
+                    });
+                }
+                
+                // أيضًا عبر المفتاح F
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'f' || e.key === 'F') {
+                        this.toggleFullscreen();
+                    }
+                });
+            }
+            
+            toggleFullscreen() {
+                if (!document.fullscreenElement) {
+                    document.documentElement.requestFullscreen().catch(err => {
+                        console.log('خطأ في ملء الشاشة:', err);
+                    });
+                    document.getElementById('fullscreen-btn').textContent = '🗗';
+                } else {
+                    document.exitFullscreen();
+                    document.getElementById('fullscreen-btn').textContent = '⛶';
+                }
             }
             
             resizeCanvas() {
@@ -656,12 +724,12 @@
                 
                 // ===== لوحة المفاتيح =====
                 
-                window.addEventListener('keydown', (e) => {
+                document.addEventListener('keydown', (e) => {
                     const key = e.key.toLowerCase();
                     this.keys[key] = true;
                     
                     // منع التمرير
-                    if ([' ', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright'].includes(key)) {
+                    if ([' ', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright', 'f'].includes(key)) {
                         e.preventDefault();
                     }
                     
@@ -674,6 +742,11 @@
                         document.getElementById('pause-btn').textContent = '⏸ إيقاف';
                     }
                     
+                    // ملء الشاشة
+                    if (key === 'f') {
+                        this.toggleFullscreen();
+                    }
+                    
                     // الخروج بالإسكيب
                     if (key === 'escape' && this.gameState === 'paused') {
                         this.resumeGame();
@@ -681,7 +754,7 @@
                     }
                 });
                 
-                window.addEventListener('keyup', (e) => {
+                document.addEventListener('keyup', (e) => {
                     this.keys[e.key.toLowerCase()] = false;
                 });
                 
@@ -703,6 +776,7 @@
                     this.gameState = 'start';
                 } else if (screenName === 'game') {
                     document.getElementById('game-screen').style.display = 'flex';
+                    this.gameState = 'playing';
                 } else if (screenName === 'end') {
                     document.getElementById('end-screen').style.display = 'flex';
                     this.gameState = 'ended';
@@ -884,6 +958,9 @@
                     this.player.grounded = false;
                     this.player.canJump = false;
                     
+                    // جسيمات القفز
+                    this.createParticles(this.player.x + this.player.width/2, this.player.y + this.player.height, 5, '#FFD700');
+                    
                     setTimeout(() => {
                         this.player.canJump = true;
                     }, 300);
@@ -969,6 +1046,20 @@
                 }
             }
             
+            updateParticles(deltaTime) {
+                for (let i = this.particles.length - 1; i >= 0; i--) {
+                    const particle = this.particles[i];
+                    particle.x += particle.velocityX;
+                    particle.y += particle.velocityY;
+                    particle.velocityY += 0.2;
+                    particle.life -= deltaTime;
+                    
+                    if (particle.life <= 0) {
+                        this.particles.splice(i, 1);
+                    }
+                }
+            }
+            
             updateCamera() {
                 if (!this.player) return;
                 
@@ -1000,6 +1091,9 @@
                             this.score += 100;
                             this.updateUI();
                             
+                            // جسيمات العملة
+                            this.createParticles(coin.x, coin.y, 8, '#FFD700');
+                            
                             // 🔥 فحص إذا جمع كل العملات
                             if (this.coins >= this.totalCoins) {
                                 console.log('🏆 جمعت كل العملات!');
@@ -1024,11 +1118,13 @@
                                 this.score += 500;
                                 this.player.invincible = true;
                                 this.player.invincibleTime = 10;
+                                this.createParticles(item.x, item.y, 12, '#E74C3C');
                             } else if (item.type === 'flower') {
                                 this.score += 1000;
                                 this.player.speed *= 1.5;
                                 this.player.invincible = true;
                                 this.player.invincibleTime = 15;
+                                this.createParticles(item.x, item.y, 12, '#9B59B6');
                             }
                             
                             this.updateUI();
@@ -1049,17 +1145,33 @@
                         if (this.player.velY > 0 && this.player.y + this.player.height < enemy.y + enemy.height/2) {
                             console.log('👾 هزمت عدواً!');
                             enemy.active = false;
-                            enemy.x = -1000; // إزالته
                             this.score += 200;
                             this.kills++;
                             this.player.velY = -12; // قفز عند هزيمة العدو
                             this.updateUI();
+                            
+                            // جسيمات تدمير العدو
+                            this.createParticles(enemy.x + enemy.width/2, enemy.y + enemy.height/2, 10, '#EF476F');
                         } else if (!this.player.invincible) {
                             // تضرر اللاعب
                             console.log('💥 تضرر من عدو!');
                             this.playerDamaged();
                         }
                     }
+                }
+            }
+            
+            createParticles(x, y, count, color) {
+                for (let i = 0; i < count; i++) {
+                    this.particles.push({
+                        x: x,
+                        y: y,
+                        velocityX: (Math.random() - 0.5) * 8,
+                        velocityY: (Math.random() - 0.5) * 8 - 4,
+                        size: Math.random() * 3 + 2,
+                        color: color,
+                        life: 1
+                    });
                 }
             }
             
@@ -1080,6 +1192,9 @@
                     this.player.velY = -10;
                     this.player.velX = this.player.facingRight ? -10 : 10;
                     
+                    // جسيمات الضرر
+                    this.createParticles(this.player.x + this.player.width/2, this.player.y + this.player.height/2, 6, '#EF476F');
+                    
                     console.log(`💔 تضررت! الأرواح المتبقية: ${this.lives}`);
                 }
             }
@@ -1098,6 +1213,7 @@
                 this.updateEnemies(deltaTime);
                 this.updateCoins(deltaTime);
                 this.updateItems(deltaTime);
+                this.updateParticles(deltaTime);
                 this.updateCamera();
                 this.checkCollisions();
                 
@@ -1215,6 +1331,16 @@
                     this.ctx.fillRect(enemy.x + 15, enemy.y + 30, enemy.width - 30, 5);
                 });
                 
+                // 🔥 الجسيمات
+                this.particles.forEach(particle => {
+                    this.ctx.globalAlpha = particle.life;
+                    this.ctx.fillStyle = particle.color;
+                    this.ctx.beginPath();
+                    this.ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+                    this.ctx.fill();
+                });
+                this.ctx.globalAlpha = 1;
+                
                 // 🔥 اللاعب
                 // تأثير المناعة (وميض)
                 if (this.player.invincible && Math.floor(this.player.invincibleTime * 10) % 2 === 0) {
@@ -1314,6 +1440,8 @@
             // 🔥 إخفاء إشعار الدوران إذا كان أفقي
             if (window.innerHeight <= window.innerWidth) {
                 document.getElementById('rotate-warning').style.display = 'none';
+            } else {
+                document.getElementById('rotate-warning').style.display = 'flex';
             }
             
             // 🔥 إنشاء اللعبة مباشرة
@@ -1332,11 +1460,33 @@
                     warning.style.display = 'none';
                     document.getElementById('start-screen').style.display = 'flex';
                 }
+                
+                // إذا كانت اللعبة تعمل، أعد حساب حجم الكنفاس
+                if (game && game.resizeCanvas) {
+                    game.resizeCanvas();
+                }
+            });
+            
+            // 🔥 تتبع حالة ملء الشاشة
+            document.addEventListener('fullscreenchange', () => {
+                const fullscreenBtn = document.getElementById('fullscreen-btn');
+                if (document.fullscreenElement) {
+                    fullscreenBtn.textContent = '🗗';
+                } else {
+                    fullscreenBtn.textContent = '⛶';
+                }
             });
         });
         
         // 🔥 منع قائمة السياق
         document.addEventListener('contextmenu', e => e.preventDefault());
+        
+        // 🔥 منع التمرير بالمفاتيح
+        document.addEventListener('keydown', (e) => {
+            if ([' ', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+                e.preventDefault();
+            }
+        });
         
         console.log('🎮 كود اللعبة محمل بنجاح!');
     </script>
