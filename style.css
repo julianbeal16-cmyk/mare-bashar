@@ -187,10 +187,6 @@ body {
     display: block;
 }
 
-#game-container.hidden {
-    display: none;
-}
-
 /* ===== الأزرار العائمة ===== */
 #fullscreen-btn, .sound-btn, .quick-fix-btn {
     position: fixed;
@@ -219,14 +215,7 @@ body {
     right: 20px;
 }
 
-.quick-fix-btn {
-    top: 80px;
-    left: 20px;
-    background: rgba(239, 71, 111, 0.8);
-    border-color: #FFD700;
-}
-
-#fullscreen-btn:hover, .sound-btn:hover, .quick-fix-btn:hover {
+#fullscreen-btn:hover, .sound-btn:hover {
     background: var(--accent);
     color: var(--dark);
     transform: scale(1.1);
@@ -690,6 +679,7 @@ body {
 .mobile-btn {
     opacity: 0.9 !important;
     transition: all 0.1s !important;
+    pointer-events: auto !important;
 }
 
 .mobile-btn:active {
