@@ -1,5 +1,5 @@
 // ============================================
-// 🎮 GAME ENGINE - الإصدار النهائي الموثوق
+// 🎮 GAME ENGINE - الإصدار النهائي الموسع
 // ============================================
 
 console.log('🎮 بدء تحميل لعبة ماريو...');
@@ -30,7 +30,7 @@ class MarioGame {
         this.lives = 3;
         this.timeLeft = 120; // 2 دقيقة
         this.coins = 0;
-        this.totalCoins = 10;
+        this.totalCoins = 30; // 🔥 زدنا العملات
         this.kills = 0;
         
         // 🔥 المؤقتات
@@ -47,20 +47,26 @@ class MarioGame {
         this.pits = [];
         this.particles = [];
         this.camera = { x: 0, y: 0 };
+        this.castle = null; // 🔥 القصر النهائي
         
-        // 🔥 تحميل صورة اللاعب
-        this.playerImage = new Image();
-        this.playerImage.src = 'assets/player.png';
-        this.playerImage.onload = () => console.log('✅ صورة اللاعب محملة بنجاح');
-        this.playerImage.onerror = () => {
-            console.log('⚠️ لم يتم تحميل صورة اللاعب، سيتم استخدام رسم بديل');
-            this.playerImage = null;
+        // 🔥 نظام تحميل الأصول المحسن
+        this.assets = {
+            player: null,
+            loaded: false
         };
+        
+        this.loadAssets().then(() => {
+            console.log('✅ جميع الأصول محملة بنجاح');
+            this.assets.loaded = true;
+        }).catch(() => {
+            console.log('⚠️ استخدام الرسومات البديلة');
+            this.assets.loaded = true;
+        });
         
         // 🔥 تهيئة الأحداث
         this.setupEvents();
         
-        // 🔥 إنشاء العالم
+        // 🔥 إنشاء العالم الموسع
         this.createGameWorld();
         
         // 🔥 تحديث أفضل نتيجة
@@ -143,6 +149,29 @@ class MarioGame {
         document.addEventListener('contextmenu', e => e.preventDefault());
     }
     
+    async loadAssets() {
+        const assetsToLoad = [
+            { name: 'player', src: 'assets/player.png' }
+        ];
+        
+        for (const asset of assetsToLoad) {
+            await new Promise((resolve) => {
+                const img = new Image();
+                img.onload = () => {
+                    this.assets[asset.name] = img;
+                    console.log(`✅ تم تحميل: ${asset.src}`);
+                    resolve();
+                };
+                img.onerror = () => {
+                    console.log(`⚠️ فشل تحميل: ${asset.src}`);
+                    this.assets[asset.name] = null;
+                    resolve(); // نكمل حتى لو فشل تحميل الصورة
+                };
+                img.src = asset.src;
+            });
+        }
+    }
+    
     updateHighScore() {
         const highScoreElement = document.getElementById('high-score');
         if (highScoreElement) {
@@ -177,7 +206,7 @@ class MarioGame {
     }
     
     createGameWorld() {
-        console.log('🌍 إنشاء عالم اللعبة...');
+        console.log('🌍 إنشاء عالم اللعبة الموسع...');
         
         // اللاعب
         this.player = {
@@ -195,55 +224,83 @@ class MarioGame {
             invincibleTime: 0
         };
         
-        // الأرض والمنصات
-        const worldWidth = this.canvas.width * 3;
+        // 🔥 توسيع العالم إلى 4 أضعاف
+        const worldWidth = this.canvas.width * 4;
+        
+        // 🔥 الأرض الطويلة
         this.platforms = [
-            { x: 0, y: this.canvas.height - 50, width: worldWidth, height: 50, type: 'ground' },
-            { x: 300, y: 350, width: 180, height: 20, type: 'platform' },
-            { x: 600, y: 300, width: 150, height: 20, type: 'platform' },
-            { x: 900, y: 250, width: 180, height: 20, type: 'platform' },
-            { x: 1200, y: 320, width: 140, height: 20, type: 'platform' },
-            { x: 1500, y: 280, width: 160, height: 20, type: 'platform' },
-            { x: 1800, y: 200, width: 170, height: 20, type: 'platform' },
-            { x: 2100, y: 350, width: 190, height: 20, type: 'platform' }
+            { x: 0, y: this.canvas.height - 50, width: worldWidth, height: 50, type: 'ground' }
         ];
         
-        // العملات
+        // 🔥 منصات إضافية طويلة (15 منصة)
+        const platformCount = 15;
+        for (let i = 0; i < platformCount; i++) {
+            this.platforms.push({
+                x: 300 + (i * 250),
+                y: 350 - (i % 3) * 70,
+                width: 150 + Math.sin(i) * 50,
+                height: 20,
+                type: 'platform'
+            });
+        }
+        
+        // 🔥 30 عملة قابلة للجمع
         this.coinItems = [];
         for (let i = 0; i < this.totalCoins; i++) {
             this.coinItems.push({
-                x: 150 + i * 180,
-                y: 180 + Math.sin(i * 0.8) * 80,
+                x: 100 + (i * 120),
+                y: 180 + Math.sin(i * 0.5) * 100,
                 collected: false,
                 anim: Math.random() * Math.PI * 2,
                 size: 12
             });
         }
         
-        // الأعداء
-        this.enemies = [
-            { x: 400, y: this.platforms[0].y - 40, width: 40, height: 40, dir: 1, speed: 1.5, active: true },
-            { x: 800, y: this.platforms[0].y - 40, width: 40, height: 40, dir: -1, speed: 2, active: true },
-            { x: 1200, y: 260, width: 40, height: 40, dir: 1, speed: 1.8, active: true },
-            { x: 1600, y: this.platforms[0].y - 40, width: 40, height: 40, dir: 1, speed: 2.2, active: true },
-            { x: 2000, y: 150, width: 40, height: 40, dir: -1, speed: 1.7, active: true }
-        ];
+        // 🔥 أعداء أكثر (8 أعداء)
+        this.enemies = [];
+        for (let i = 0; i < 8; i++) {
+            this.enemies.push({
+                x: 400 + (i * 300),
+                y: this.platforms[0].y - 40,
+                width: 40,
+                height: 40,
+                dir: i % 2 === 0 ? 1 : -1,
+                speed: 1.5 + Math.random() * 1,
+                active: true
+            });
+        }
         
-        // الفطر
-        this.mushrooms = [
-            { x: 500, y: 180, collected: false },
-            { x: 1100, y: 220, collected: false },
-            { x: 1700, y: 150, collected: false }
-        ];
+        // 🔥 فطر أكثر (6 فطر)
+        this.mushrooms = [];
+        for (let i = 0; i < 6; i++) {
+            this.mushrooms.push({
+                x: 500 + (i * 400),
+                y: 180 + Math.cos(i) * 80,
+                collected: false
+            });
+        }
         
-        // الحفر
+        // 🔥 حفر أكثر
         this.pits = [
-            { x: 1400, y: this.platforms[0].y, width: 80, height: 100 },
-            { x: 2400, y: this.platforms[0].y, width: 100, height: 100 }
+            { x: 1200, y: this.platforms[0].y, width: 80, height: 100 },
+            { x: 1800, y: this.platforms[0].y, width: 100, height: 100 },
+            { x: 2400, y: this.platforms[0].y, width: 120, height: 100 },
+            { x: 3000, y: this.platforms[0].y, width: 150, height: 100 }
         ];
         
-        // الجسيمات
+        // 🔥 القصر النهائي في نهاية العالم
+        this.castle = {
+            x: worldWidth - 300,
+            y: this.platforms[0].y - 200,
+            width: 200,
+            height: 200,
+            reached: false
+        };
+        
+        // جسيمات
         this.particles = [];
+        
+        console.log(`🌍 العالم الموسع جاهز: ${worldWidth}px`);
     }
     
     startGame() {
@@ -256,7 +313,7 @@ class MarioGame {
         this.coins = 0;
         this.kills = 0;
         
-        // إنشاء العالم
+        // إنشاء العالم الموسع
         this.createGameWorld();
         
         // إظهار شاشة اللعب
@@ -388,8 +445,8 @@ class MarioGame {
         
         // حدود
         if (this.player.x < 0) this.player.x = 0;
-        if (this.player.x > this.canvas.width * 3 - this.player.width) {
-            this.player.x = this.canvas.width * 3 - this.player.width;
+        if (this.player.x > this.canvas.width * 4 - this.player.width) {
+            this.player.x = this.canvas.width * 4 - this.player.width;
         }
         
         // اصطدام مع المنصات
@@ -448,9 +505,9 @@ class MarioGame {
             
             enemy.x += enemy.speed * enemy.dir * deltaTime * 60;
             
-            if (enemy.x < 0 || enemy.x + enemy.width > this.canvas.width * 3) {
+            if (enemy.x < 0 || enemy.x + enemy.width > this.canvas.width * 4) {
                 enemy.dir *= -1;
-                enemy.x = Math.max(0, Math.min(this.canvas.width * 3 - enemy.width, enemy.x));
+                enemy.x = Math.max(0, Math.min(this.canvas.width * 4 - enemy.width, enemy.x));
             }
             
             enemy.y = this.platforms[0].y - enemy.height;
@@ -472,7 +529,7 @@ class MarioGame {
         this.camera.x += (targetX - this.camera.x) * 0.1;
         this.camera.y += (targetY - this.camera.y) * 0.1;
         
-        this.camera.x = Math.max(0, Math.min(this.canvas.width * 3 - this.canvas.width, this.camera.x));
+        this.camera.x = Math.max(0, Math.min(this.canvas.width * 4 - this.canvas.width, this.camera.x));
         this.camera.y = Math.max(0, Math.min(this.canvas.height - this.canvas.height, this.camera.y));
     }
     
@@ -566,12 +623,32 @@ class MarioGame {
     }
     
     checkEndConditions() {
+        // الفوز بجمع كل العملات
         if (this.coins >= this.totalCoins) {
             this.endGame(true);
             return;
         }
         
-        if (this.player.x >= this.canvas.width * 3 - 200) {
+        // 🔥 الفوز بالوصول للقصر
+        const playerCenterX = this.player.x + this.player.width / 2;
+        const playerCenterY = this.player.y + this.player.height / 2;
+        const castleCenterX = this.castle.x + this.castle.width / 2;
+        const castleCenterY = this.castle.y + this.castle.height / 2;
+        
+        const distanceToCastle = Math.sqrt(
+            Math.pow(playerCenterX - castleCenterX, 2) + 
+            Math.pow(playerCenterY - castleCenterY, 2)
+        );
+        
+        if (distanceToCastle < 150 && !this.castle.reached) {
+            this.castle.reached = true;
+            this.score += 2000; // مكافأة إضافية للوصول للقصر
+            this.endGame(true);
+            return;
+        }
+        
+        // 🔥 فحص إذا وصل لنهاية العالم
+        if (this.player.x >= this.canvas.width * 4 - 200) {
             this.endGame(true);
             return;
         }
@@ -587,16 +664,33 @@ class MarioGame {
             this.updateHighScore();
         }
         
+        // 🔥 تحديد نوع الفوز
+        let winType = '';
+        if (this.castle.reached) {
+            winType = 'القصر';
+        } else if (this.coins >= this.totalCoins) {
+            winType = 'العملات';
+        } else if (this.player.x >= this.canvas.width * 4 - 200) {
+            winType = 'نهاية العالم';
+        }
+        
         document.getElementById('end-icon').className = isWin ? 'fas fa-trophy' : 'fas fa-skull-crossbones';
-        document.getElementById('end-title').textContent = isWin ? 'تهانينا!' : 'انتهت اللعبة';
+        document.getElementById('end-title').textContent = isWin ? 'تهانينا! 🏆' : 'انتهت اللعبة';
+        
         document.getElementById('end-message').textContent = isWin 
-            ? `جمعت ${this.coins} عملة في الوقت المحدد!`
+            ? `فوز ${winType}! جمعت ${this.coins} عملة من ${this.totalCoins}`
             : 'حاول مرة أخرى في المرة القادمة!';
         
         document.getElementById('final-score').textContent = this.score;
         document.getElementById('final-coins').textContent = `${this.coins}/${this.totalCoins}`;
         document.getElementById('final-time').textContent = this.formatTime(120 - this.timeLeft);
         document.getElementById('final-kills').textContent = this.kills;
+        
+        // 🔥 إضافة رسالة إضافية إذا وصل للقصر
+        if (this.castle.reached) {
+            const message = document.getElementById('end-message');
+            message.innerHTML += '<br><span style="color:#FFD700">🎉 وصلت للقصر النهائي! 🏰</span>';
+        }
         
         this.showScreen('end');
     }
@@ -623,12 +717,12 @@ class MarioGame {
         gradient.addColorStop(0.7, '#5DADE2');
         gradient.addColorStop(1, '#3498DB');
         this.ctx.fillStyle = gradient;
-        this.ctx.fillRect(0, 0, this.canvas.width * 3, this.canvas.height);
+        this.ctx.fillRect(0, 0, this.canvas.width * 4, this.canvas.height);
         
         // سحب
         this.ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-        for (let i = 0; i < 6; i++) {
-            const x = (this.camera.x * 0.2 + i * 250) % (this.canvas.width * 3 + 300);
+        for (let i = 0; i < 10; i++) {
+            const x = (this.camera.x * 0.2 + i * 250) % (this.canvas.width * 4 + 300);
             this.drawCloud(x, 60 + Math.sin(this.frameCount * 0.01 + i) * 10, 50);
         }
         
@@ -639,6 +733,8 @@ class MarioGame {
         this.drawMountain(900, 220, 170, 120);
         this.drawMountain(1400, 190, 140, 95);
         this.drawMountain(2000, 210, 160, 110);
+        this.drawMountain(2800, 180, 140, 100);
+        this.drawMountain(3500, 220, 180, 130);
         
         // منصات
         this.platforms.forEach(platform => {
@@ -702,6 +798,9 @@ class MarioGame {
             this.ctx.fillRect(enemy.x + 24, enemy.y + 8, 8, 8);
         });
         
+        // 🔥 رسم القصر
+        this.drawCastle();
+        
         // جسيمات
         this.particles.forEach((particle, i) => {
             particle.x += particle.velX;
@@ -722,28 +821,82 @@ class MarioGame {
         this.ctx.globalAlpha = 1;
         
         // اللاعب
-        if (this.playerImage && this.playerImage.complete && !this.playerImage.error) {
+        this.drawPlayer();
+        
+        this.ctx.restore();
+    }
+    
+    drawPlayer() {
+        const player = this.player;
+        
+        if (this.assets.player && this.assets.loaded) {
             this.ctx.save();
-            if (!this.player.facingRight) {
+            if (!player.facingRight) {
                 this.ctx.scale(-1, 1);
-                this.ctx.drawImage(this.playerImage, -this.player.x - this.player.width, this.player.y, this.player.width, this.player.height);
+                this.ctx.drawImage(this.assets.player, -player.x - player.width, player.y, player.width, player.height);
             } else {
-                this.ctx.drawImage(this.playerImage, this.player.x, this.player.y, this.player.width, this.player.height);
+                this.ctx.drawImage(this.assets.player, player.x, player.y, player.width, player.height);
             }
             this.ctx.restore();
         } else {
-            this.ctx.fillStyle = this.player.invincible ? '#9B59B6' : '#E74C3C';
-            this.ctx.fillRect(this.player.x, this.player.y, this.player.width, this.player.height);
+            // الرسم البديل
+            this.ctx.fillStyle = player.invincible ? '#9B59B6' : '#E74C3C';
+            this.ctx.fillRect(player.x, player.y, player.width, player.height);
             
+            // رسم تفاصيل الوجه
             this.ctx.fillStyle = '#2C3E50';
-            this.ctx.fillRect(this.player.x + 10, this.player.y + 10, 20, 20);
-            
+            this.ctx.fillRect(player.x + 10, player.y + 10, 20, 20);
             this.ctx.fillStyle = '#FFF';
-            this.ctx.fillRect(this.player.x + 15, this.player.y + 15, 5, 5);
-            this.ctx.fillRect(this.player.x + 25, this.player.y + 15, 5, 5);
+            this.ctx.fillRect(player.x + 15, player.y + 15, 5, 5);
+            this.ctx.fillRect(player.x + 25, player.y + 15, 5, 5);
+        }
+    }
+    
+    drawCastle() {
+        const castle = this.castle;
+        
+        // قاعدة القصر
+        this.ctx.fillStyle = '#8B4513';
+        this.ctx.fillRect(castle.x, castle.y, castle.width, castle.height);
+        
+        // أبراج القصر
+        const towerWidth = castle.width * 0.25;
+        this.ctx.fillStyle = '#A0522D';
+        this.ctx.fillRect(castle.x - 10, castle.y - 100, towerWidth, 100);
+        this.ctx.fillRect(castle.x + castle.width - towerWidth + 10, castle.y - 100, towerWidth, 100);
+        
+        // العلم
+        this.ctx.fillStyle = '#E74C3C';
+        this.ctx.beginPath();
+        this.ctx.moveTo(castle.x + castle.width/2, castle.y - 150);
+        this.ctx.lineTo(castle.x + castle.width/2, castle.y - 180);
+        this.ctx.lineTo(castle.x + castle.width/2 + 20, castle.y - 165);
+        this.ctx.closePath();
+        this.ctx.fill();
+        
+        // نوافذ
+        this.ctx.fillStyle = '#FFD700';
+        for (let i = 0; i < 3; i++) {
+            for (let j = 0; j < 2; j++) {
+                this.ctx.fillRect(
+                    castle.x + 30 + i * 50,
+                    castle.y + 30 + j * 60,
+                    25, 40
+                );
+            }
         }
         
-        this.ctx.restore();
+        // الباب
+        this.ctx.fillStyle = '#654321';
+        this.ctx.fillRect(castle.x + castle.width/2 - 30, castle.y + castle.height - 80, 60, 80);
+        
+        // كتابة "الفوز"
+        if (!castle.reached) {
+            this.ctx.fillStyle = '#FFD700';
+            this.ctx.font = 'bold 20px Cairo';
+            this.ctx.textAlign = 'center';
+            this.ctx.fillText('🏆 القصر النهائي', castle.x + castle.width/2, castle.y - 200);
+        }
     }
     
     drawCloud(x, y, size) {
