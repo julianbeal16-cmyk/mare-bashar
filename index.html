@@ -7,33 +7,19 @@
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
-    <style>
-        /* تنسيقات الطوارئ */
-        .emergency-fix {
-            display: block !important;
-            visibility: visible !important;
-            opacity: 1 !important;
-            position: relative !important;
-            width: 100% !important;
-            height: 100% !important;
-        }
-        #game-canvas.visible {
-            display: block !important;
-        }
-    </style>
 </head>
 <body>
-    <!-- شاشة التحميل السريعة -->
-    <div id="loading" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #1a1a2e; display: flex; justify-content: center; align-items: center; z-index: 9999; transition: opacity 0.3s;">
-        <div style="text-align: center; color: white;">
-            <div style="width: 60px; height: 60px; border: 5px solid rgba(255, 255, 255, 0.1); border-top-color: #FFD700; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 20px;"></div>
-            <h2 style="color: #FFD700; margin-bottom: 10px;">جاري تحميل اللعبة</h2>
-            <div id="loading-progress" style="font-size: 1.2rem; color: #4ECDC4;">0%</div>
+    <!-- شاشة التحميل -->
+    <div id="loading">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <h2>جاري تحميل اللعبة</h2>
+            <div id="loading-progress">0%</div>
         </div>
     </div>
 
     <!-- زر ملء الشاشة -->
-    <button id="fullscreen-btn" style="position: fixed; top: 20px; left: 20px; width: 50px; height: 50px; border-radius: 50%; background: rgba(0,0,0,0.7); border: 2px solid #FFD700; color: #FFD700; font-size: 1.2rem; cursor: pointer; z-index: 1000; display: flex; align-items: center; justify-content: center;">
+    <button id="fullscreen-btn">
         <i class="fas fa-expand"></i>
     </button>
 
@@ -46,9 +32,9 @@
             </div>
 
             <div class="character-preview">
-                <img id="player-img" src="assets/player.png" alt="شخصية اللاعب" 
-                     onerror="this.style.display='none'; document.getElementById('default-char').style.display='flex';">
-                <div id="default-char" class="default-character">
+                <img id="player-img" src="player.png" alt="شخصية اللاعب" 
+                     onerror="this.style.display='none'">
+                <div class="default-character">
                     <div class="char-placeholder">🎮</div>
                 </div>
             </div>
@@ -122,7 +108,7 @@
     </div>
 
     <!-- شاشة اللعب -->
-    <div id="game-screen" class="screen" style="display: none;">
+    <div id="game-screen" class="screen">
         <div class="game-header">
             <div class="game-info">
                 <div class="info-item">
@@ -148,7 +134,7 @@
         </div>
 
         <div class="game-area">
-            <canvas id="game-canvas" width="800" height="600" style="display: none;">
+            <canvas id="game-canvas" width="800" height="600">
                 متصفحك لا يدعم Canvas. الرجاء استخدام Chrome أو Firefox.
             </canvas>
         </div>
@@ -172,7 +158,7 @@
     </div>
 
     <!-- شاشة النهاية -->
-    <div id="end-screen" class="screen" style="display: none;">
+    <div id="end-screen" class="screen">
         <div class="screen-content">
             <div class="end-content">
                 <div class="end-icon">
@@ -214,7 +200,7 @@
     </div>
 
     <!-- نافذة المساعدة -->
-    <div id="help-modal" class="modal" style="display: none;">
+    <div id="help-modal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
                 <h2><i class="fas fa-question-circle"></i> كيفية اللعب</h2>
@@ -264,68 +250,58 @@
     </div>
 
     <!-- روابط الطوارئ -->
-    <div id="emergency-links" style="position: fixed; bottom: 10px; right: 10px; z-index: 9998; display: none;">
-        <button onclick="forceStartGame()" style="background: #E74C3C; color: white; border: none; padding: 10px 15px; border-radius: 5px; margin: 5px; cursor: pointer;">
+    <div id="emergency-links">
+        <button onclick="forceStartGame()">
             <i class="fas fa-play"></i> بدء قسري
         </button>
-        <button onclick="forceShowGame()" style="background: #3498db; color: white; border: none; padding: 10px 15px; border-radius: 5px; margin: 5px; cursor: pointer;">
+        <button onclick="forceShowGame()">
             <i class="fas fa-eye"></i> إظهار اللعبة
         </button>
-        <button onclick="location.reload()" style="background: #2ECC71; color: white; border: none; padding: 10px 15px; border-radius: 5px; margin: 5px; cursor: pointer;">
+        <button onclick="location.reload()">
             <i class="fas fa-redo"></i> تحديث
         </button>
     </div>
 
     <script src="game.js"></script>
     <script>
-        // ============================================
-        // نظام تحميل وتشغيل الطوارئ
-        // ============================================
-        
+        // متغيرات النظام
         let gameInstance = null;
-        let loadingInterval;
+        let loadingProgress = 0;
         
-        // بدء التحميل
+        // بدء التحميل عند تحميل الصفحة
         window.addEventListener('load', function() {
-            console.log('📄 الصفحة محملة - بدء تهيئة اللعبة...');
+            console.log('📄 الصفحة محملة - بدء تحميل اللعبة...');
             
-            // إظهار روابط الطوارئ
-            document.getElementById('emergency-links').style.display = 'block';
+            // بدء شريط التقدم
+            startLoadingProgress();
             
-            // تحميل تقدمي
-            let progress = 0;
-            const progressElement = document.getElementById('loading-progress');
-            loadingInterval = setInterval(function() {
-                progress += 10;
-                if (progressElement) {
-                    progressElement.textContent = progress + '%';
+            // تهيئة اللعبة بعد ثانيتين
+            setTimeout(function() {
+                try {
+                    gameInstance = new MarioGame();
+                    console.log('✅ اللعبة جاهزة للعب!');
+                } catch (error) {
+                    console.error('❌ خطأ في إنشاء اللعبة:', error);
+                    showEmergencyMessage('فشل تحميل اللعبة: ' + error.message);
                 }
-                
-                if (progress >= 100) {
-                    clearInterval(loadingInterval);
-                    
-                    // إخفاء شاشة التحميل
-                    const loadingScreen = document.getElementById('loading');
-                    if (loadingScreen) {
-                        loadingScreen.style.opacity = '0';
-                        setTimeout(function() {
-                            loadingScreen.style.display = 'none';
-                            
-                            // تهيئة اللعبة بعد إخفاء شاشة التحميل
-                            setTimeout(function() {
-                                try {
-                                    gameInstance = new MarioGame();
-                                    console.log('✅ اللعبة جاهزة للعب!');
-                                } catch (error) {
-                                    console.error('❌ خطأ في إنشاء اللعبة:', error);
-                                    showEmergencyMessage('فشل تحميل اللعبة: ' + error.message);
-                                }
-                            }, 100);
-                        }, 300);
-                    }
-                }
-            }, 150);
+            }, 2000);
         });
+        
+        // دالة شريط التقدم
+        function startLoadingProgress() {
+            const progressElement = document.getElementById('loading-progress');
+            if (!progressElement) return;
+            
+            const interval = setInterval(function() {
+                loadingProgress += 5;
+                if (loadingProgress > 90) {
+                    clearInterval(interval);
+                    progressElement.textContent = '90%';
+                } else {
+                    progressElement.textContent = loadingProgress + '%';
+                }
+            }, 100);
+        }
         
         // نافذة المساعدة
         document.getElementById('help-btn').addEventListener('click', function() {
@@ -348,18 +324,10 @@
             playerImg.onerror = function() {
                 console.log('⚠️ صورة اللاعب غير موجودة، سيتم استخدام البديل');
                 this.style.display = 'none';
-                const defaultChar = document.getElementById('default-char');
-                if (defaultChar) {
-                    defaultChar.style.display = 'flex';
-                }
             };
             
             playerImg.onload = function() {
                 console.log('✅ صورة اللاعب محملة');
-                const defaultChar = document.getElementById('default-char');
-                if (defaultChar) {
-                    defaultChar.style.display = 'none';
-                }
             };
         }
         
@@ -373,6 +341,12 @@
         window.forceStartGame = function() {
             console.log('🚀 بدء قسري للعبة...');
             
+            // إخفاء شاشة التحميل
+            const loadingScreen = document.getElementById('loading');
+            if (loadingScreen) {
+                loadingScreen.style.display = 'none';
+            }
+            
             // إخفاء كل الشاشات
             document.querySelectorAll('.screen').forEach(screen => {
                 screen.style.display = 'none';
@@ -382,15 +356,12 @@
             const gameScreen = document.getElementById('game-screen');
             if (gameScreen) {
                 gameScreen.style.display = 'flex';
-                gameScreen.classList.add('emergency-fix');
             }
             
             // إظهار Canvas
             const canvas = document.getElementById('game-canvas');
             if (canvas) {
                 canvas.style.display = 'block';
-                canvas.classList.add('visible');
-                canvas.classList.add('emergency-fix');
                 
                 // تعيين حجم Canvas
                 const gameArea = document.querySelector('.game-area');
@@ -417,6 +388,12 @@
         window.forceShowGame = function() {
             console.log('👁️ إظهار قسري للعبة...');
             
+            // إخفاء شاشة التحميل
+            const loadingScreen = document.getElementById('loading');
+            if (loadingScreen) {
+                loadingScreen.style.display = 'none';
+            }
+            
             // إخفاء كل الشاشات
             document.querySelectorAll('.screen').forEach(screen => {
                 screen.style.display = 'none';
@@ -426,34 +403,14 @@
             const gameScreen = document.getElementById('game-screen');
             if (gameScreen) {
                 gameScreen.style.display = 'flex';
-                gameScreen.style.position = 'fixed';
-                gameScreen.style.top = '0';
-                gameScreen.style.left = '0';
-                gameScreen.style.width = '100%';
-                gameScreen.style.height = '100%';
-                gameScreen.style.zIndex = '1000';
-                gameScreen.style.background = '#000';
             }
             
             // إظهار Canvas
             const canvas = document.getElementById('game-canvas');
             if (canvas) {
                 canvas.style.display = 'block';
-                canvas.style.width = '100%';
-                canvas.style.height = '100%';
-                canvas.style.position = 'absolute';
-                canvas.style.top = '0';
-                canvas.style.left = '0';
                 
-                // تعيين حجم Canvas
-                if (canvas.width === 0 || canvas.height === 0) {
-                    canvas.width = 800;
-                    canvas.height = 600;
-                }
-            }
-            
-            // اختبار رسم Canvas
-            if (canvas) {
+                // اختبار رسم Canvas
                 const ctx = canvas.getContext('2d');
                 if (ctx) {
                     // رسم خلفية بسيطة
@@ -516,23 +473,6 @@
                 }
             });
         }
-        
-        // اختبار Canvas
-        setTimeout(function() {
-            const canvas = document.getElementById('game-canvas');
-            if (!canvas) {
-                console.error('❌ Canvas غير موجود!');
-                return;
-            }
-            
-            const ctx = canvas.getContext('2d');
-            if (!ctx) {
-                console.error('❌ سياق Canvas غير مدعوم!');
-                return;
-            }
-            
-            console.log('✅ Canvas يعمل بشكل صحيح');
-        }, 1000);
         
         // مؤقت للتحقق من حالة اللعبة
         setTimeout(function() {
