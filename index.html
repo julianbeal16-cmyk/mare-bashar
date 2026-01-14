@@ -3,39 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لعبة ماريو المحترفة</title>
+    <title>لعبة ماريو</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
 </head>
 <body>
-    <!-- شاشة التحميل -->
-    <div id="loading">
-        <div class="loading-content">
-            <div class="loading-spinner"></div>
-            <h2>جاري تحميل اللعبة</h2>
-            <div id="loading-progress">0%</div>
-        </div>
-    </div>
-
-    <!-- زر ملء الشاشة -->
-    <button id="fullscreen-btn">
-        <i class="fas fa-expand"></i>
-    </button>
-
     <!-- شاشة البداية -->
     <div id="start-screen" class="screen active">
         <div class="screen-content">
             <div class="logo">
                 <h1><i class="fas fa-gamepad"></i> لعبة ماريو</h1>
-                <p class="subtitle">مغامرة حقيقية مع شخصيتك المفضلة</p>
+                <p class="subtitle">مغامرة حقيقية مع شخصيتك</p>
             </div>
 
             <div class="character-preview">
-                <img id="player-img" src="player.png" alt="شخصية اللاعب" 
-                     onerror="this.style.display='none'">
                 <div class="default-character">
                     <div class="char-placeholder">🎮</div>
+                    <p>شخصية اللاعب</p>
                 </div>
             </div>
 
@@ -98,10 +83,6 @@
                         <div class="key">P</div>
                         <span>إيقاف/متابعة</span>
                     </div>
-                    <div class="control-item">
-                        <div class="key">F</div>
-                        <span>ملء الشاشة</span>
-                    </div>
                 </div>
             </div>
         </div>
@@ -128,13 +109,18 @@
                     <span id="coins">0/30</span>
                 </div>
             </div>
-            <button id="pause-btn" class="control-btn">
-                <i class="fas fa-pause"></i>
-            </button>
+            <div class="game-controls">
+                <button id="menu-btn" class="control-btn" title="القائمة">
+                    <i class="fas fa-home"></i>
+                </button>
+                <button id="pause-btn" class="control-btn" title="إيقاف">
+                    <i class="fas fa-pause"></i>
+                </button>
+            </div>
         </div>
 
         <div class="game-area">
-            <canvas id="game-canvas" width="800" height="600">
+            <canvas id="game-canvas">
                 متصفحك لا يدعم Canvas. الرجاء استخدام Chrome أو Firefox.
             </canvas>
         </div>
@@ -142,15 +128,15 @@
         <!-- أزرار التحكم للجوال -->
         <div class="mobile-controls">
             <div class="left-controls">
-                <button id="left-btn" class="mobile-btn">
+                <button id="left-btn" class="mobile-btn" title="يسار">
                     <i class="fas fa-arrow-left"></i>
                 </button>
-                <button id="right-btn" class="mobile-btn">
+                <button id="right-btn" class="mobile-btn" title="يمين">
                     <i class="fas fa-arrow-right"></i>
                 </button>
             </div>
             <div class="right-controls">
-                <button id="jump-btn" class="mobile-btn jump-btn">
+                <button id="jump-btn" class="mobile-btn jump-btn" title="قفز">
                     <i class="fas fa-arrow-up"></i>
                 </button>
             </div>
@@ -191,7 +177,7 @@
                     <button id="play-again-btn" class="btn btn-primary">
                         <i class="fas fa-redo"></i> لعب مجدداً
                     </button>
-                    <button id="menu-btn" class="btn btn-secondary">
+                    <button id="back-to-menu-btn" class="btn btn-secondary">
                         <i class="fas fa-home"></i> القائمة الرئيسية
                     </button>
                 </div>
@@ -230,268 +216,24 @@
                         <span class="help-key">P</span>
                         <span>إيقاف/متابعة اللعبة</span>
                     </div>
-                    <div class="help-item">
-                        <span class="help-key">F</span>
-                        <span>ملء الشاشة</span>
-                    </div>
                 </div>
                 
                 <h3><i class="fas fa-mobile-alt"></i> التحكم على الهاتف</h3>
                 <p>استخدم الأزرار الظاهرة على الشاشة للتحكم بالشخصية.</p>
-                
-                <h3><i class="fas fa-star"></i> جمع النقاط</h3>
-                <ul class="points-list">
-                    <li><i class="fas fa-coins" style="color: #FFD700;"></i> العملة الذهبية: 100 نقطة</li>
-                    <li><i class="fas fa-skull-crossbones"></i> هزيمة العدو: 200 نقطة</li>
-                    <li><i class="fas fa-mushroom" style="color: #E74C3C;"></i> الفطر: 500 نقطة + مناعة مؤقتة</li>
-                </ul>
             </div>
         </div>
     </div>
 
     <!-- روابط الطوارئ -->
     <div id="emergency-links">
-        <button onclick="forceStartGame()">
-            <i class="fas fa-play"></i> بدء قسري
+        <button onclick="forceStartGame()" class="emergency-btn">
+            <i class="fas fa-play"></i> بدء سريع
         </button>
-        <button onclick="forceShowGame()">
-            <i class="fas fa-eye"></i> إظهار اللعبة
-        </button>
-        <button onclick="location.reload()">
-            <i class="fas fa-redo"></i> تحديث
+        <button onclick="location.reload()" class="emergency-btn">
+            <i class="fas fa-redo"></i> تحديث الصفحة
         </button>
     </div>
 
     <script src="game.js"></script>
-    <script>
-        // متغيرات النظام
-        let gameInstance = null;
-        let loadingProgress = 0;
-        
-        // بدء التحميل عند تحميل الصفحة
-        window.addEventListener('load', function() {
-            console.log('📄 الصفحة محملة - بدء تحميل اللعبة...');
-            
-            // بدء شريط التقدم
-            startLoadingProgress();
-            
-            // تهيئة اللعبة بعد ثانيتين
-            setTimeout(function() {
-                try {
-                    gameInstance = new MarioGame();
-                    console.log('✅ اللعبة جاهزة للعب!');
-                } catch (error) {
-                    console.error('❌ خطأ في إنشاء اللعبة:', error);
-                    showEmergencyMessage('فشل تحميل اللعبة: ' + error.message);
-                }
-            }, 2000);
-        });
-        
-        // دالة شريط التقدم
-        function startLoadingProgress() {
-            const progressElement = document.getElementById('loading-progress');
-            if (!progressElement) return;
-            
-            const interval = setInterval(function() {
-                loadingProgress += 5;
-                if (loadingProgress > 90) {
-                    clearInterval(interval);
-                    progressElement.textContent = '90%';
-                } else {
-                    progressElement.textContent = loadingProgress + '%';
-                }
-            }, 100);
-        }
-        
-        // نافذة المساعدة
-        document.getElementById('help-btn').addEventListener('click', function() {
-            document.getElementById('help-modal').style.display = 'block';
-        });
-        
-        document.getElementById('close-help').addEventListener('click', function() {
-            document.getElementById('help-modal').style.display = 'none';
-        });
-        
-        window.addEventListener('click', function(e) {
-            if (e.target === document.getElementById('help-modal')) {
-                document.getElementById('help-modal').style.display = 'none';
-            }
-        });
-        
-        // معالجة أخطاء الصور
-        const playerImg = document.getElementById('player-img');
-        if (playerImg) {
-            playerImg.onerror = function() {
-                console.log('⚠️ صورة اللاعب غير موجودة، سيتم استخدام البديل');
-                this.style.display = 'none';
-            };
-            
-            playerImg.onload = function() {
-                console.log('✅ صورة اللاعب محملة');
-            };
-        }
-        
-        // دالة عرض رسالة الطوارئ
-        function showEmergencyMessage(message) {
-            console.error('🚨 خطأ طارئ:', message);
-            alert('🚨 خطأ: ' + message + '\n\nاضغط OK ثم استخدم أزرار الطوارئ في أسفل الشاشة.');
-        }
-        
-        // دالات الطوارئ
-        window.forceStartGame = function() {
-            console.log('🚀 بدء قسري للعبة...');
-            
-            // إخفاء شاشة التحميل
-            const loadingScreen = document.getElementById('loading');
-            if (loadingScreen) {
-                loadingScreen.style.display = 'none';
-            }
-            
-            // إخفاء كل الشاشات
-            document.querySelectorAll('.screen').forEach(screen => {
-                screen.style.display = 'none';
-            });
-            
-            // إظهار شاشة اللعب
-            const gameScreen = document.getElementById('game-screen');
-            if (gameScreen) {
-                gameScreen.style.display = 'flex';
-            }
-            
-            // إظهار Canvas
-            const canvas = document.getElementById('game-canvas');
-            if (canvas) {
-                canvas.style.display = 'block';
-                
-                // تعيين حجم Canvas
-                const gameArea = document.querySelector('.game-area');
-                if (gameArea) {
-                    canvas.width = gameArea.clientWidth || 800;
-                    canvas.height = gameArea.clientHeight || 500;
-                }
-            }
-            
-            // بدء لعبة طارئة إذا لم تكن موجودة
-            if (!gameInstance) {
-                console.log('🆘 إنشاء لعبة طارئة...');
-                gameInstance = new MarioGame();
-                setTimeout(function() {
-                    if (gameInstance && gameInstance.startGame) {
-                        gameInstance.startGame();
-                    }
-                }, 500);
-            } else if (gameInstance.startGame) {
-                gameInstance.startGame();
-            }
-        };
-        
-        window.forceShowGame = function() {
-            console.log('👁️ إظهار قسري للعبة...');
-            
-            // إخفاء شاشة التحميل
-            const loadingScreen = document.getElementById('loading');
-            if (loadingScreen) {
-                loadingScreen.style.display = 'none';
-            }
-            
-            // إخفاء كل الشاشات
-            document.querySelectorAll('.screen').forEach(screen => {
-                screen.style.display = 'none';
-            });
-            
-            // إظهار شاشة اللعب
-            const gameScreen = document.getElementById('game-screen');
-            if (gameScreen) {
-                gameScreen.style.display = 'flex';
-            }
-            
-            // إظهار Canvas
-            const canvas = document.getElementById('game-canvas');
-            if (canvas) {
-                canvas.style.display = 'block';
-                
-                // اختبار رسم Canvas
-                const ctx = canvas.getContext('2d');
-                if (ctx) {
-                    // رسم خلفية بسيطة
-                    ctx.fillStyle = '#87CEEB';
-                    ctx.fillRect(0, 0, canvas.width, canvas.height);
-                    
-                    // رسم أرض
-                    ctx.fillStyle = '#8B4513';
-                    ctx.fillRect(0, canvas.height - 60, canvas.width, 60);
-                    
-                    // رسالة
-                    ctx.fillStyle = '#FFD700';
-                    ctx.font = 'bold 30px Cairo';
-                    ctx.textAlign = 'center';
-                    ctx.fillText('🎮 اللعبة جاهزة!', canvas.width / 2, canvas.height / 2);
-                    ctx.fillStyle = '#FFF';
-                    ctx.font = '20px Cairo';
-                    ctx.fillText('استخدم مفاتيح الأسهم للتحرك', canvas.width / 2, canvas.height / 2 + 40);
-                }
-            }
-        };
-        
-        // اختبار Font Awesome
-        setTimeout(function() {
-            if (!document.querySelector('.fa-gamepad')) {
-                console.log('⚠️ Font Awesome غير محمل، استبدال الأيقونات');
-                replaceIconsWithEmojis();
-            }
-        }, 2000);
-        
-        function replaceIconsWithEmojis() {
-            const iconMap = {
-                'fa-gamepad': '🎮',
-                'fa-play': '▶️',
-                'fa-question-circle': '❓',
-                'fa-trophy': '🏆',
-                'fa-clock': '⏰',
-                'fa-heart': '❤️',
-                'fa-coins': '💰',
-                'fa-pause': '⏸️',
-                'fa-expand': '⛶',
-                'fa-compress': '🗖',
-                'fa-arrow-left': '←',
-                'fa-arrow-right': '→',
-                'fa-arrow-up': '↑',
-                'fa-times': '✕',
-                'fa-redo': '↻',
-                'fa-home': '⌂',
-                'fa-skull-crossbones': '💀',
-                'fa-exclamation-triangle': '⚠️'
-            };
-            
-            document.querySelectorAll('i').forEach(icon => {
-                for (const className in iconMap) {
-                    if (icon.classList.contains(className)) {
-                        const text = document.createTextNode(iconMap[className]);
-                        icon.parentNode.replaceChild(text, icon);
-                        break;
-                    }
-                }
-            });
-        }
-        
-        // مؤقت للتحقق من حالة اللعبة
-        setTimeout(function() {
-            console.log('🕒 حالة اللعبة بعد 3 ثواني:');
-            console.log('- Canvas:', document.getElementById('game-canvas') ? 'موجود' : 'مفقود');
-            console.log('- Game Instance:', gameInstance ? 'موجود' : 'مفقود');
-            
-            if (!gameInstance) {
-                console.log('⚠️ اللعبة لم تبدأ بعد، استخدم أزرار الطوارئ');
-            }
-        }, 3000);
-        
-        // مؤقت للتشغيل التلقائي للطوارئ
-        setTimeout(function() {
-            if (!gameInstance) {
-                console.log('🆘 بدء تلقائي للطوارئ بعد 5 ثواني...');
-                forceShowGame();
-            }
-        }, 5000);
-    </script>
 </body>
 </html>
