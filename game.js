@@ -161,6 +161,8 @@ class MarioGame {
                 
                 // إظهار Canvas
                 this.canvas.style.display = 'block';
+                this.canvas.style.visibility = 'visible';
+                this.canvas.style.opacity = '1';
                 this.canvas.classList.add('visible');
                 
                 console.log(`📐 حجم Canvas: ${width}x${height}`);
@@ -176,7 +178,6 @@ class MarioGame {
         // إعادة التحجيم بعد تأخير بسيط
         setTimeout(updateCanvasSize, 100);
         setTimeout(updateCanvasSize, 500);
-        setTimeout(updateCanvasSize, 1000);
     }
     
     loadPlayerImage() {
@@ -189,6 +190,9 @@ class MarioGame {
             this.assets.player = img;
             this.assets.loaded = true;
             
+            // إخفاء شاشة التحميل
+            this.hideLoadingScreen();
+            
             // إذا كنا في شاشة البداية، ارسمها
             if (this.gameState === 'ready') {
                 this.drawStartScreen();
@@ -199,18 +203,59 @@ class MarioGame {
             console.log('⚠️ فشل تحميل الصورة، استخدام رسم بديل');
             this.assets.player = null;
             this.assets.loaded = true;
+            
+            // إخفاء شاشة التحميل حتى لو فشلت الصورة
+            this.hideLoadingScreen();
         };
         
         // محاولة مسارات مختلفة
-        img.src = './assets/player.png';
+        const imagePaths = [
+            'player.png',
+            'assets/player.png',
+            './assets/player.png',
+            '/assets/player.png'
+        ];
+        
+        let currentPathIndex = 0;
+        const tryNextPath = () => {
+            if (currentPathIndex >= imagePaths.length) {
+                console.log('❌ لم أجد صورة اللاعب في أي مسار');
+                this.hideLoadingScreen();
+                return;
+            }
+            
+            const path = imagePaths[currentPathIndex];
+            console.log(`🔍 محاولة تحميل الصورة من: ${path}`);
+            img.src = path;
+            currentPathIndex++;
+        };
+        
+        img.onerror = () => {
+            console.log(`❌ فشل تحميل الصورة من المسار: ${img.src}`);
+            tryNextPath();
+        };
+        
+        // بدأ المحاولة
+        tryNextPath();
         
         // Timeout احتياطي
         setTimeout(() => {
             if (!this.assets.loaded) {
-                console.log('⏰ انتهى وقت تحميل الصورة');
+                console.log('⏰ انتهى وقت تحميل الصورة، استخدام بديل');
                 this.assets.loaded = true;
+                this.hideLoadingScreen();
             }
-        }, 3000);
+        }, 2000);
+    }
+    
+    hideLoadingScreen() {
+        const loadingScreen = document.getElementById('loading');
+        if (loadingScreen) {
+            loadingScreen.style.opacity = '0';
+            setTimeout(() => {
+                loadingScreen.style.display = 'none';
+            }, 300);
+        }
     }
     
     initializeEvents() {
@@ -1675,7 +1720,7 @@ window.addEventListener('load', function() {
             console.error('❌ فشل إنشاء اللعبة:', error);
             alert('🚨 فشل تحميل اللعبة!\n\n' + error.message + '\n\nاستخدم أزرار الطوارئ في أسفل الشاشة.');
         }
-    }, 500);
+    }, 100);
 });
 
 // تسهيل الوصول للعبة
