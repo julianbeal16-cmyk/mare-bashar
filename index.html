@@ -7,7 +7,6 @@
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎮</text></svg>">
 </head>
 <body>
     <!-- شاشة التحميل -->
@@ -142,6 +141,7 @@
 
         <!-- أزرار التحكم للجوال -->
         <div class="mobile-controls">
+            <!-- الأزرار على اليسار -->
             <div class="left-controls">
                 <button id="left-btn" class="mobile-btn">
                     <i class="fas fa-arrow-left"></i>
@@ -150,6 +150,8 @@
                     <i class="fas fa-arrow-right"></i>
                 </button>
             </div>
+            
+            <!-- زر القفز على اليمين -->
             <div class="right-controls">
                 <button id="jump-btn" class="mobile-btn jump-btn">
                     <i class="fas fa-arrow-up"></i>
@@ -211,12 +213,7 @@
             </div>
             <div class="modal-body">
                 <h3><i class="fas fa-bullseye"></i> هدف اللعبة</h3>
-                <p>اجمع 30 عملة ذهبية في غضون دقيقتين وتجنب الأعداء والفخاخ. يمكنك الفوز بثلاث طرق:</p>
-                <ol>
-                    <li>✅ جمع كل العملات (30 عملة)</li>
-                    <li>🏰 الوصول إلى القصر النهائي</li>
-                    <li>🌍 الوصول إلى نهاية العالم</li>
-                </ol>
+                <p>اجمع 30 عملة ذهبية في غضون دقيقتين وتجنب الأعداء والفخاخ.</p>
                 
                 <h3><i class="fas fa-keyboard"></i> التحكم بلوحة المفاتيح</h3>
                 <div class="help-controls">
@@ -250,221 +247,41 @@
                     <li><i class="fas fa-coins" style="color: #FFD700;"></i> العملة الذهبية: 100 نقطة</li>
                     <li><i class="fas fa-skull-crossbones"></i> هزيمة العدو: 200 نقطة</li>
                     <li><i class="fas fa-mushroom" style="color: #E74C3C;"></i> الفطر: 500 نقطة + مناعة مؤقتة</li>
-                    <li><i class="fas fa-trophy" style="color: #FFD700;"></i> الوصول للقصر: 2000 نقطة</li>
-                </ul>
-                
-                <h3><i class="fas fa-map"></i> العالم الموسع</h3>
-                <p>العالم الآن أكبر 4 مرات من السابق ويحتوي على:</p>
-                <ul class="points-list">
-                    <li>📏 مسار طويل 4x الحجم الأصلي</li>
-                    <li>💰 30 عملة ذهبية</li>
-                    <li>👹 8 أعداء</li>
-                    <li>🍄 6 فطر للمناعة</li>
-                    <li>🕳️ 4 حفر خطيرة</li>
-                    <li>🏰 قصر نهائي للنهاية</li>
                 </ul>
             </div>
         </div>
     </div>
 
-    <!-- رسالة الخطأ -->
-    <div id="error-container" class="error-container">
-        <div class="error-message">
-            <h3><i class="fas fa-exclamation-triangle"></i> خطأ في اللعبة</h3>
-            <p id="error-details">حدث خطأ غير معروف</p>
-            <button onclick="location.reload()" class="refresh-btn">
-                <i class="fas fa-redo"></i> تحديث الصفحة
-            </button>
-        </div>
-    </div>
-
     <script src="game.js"></script>
     <script>
-        // تحميل تقدمي محسن
-        window.addEventListener('load', function() {
-            console.log('📄 الصفحة محملة');
-            
-            const loading = document.getElementById('loading');
-            const progress = document.getElementById('loading-progress');
-            const errorContainer = document.getElementById('error-container');
-            
-            // إخفاء رسالة الخطأ
-            errorContainer.style.display = 'none';
-            
-            let percent = 0;
-            const loadInterval = setInterval(function() {
-                percent += 10;
-                if (progress) {
-                    progress.textContent = percent + '%';
-                }
+        // إخفاء شاشة التحميل
+        setTimeout(() => {
+            document.getElementById('loading').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('loading').style.display = 'none';
                 
-                if (percent >= 100) {
-                    clearInterval(loadInterval);
-                    if (loading) {
-                        loading.style.opacity = '0';
-                        setTimeout(function() {
-                            loading.style.display = 'none';
-                            
-                            // تهيئة اللعبة بعد إخفاء شاشة التحميل
-                            setTimeout(function() {
-                                try {
-                                    if (typeof MarioGame !== 'undefined') {
-                                        window.game = new MarioGame();
-                                        console.log('🎮 اللعبة جاهزة');
-                                    } else {
-                                        throw new Error('لم يتم تحميل game.js');
-                                    }
-                                } catch (error) {
-                                    console.error('❌ خطأ في تهيئة اللعبة:', error);
-                                    showError('فشل تحميل اللعبة: ' + error.message);
-                                }
-                            }, 100);
-                        }, 300);
-                    }
-                }
-            }, 150);
-        });
+                // تهيئة اللعبة بعد إخفاء شاشة التحميل
+                setTimeout(() => {
+                    window.game = new MarioGame();
+                    console.log('✅ اللعبة جاهزة!');
+                }, 100);
+            }, 500);
+        }, 1000);
 
         // نافذة المساعدة
-        document.getElementById('help-btn').addEventListener('click', function() {
-            document.getElementById('help-modal').style.display = 'flex';
+        document.getElementById('help-btn').addEventListener('click', () => {
+            document.getElementById('help-modal').style.display = 'block';
         });
 
-        document.getElementById('close-help').addEventListener('click', function() {
+        document.getElementById('close-help').addEventListener('click', () => {
             document.getElementById('help-modal').style.display = 'none';
         });
 
-        window.addEventListener('click', function(e) {
+        window.addEventListener('click', (e) => {
             if (e.target === document.getElementById('help-modal')) {
                 document.getElementById('help-modal').style.display = 'none';
             }
         });
-
-        // معالجة أخطاء الصور
-        const playerImg = document.getElementById('player-img');
-        if (playerImg) {
-            playerImg.onerror = function() {
-                console.log('⚠️ صورة اللاعب غير موجودة، سيتم استخدام البديل');
-                this.style.display = 'none';
-                const defaultChar = document.getElementById('default-char');
-                if (defaultChar) {
-                    defaultChar.style.display = 'flex';
-                }
-            };
-            
-            playerImg.onload = function() {
-                console.log('✅ صورة اللاعب محملة');
-                const defaultChar = document.getElementById('default-char');
-                if (defaultChar) {
-                    defaultChar.style.display = 'none';
-                }
-            };
-        }
-
-        // دالة عرض الخطأ
-        function showError(message) {
-            console.error('❌ خطأ:', message);
-            const errorContainer = document.getElementById('error-container');
-            const errorDetails = document.getElementById('error-details');
-            
-            if (errorContainer && errorDetails) {
-                errorDetails.textContent = message;
-                errorContainer.style.display = 'flex';
-            }
-            
-            // إخفاء شاشة التحميل إذا كانت ظاهرة
-            const loading = document.getElementById('loading');
-            if (loading) {
-                loading.style.display = 'none';
-            }
-        }
-
-        // اختبار Font Awesome
-        setTimeout(function() {
-            if (!document.querySelector('.fa-gamepad')) {
-                console.log('⚠️ Font Awesome غير محمل، استبدال الأيقونات');
-                replaceIcons();
-            }
-        }, 2000);
-
-        // استبدال الأيقونات في حالة فشل Font Awesome
-        function replaceIcons() {
-            const iconMap = {
-                'fa-gamepad': '🎮',
-                'fa-play': '▶️',
-                'fa-question-circle': '❓',
-                'fa-trophy': '🏆',
-                'fa-clock': '⏰',
-                'fa-heart': '❤️',
-                'fa-coins': '💰',
-                'fa-pause': '⏸️',
-                'fa-expand': '⛶',
-                'fa-compress': '🗖',
-                'fa-arrow-left': '←',
-                'fa-arrow-right': '→',
-                'fa-arrow-up': '↑',
-                'fa-times': '✕',
-                'fa-redo': '↻',
-                'fa-home': '⌂',
-                'fa-skull-crossbones': '💀',
-                'fa-exclamation-triangle': '⚠️'
-            };
-            
-            document.querySelectorAll('i').forEach(icon => {
-                for (const className in iconMap) {
-                    if (icon.classList.contains(className)) {
-                        const text = document.createTextNode(iconMap[className]);
-                        icon.parentNode.replaceChild(text, icon);
-                        break;
-                    }
-                }
-            });
-        }
-
-        // اختبار Canvas
-        document.addEventListener('DOMContentLoaded', function() {
-            const canvas = document.getElementById('game-canvas');
-            if (!canvas) {
-                showError('عنصر Canvas غير موجود في الصفحة');
-                return;
-            }
-            
-            // تعيين حجم افتراضي
-            canvas.width = 800;
-            canvas.height = 600;
-            
-            // اختبار دعم Canvas
-            if (!canvas.getContext) {
-                showError('متصفحك لا يدعم Canvas. الرجاء استخدام Chrome أو Firefox.');
-                return;
-            }
-            
-            const ctx = canvas.getContext('2d');
-            if (!ctx) {
-                showError('فشل في الحصول على سياق الرسم Canvas');
-                return;
-            }
-            
-            // اختبار رسم بسيط
-            try {
-                ctx.fillStyle = 'rgba(0,0,0,0)';
-                ctx.fillRect(0, 0, 1, 1);
-            } catch (error) {
-                showError('فشل اختبار Canvas: ' + error.message);
-            }
-        });
-
-        // إضافة إشعار التحكم
-        document.addEventListener('keydown', function(e) {
-            if (e.key === '?' || e.key === '؟') {
-                document.getElementById('help-modal').style.display = 'flex';
-            }
-        });
-
-        // تلميح للمستخدم
-        setTimeout(function() {
-            console.log('💡 تلميح: اضغط على ? لفتح نافذة المساعدة');
-        }, 3000);
     </script>
 </body>
 </html>
