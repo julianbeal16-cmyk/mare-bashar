@@ -10,7 +10,7 @@
 </head>
 <body>
     <!-- زر ملء الشاشة -->
-    <button id="fullscreen-btn" title="ملء الشاشة">
+    <button id="fullscreen-btn">
         <i class="fas fa-expand"></i>
     </button>
 
@@ -23,10 +23,9 @@
             </div>
 
             <div class="character-preview">
-                <img id="player-img" src="player.png" alt="شخصيتك" 
-                     onerror="this.style.display='none'; document.getElementById('player-placeholder').style.display='block';">
-                <div id="player-placeholder" class="player-placeholder">
-                    <div class="char-icon">🎮</div>
+                <img id="player-img" src="player.png" alt="شخصية اللاعب">
+                <div id="default-character" class="default-character">
+                    <div class="char-icon">👤</div>
                     <p>شخصيتك</p>
                 </div>
             </div>
@@ -66,8 +65,8 @@
                 <button id="start-btn" class="btn btn-primary">
                     <i class="fas fa-play"></i> ابدأ اللعب
                 </button>
-                <button id="how-to-play" class="btn btn-secondary">
-                    <i class="fas fa-question-circle"></i> كيف تلعب
+                <button id="help-btn" class="btn btn-secondary">
+                    <i class="fas fa-question-circle"></i> كيفية اللعب
                 </button>
             </div>
 
@@ -76,19 +75,19 @@
                 <div class="controls-grid">
                     <div class="control-item">
                         <div class="key"><i class="fas fa-arrow-left"></i></div>
-                        <span>يسار</span>
+                        <span>اليسار</span>
                     </div>
                     <div class="control-item">
                         <div class="key"><i class="fas fa-arrow-right"></i></div>
-                        <span>يمين</span>
+                        <span>اليمين</span>
                     </div>
                     <div class="control-item">
                         <div class="key"><i class="fas fa-arrow-up"></i></div>
-                        <span>قفز</span>
+                        <span>القفز</span>
                     </div>
                     <div class="control-item">
-                        <div class="key"><i class="fas fa-expand"></i></div>
-                        <span>ملء شاشة</span>
+                        <div class="key">F</div>
+                        <span>ملء الشاشة</span>
                     </div>
                 </div>
             </div>
@@ -116,9 +115,8 @@
                     <span id="coins">0/30</span>
                 </div>
             </div>
-            
             <div class="game-actions">
-                <button id="menu-btn-game" class="game-btn" title="القائمة">
+                <button id="menu-btn" class="game-btn" title="القائمة">
                     <i class="fas fa-home"></i>
                 </button>
                 <button id="pause-btn" class="game-btn" title="إيقاف">
@@ -177,7 +175,7 @@
                     <button id="play-again-btn" class="btn btn-primary">
                         <i class="fas fa-redo"></i> لعب مجدداً
                     </button>
-                    <button id="back-to-menu" class="btn btn-secondary">
+                    <button id="back-menu-btn" class="btn btn-secondary">
                         <i class="fas fa-home"></i> القائمة الرئيسية
                     </button>
                 </div>
@@ -186,17 +184,17 @@
     </div>
 
     <!-- نافذة التعليمات -->
-    <div id="instructions-modal" class="modal">
+    <div id="help-modal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2><i class="fas fa-question-circle"></i> كيف تلعب</h2>
-                <button id="close-instructions" class="close-btn">
+                <h2><i class="fas fa-question-circle"></i> كيفية اللعب</h2>
+                <button id="close-help" class="close-btn">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
             <div class="modal-body">
                 <h3><i class="fas fa-bullseye"></i> هدف اللعبة</h3>
-                <p>اجمع 30 عملة ذهبية وتجنب الأعداء والفخاخ.</p>
+                <p>اجمع 30 عملة ذهبية في غضون دقيقتين وتجنب الأعداء والفخاخ.</p>
                 
                 <h3><i class="fas fa-keyboard"></i> التحكم</h3>
                 <div class="instructions-list">
@@ -221,78 +219,57 @@
                         <span>ملء الشاشة</span>
                     </div>
                 </div>
-                
-                <h3><i class="fas fa-star"></i> جمع النقاط</h3>
-                <ul>
-                    <li>العملة الذهبية: <span class="points">+100 نقطة</span></li>
-                    <li>هزيمة العدو: <span class="points">+200 نقطة</span></li>
-                    <li>جمع كل العملات: <span class="points">+2000 نقطة</span></li>
-                </ul>
             </div>
         </div>
-    </div>
-
-    <!-- زر الإسعافات الأولية -->
-    <div id="emergency-buttons">
-        <button onclick="emergencyStart()" class="emergency-btn">
-            <i class="fas fa-play-circle"></i> بدء سريع
-        </button>
-        <button onclick="location.reload()" class="emergency-btn">
-            <i class="fas fa-redo"></i> تحديث
-        </button>
     </div>
 
     <script src="game.js"></script>
     <script>
         // إدارة النوافذ
-        document.getElementById('how-to-play').addEventListener('click', () => {
-            document.getElementById('instructions-modal').style.display = 'flex';
+        document.getElementById('help-btn').addEventListener('click', () => {
+            document.getElementById('help-modal').style.display = 'flex';
         });
         
-        document.getElementById('close-instructions').addEventListener('click', () => {
-            document.getElementById('instructions-modal').style.display = 'none';
+        document.getElementById('close-help').addEventListener('click', () => {
+            document.getElementById('help-modal').style.display = 'none';
         });
         
-        // إغلاق النافذة بالنقر خارجها
         window.addEventListener('click', (e) => {
-            if (e.target === document.getElementById('instructions-modal')) {
-                document.getElementById('instructions-modal').style.display = 'none';
+            if (e.target === document.getElementById('help-modal')) {
+                document.getElementById('help-modal').style.display = 'none';
             }
         });
         
         // زر ملء الشاشة
-        document.getElementById('fullscreen-btn').addEventListener('click', toggleFullscreen);
-        
-        function toggleFullscreen() {
+        document.getElementById('fullscreen-btn').addEventListener('click', () => {
             if (!document.fullscreenElement) {
-                document.documentElement.requestFullscreen().catch(err => {
-                    console.log(`خطأ في ملء الشاشة: ${err.message}`);
-                });
+                document.documentElement.requestFullscreen();
+                document.getElementById('fullscreen-btn').innerHTML = '<i class="fas fa-compress"></i>';
             } else {
                 document.exitFullscreen();
-            }
-        }
-        
-        // تغيير أيقونة ملء الشاشة
-        document.addEventListener('fullscreenchange', () => {
-            const btn = document.getElementById('fullscreen-btn');
-            if (document.fullscreenElement) {
-                btn.innerHTML = '<i class="fas fa-compress"></i>';
-            } else {
-                btn.innerHTML = '<i class="fas fa-expand"></i>';
+                document.getElementById('fullscreen-btn').innerHTML = '<i class="fas fa-expand"></i>';
             }
         });
         
-        // بدء طارئ
-        window.emergencyStart = function() {
-            if (window.game && window.game.startGame) {
-                window.game.startGame();
-            } else {
-                alert('اللعبة غير جاهزة. جرب تحديث الصفحة.');
-            }
+        // معالجة صورة اللاعب
+        const playerImg = document.getElementById('player-img');
+        const defaultChar = document.getElementById('default-character');
+        
+        playerImg.onerror = () => {
+            playerImg.style.display = 'none';
+            defaultChar.style.display = 'flex';
         };
         
-        // تحميل الصفحة
+        playerImg.onload = () => {
+            defaultChar.style.display = 'none';
+        };
+        
+        // إخفاء الشخصية البديلة إذا الصورة محملة
+        if (playerImg.complete && playerImg.naturalHeight !== 0) {
+            defaultChar.style.display = 'none';
+        }
+        
+        // عند تحميل الصفحة
         window.addEventListener('load', () => {
             console.log('🎮 اللعبة جاهزة للتحميل...');
         });
