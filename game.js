@@ -4,6 +4,34 @@
 
 'use strict';
 
+// إضافة دالة roundRect إذا لم تكن موجودة
+if (!CanvasRenderingContext2D.prototype.roundRect) {
+    CanvasRenderingContext2D.prototype.roundRect = function(x, y, width, height, radius) {
+        if (typeof radius === 'undefined') radius = 5;
+        if (typeof radius === 'number') {
+            radius = {tl: radius, tr: radius, br: radius, bl: radius};
+        } else {
+            var defaultRadius = {tl: 0, tr: 0, br: 0, bl: 0};
+            for (var side in defaultRadius) {
+                radius[side] = radius[side] || defaultRadius[side];
+            }
+        }
+        
+        this.beginPath();
+        this.moveTo(x + radius.tl, y);
+        this.lineTo(x + width - radius.tr, y);
+        this.quadraticCurveTo(x + width, y, x + width, y + radius.tr);
+        this.lineTo(x + width, y + height - radius.br);
+        this.quadraticCurveTo(x + width, y + height, x + width - radius.br, y + height);
+        this.lineTo(x + radius.bl, y + height);
+        this.quadraticCurveTo(x, y + height, x, y + height - radius.bl);
+        this.lineTo(x, y + radius.tl);
+        this.quadraticCurveTo(x, y, x + radius.tl, y);
+        this.closePath();
+        return this;
+    };
+}
+
 // الكائن الرئيسي للعبة
 const MarioGame = {
     // ======================
@@ -42,7 +70,7 @@ const MarioGame = {
     particles: [],
     camera: { x: 0, y: 0 },
     castle: null,
-    worldWidth: 0,
+    worldWidth: 3000,
     
     // التحكم
     keys: {},
@@ -56,6 +84,7 @@ const MarioGame = {
     // إعدادات الصوت
     soundEnabled: true,
     musicEnabled: true,
+    sounds: {},
     
     // ======================
     // التهيئة الأساسية
@@ -65,6 +94,9 @@ const MarioGame = {
         console.log('🚀 تهيئة لعبة ماريو الخارقة...');
         
         try {
+            // إخفاء شاشة التحميل
+            document.getElementById('loading').style.display = 'none';
+            
             // 1. إعداد Canvas
             this.setupCanvas();
             
@@ -179,7 +211,10 @@ const MarioGame = {
     setupMobileControls() {
         const setupButton = (id, control) => {
             const btn = document.getElementById(id);
-            if (!btn) return;
+            if (!btn) {
+                console.warn(`⚠️ الزر ${id} غير موجود`);
+                return;
+            }
             
             const events = ['touchstart', 'mousedown'];
             const endEvents = ['touchend', 'touchcancel', 'mouseup', 'mouseleave'];
@@ -215,30 +250,48 @@ const MarioGame = {
     
     setupButtons() {
         // زر البدء الرئيسي
-        document.getElementById('start-game').addEventListener('click', () => this.startGame());
+        const startBtn = document.getElementById('start-game');
+        if (startBtn) {
+            startBtn.addEventListener('click', () => this.startGame());
+        }
         
         // زر الإيقاف/المتابعة
-        document.getElementById('pause-button').addEventListener('click', () => this.togglePause());
+        const pauseBtn = document.getElementById('pause-button');
+        if (pauseBtn) {
+            pauseBtn.addEventListener('click', () => this.togglePause());
+        }
         
         // زر القائمة
-        document.getElementById('menu-button').addEventListener('click', () => this.backToMenu());
+        const menuBtn = document.getElementById('menu-button');
+        if (menuBtn) {
+            menuBtn.addEventListener('click', () => this.backToMenu());
+        }
         
         // زر الصوت
-        document.getElementById('sound-button').addEventListener('click', () => this.toggleSound());
+        const soundBtn = document.getElementById('sound-button');
+        if (soundBtn) {
+            soundBtn.addEventListener('click', () => this.toggleSound());
+        }
         
         // زر إعادة اللعب
-        document.getElementById('play-again-btn').addEventListener('click', () => this.restartGame());
+        const playAgainBtn = document.getElementById('play-again-btn');
+        if (playAgainBtn) {
+            playAgainBtn.addEventListener('click', () => this.restartGame());
+        }
         
         // زر العودة للقائمة من النهاية
-        document.getElementById('return-menu-btn').addEventListener('click', () => {
-            this.showScreen('start');
-        });
+        const returnBtn = document.getElementById('return-menu-btn');
+        if (returnBtn) {
+            returnBtn.addEventListener('click', () => {
+                this.showScreen('start');
+            });
+        }
         
         // زر المشاركة
-        document.getElementById('share-btn').addEventListener('click', () => this.shareScore());
-        
-        // زر ملء الشاشة
-        document.getElementById('fullscreen-btn').addEventListener('click', () => this.toggleFullscreen());
+        const shareBtn = document.getElementById('share-btn');
+        if (shareBtn) {
+            shareBtn.addEventListener('click', () => this.shareScore());
+        }
     },
     
     setupAudio() {
@@ -493,17 +546,28 @@ const MarioGame = {
         // الوقت
         const minutes = Math.floor(this.timeLeft / 60);
         const seconds = this.timeLeft % 60;
-        document.getElementById('time-count').textContent = 
-            `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        const timeElement = document.getElementById('time-count');
+        if (timeElement) {
+            timeElement.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
         
         // النتيجة
-        document.getElementById('score-count').textContent = this.score;
+        const scoreElement = document.getElementById('score-count');
+        if (scoreElement) {
+            scoreElement.textContent = this.score;
+        }
         
         // الأرواح
-        document.getElementById('lives-count').textContent = this.lives;
+        const livesElement = document.getElementById('lives-count');
+        if (livesElement) {
+            livesElement.textContent = this.lives;
+        }
         
         // العملات
-        document.getElementById('coins-count').textContent = `${this.coins}/${this.totalCoins}`;
+        const coinsElement = document.getElementById('coins-count');
+        if (coinsElement) {
+            coinsElement.textContent = `${this.coins}/${this.totalCoins}`;
+        }
     },
     
     updateMissionText() {
@@ -915,14 +979,20 @@ const MarioGame = {
         }
         
         // تحديث الإحصائيات النهائية
-        document.getElementById('final-score').textContent = this.score;
-        document.getElementById('final-coins').textContent = `${this.coins}/${this.totalCoins}`;
-        document.getElementById('final-time').textContent = this.formatTime(120 - this.timeLeft);
-        document.getElementById('final-kills').textContent = this.kills;
+        const finalScore = document.getElementById('final-score');
+        const finalCoins = document.getElementById('final-coins');
+        const finalTime = document.getElementById('final-time');
+        const finalKills = document.getElementById('final-kills');
+        const finalSpeed = document.getElementById('final-speed');
+        
+        if (finalScore) finalScore.textContent = this.score;
+        if (finalCoins) finalCoins.textContent = `${this.coins}/${this.totalCoins}`;
+        if (finalTime) finalTime.textContent = this.formatTime(120 - this.timeLeft);
+        if (finalKills) finalKills.textContent = this.kills;
         
         // حساب سرعة الإنجاز
         const speed = Math.round((120 - this.timeLeft) / 120 * 100);
-        document.getElementById('final-speed').textContent = `${100 - speed}%`;
+        if (finalSpeed) finalSpeed.textContent = `${100 - speed}%`;
     },
     
     updateAchievements() {
@@ -999,14 +1069,15 @@ const MarioGame = {
     
     drawBackground() {
         const ctx = this.ctx;
+        const canvas = this.canvas;
         
         // السماء المتدرجة
-        const gradient = ctx.createLinearGradient(0, 0, 0, this.canvas.height);
+        const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
         gradient.addColorStop(0, '#87CEEB');
         gradient.addColorStop(0.6, '#5DADE2');
         gradient.addColorStop(1, '#3498DB');
         ctx.fillStyle = gradient;
-        ctx.fillRect(0, 0, this.worldWidth, this.canvas.height);
+        ctx.fillRect(0, 0, this.worldWidth, canvas.height);
         
         // سحب متحركة
         ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
@@ -1029,9 +1100,9 @@ const MarioGame = {
             const height = 120 + Math.sin(i) * 60;
             
             ctx.beginPath();
-            ctx.moveTo(x, this.canvas.height - 80);
-            ctx.lineTo(x + 250, this.canvas.height - 80 - height);
-            ctx.lineTo(x + 500, this.canvas.height - 80);
+            ctx.moveTo(x, canvas.height - 80);
+            ctx.lineTo(x + 250, canvas.height - 80 - height);
+            ctx.lineTo(x + 500, canvas.height - 80);
             ctx.closePath();
             ctx.fill();
         }
@@ -1163,6 +1234,7 @@ const MarioGame = {
         
         const ctx = this.ctx;
         const c = this.castle;
+        const canvas = this.canvas;
         
         // قاعدة القصر
         const baseGradient = ctx.createLinearGradient(
@@ -1298,6 +1370,7 @@ const MarioGame = {
     
     drawHUD() {
         const ctx = this.ctx;
+        const canvas = this.canvas;
         
         // معلومات سريعة في الزاوية
         ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
@@ -1315,7 +1388,7 @@ const MarioGame = {
         if (this.frameCount % 120 < 60) {
             ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
             ctx.font = '16px Cairo';
-            ctx.fillText('🎯 اجمع كل العملات!', this.canvas.width - 200, 40);
+            ctx.fillText('🎯 اجمع كل العملات!', canvas.width - 200, 40);
         }
     },
     
@@ -1324,35 +1397,43 @@ const MarioGame = {
     // ======================
     
     togglePause() {
+        const pauseBtn = document.getElementById('pause-button');
+        
         if (this.state === 'playing') {
             this.state = 'paused';
             if (this.gameTimer) clearInterval(this.gameTimer);
             if (this.animationId) cancelAnimationFrame(this.animationId);
-            document.getElementById('pause-button').innerHTML = '<i class="fas fa-play"></i>';
-            document.getElementById('pause-button').title = 'متابعة اللعبة';
+            if (pauseBtn) {
+                pauseBtn.innerHTML = '<i class="fas fa-play"></i>';
+                pauseBtn.title = 'متابعة اللعبة';
+            }
             this.showNotification('⏸️ اللعبة متوقفة');
         } else if (this.state === 'paused') {
             this.state = 'playing';
             this.startTimer();
             this.startGameLoop();
-            document.getElementById('pause-button').innerHTML = '<i class="fas fa-pause"></i>';
-            document.getElementById('pause-button').title = 'إيقاف اللعبة';
+            if (pauseBtn) {
+                pauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
+                pauseBtn.title = 'إيقاف اللعبة';
+            }
             this.showNotification('▶️ اللعبة مستمرة');
         }
     },
     
     toggleSound() {
         const btn = document.getElementById('sound-button');
-        if (btn.innerHTML.includes('volume-up')) {
-            btn.innerHTML = '<i class="fas fa-volume-mute"></i>';
-            btn.title = 'تشغيل الصوت';
-            this.soundEnabled = false;
-            this.showNotification('🔇 الصوت متوقف');
-        } else {
-            btn.innerHTML = '<i class="fas fa-volume-up"></i>';
-            btn.title = 'إيقاف الصوت';
-            this.soundEnabled = true;
-            this.showNotification('🔊 الصوت مفعل');
+        if (btn) {
+            if (btn.innerHTML.includes('volume-up')) {
+                btn.innerHTML = '<i class="fas fa-volume-mute"></i>';
+                btn.title = 'تشغيل الصوت';
+                this.soundEnabled = false;
+                this.showNotification('🔇 الصوت متوقف');
+            } else {
+                btn.innerHTML = '<i class="fas fa-volume-up"></i>';
+                btn.title = 'إيقاف الصوت';
+                this.soundEnabled = true;
+                this.showNotification('🔊 الصوت مفعل');
+            }
         }
     },
     
@@ -1449,8 +1530,8 @@ const MarioGame = {
                         <button onclick="location.reload()" style="margin:10px; padding:15px 30px; background:#3498DB; color:white; border:none; border-radius:10px; cursor:pointer; font-size:16px;">
                             🔄 إعادة تحميل الصفحة
                         </button>
-                        <button onclick="startSimpleVersion()" style="margin:10px; padding:15px 30px; background:#2ECC71; color:white; border:none; border-radius:10px; cursor:pointer; font-size:16px;">
-                            🎮 بدء نسخة مبسطة
+                        <button onclick="MarioGame.restartGame()" style="margin:10px; padding:15px 30px; background:#2ECC71; color:white; border:none; border-radius:10px; cursor:pointer; font-size:16px;">
+                            🎮 إعادة المحاولة
                         </button>
                     </div>
                     <p style="color:#666; font-size:14px;">إذا استمرت المشكلة، تأكد من استخدام متصفح حديث</p>
@@ -1466,7 +1547,7 @@ const MarioGame = {
 // تهيئة اللعبة عند تحميل الصفحة
 // ============================================
 
-window.addEventListener('load', () => {
+window.addEventListener('DOMContentLoaded', () => {
     console.log('📄 الصفحة محملة - جاري تهيئة اللعبة...');
     
     // تأخير بسيط للتأكد من تحميل كل شيء
@@ -1474,11 +1555,12 @@ window.addEventListener('load', () => {
         try {
             MarioGame.init();
             
-            // إضافة دالة startMarioGame للاستدعاء من الخارج
+            // جعل الدوال متاحة عالمياً
             window.startMarioGame = () => MarioGame.startGame();
             window.togglePause = () => MarioGame.togglePause();
             window.restartGame = () => MarioGame.restartGame();
             window.backToMenu = () => MarioGame.backToMenu();
+            window.showNotification = (msg) => MarioGame.showNotification(msg);
             
             console.log('✅ جميع الأنظمة جاهزة للعمل!');
             
@@ -1521,27 +1603,6 @@ window.showDebug = () => {
         MarioGame.showNotification('🐛 معلومات التصحيح في الكونسول (F12)');
     }
 };
-
-// ============================================
-// تحسينات إضافية
-// ============================================
-
-// إضافة دالة roundRect إذا لم تكن موجودة
-if (!CanvasRenderingContext2D.prototype.roundRect) {
-    CanvasRenderingContext2D.prototype.roundRect = function(x, y, width, height, radius) {
-        if (width < 2 * radius) radius = width / 2;
-        if (height < 2 * radius) radius = height / 2;
-        
-        this.beginPath();
-        this.moveTo(x + radius, y);
-        this.arcTo(x + width, y, x + width, y + height, radius);
-        this.arcTo(x + width, y + height, x, y + height, radius);
-        this.arcTo(x, y + height, x, y, radius);
-        this.arcTo(x, y, x + width, y, radius);
-        this.closePath();
-        return this;
-    };
-}
 
 // إدارة وضع ملء الشاشة
 document.addEventListener('fullscreenchange', () => {
