@@ -3,115 +3,101 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🎮 لعبة ماريو الخارقة</title>
+    <title>🎮 لعبة ماريو الخارقة - الإصدار النهائي</title>
+    <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <!-- شاشة التحميل -->
-    <div id="loading-screen" class="screen">
-        <div class="loading-content">
-            <div class="loading-spinner"></div>
-            <h2>🎮 جاري تحميل المغامرة...</h2>
-            <div class="loading-progress">
-                <div class="progress-bar"></div>
-                <span id="progress-text">0%</span>
-            </div>
-            <p class="loading-tip" id="loading-tip">جاري تهيئة عالم اللعبة...</p>
+    <!-- شاشة التحميل السريع -->
+    <div id="loading" style="position:fixed; top:0; left:0; width:100%; height:100%; background:#0a0a1a; z-index:9999; display:none;">
+        <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); text-align:center;">
+            <div style="width:80px; height:80px; border:5px solid #FFD700; border-top-color:transparent; border-radius:50%; animation:spin 1s linear infinite; margin:0 auto 20px;"></div>
+            <h2 style="color:#FFD700;">🎮 جاري تحضير المغامرة...</h2>
         </div>
     </div>
 
-    <!-- زر ملء الشاشة -->
-    <button id="fullscreen-btn" title="ملء الشاشة">
-        <i class="fas fa-expand"></i>
-    </button>
-
-    <!-- زر الموسيقى -->
-    <button id="music-btn" title="تشغيل/إيقاف الموسيقى">
-        <i class="fas fa-volume-up"></i>
-    </button>
-
     <!-- شاشة البداية -->
     <div id="start-screen" class="screen">
-        <div class="screen-content">
+        <div class="start-container">
             <!-- العنوان الرئيسي -->
-            <div class="main-header">
-                <div class="game-logo">
+            <div class="game-title">
+                <div class="logo">
                     <i class="fas fa-gamepad"></i>
-                    <h1>لعبة ماريو <span class="highlight">الخارقة</span></h1>
+                    <h1>لعبة <span class="highlight">ماريو</span> الخارقة</h1>
                 </div>
-                <p class="game-tagline">مغامرتك الشخصية تبدأ الآن!</p>
+                <p class="subtitle">مغامرة مثيرة في عالم مليء بالتحديات والأسرار!</p>
             </div>
 
-            <!-- صورة اللاعب -->
-            <div class="hero-section">
-                <div class="character-display">
-                    <div class="character-frame">
-                        <img id="hero-image" src="player.png" alt="بطل اللعبة">
-                        <div class="character-overlay">
-                            <div class="character-name">🔰 البطل</div>
-                            <div class="character-level">المستوى 1</div>
+            <!-- عرض البطل -->
+            <div class="hero-display">
+                <div class="hero-card">
+                    <div class="hero-image">
+                        <div class="hero-avatar">
+                            <i class="fas fa-user-ninja"></i>
                         </div>
-                        <div class="character-glow"></div>
+                        <div class="hero-badge">البطل</div>
                     </div>
-                    <div class="character-stats">
-                        <div class="stat">
-                            <i class="fas fa-bolt"></i>
-                            <span>السرعة: <strong>عالية</strong></span>
-                        </div>
-                        <div class="stat">
-                            <i class="fas fa-shield-alt"></i>
-                            <span>الدفاع: <strong>متوسط</strong></span>
-                        </div>
-                        <div class="stat">
-                            <i class="fas fa-fist-raised"></i>
-                            <span>القوة: <strong>عالية</strong></span>
+                    <div class="hero-info">
+                        <h3><i class="fas fa-user"></i> معلومات البطل</h3>
+                        <div class="hero-stats">
+                            <div class="stat">
+                                <i class="fas fa-bolt"></i>
+                                <span>سرعة عالية</span>
+                            </div>
+                            <div class="stat">
+                                <i class="fas fa-shield-alt"></i>
+                                <span>دفاع متوسط</span>
+                            </div>
+                            <div class="stat">
+                                <i class="fas fa-fist-raised"></i>
+                                <span>قوة خارقة</span>
+                            </div>
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <!-- بطاقة الإحصائيات -->
-                <div class="stats-cards">
-                    <div class="stat-card glowing">
+            <!-- إحصائيات اللعبة -->
+            <div class="game-stats-section">
+                <h2><i class="fas fa-chart-line"></i> إحصائيات اللعبة</h2>
+                <div class="stats-grid">
+                    <div class="stat-box">
                         <div class="stat-icon">
                             <i class="fas fa-crown"></i>
                         </div>
-                        <div class="stat-info">
-                            <h4>🏆 أفضل نتيجة</h4>
-                            <p id="high-score" class="stat-value">0</p>
+                        <div class="stat-content">
+                            <h3>أفضل نتيجة</h3>
+                            <p class="stat-value" id="high-score">0</p>
                             <small>السجل القياسي</small>
                         </div>
                     </div>
-                    
-                    <div class="stat-card glowing">
+                    <div class="stat-box">
                         <div class="stat-icon">
                             <i class="fas fa-clock"></i>
                         </div>
-                        <div class="stat-info">
-                            <h4>⏱️ التحدي الزمني</h4>
+                        <div class="stat-content">
+                            <h3>الوقت المحدد</h3>
                             <p class="stat-value">02:00</p>
                             <small>دقيقتان فقط!</small>
                         </div>
                     </div>
-                    
-                    <div class="stat-card glowing">
+                    <div class="stat-box">
                         <div class="stat-icon">
                             <i class="fas fa-heart"></i>
                         </div>
-                        <div class="stat-info">
-                            <h4>❤️ الأرواح</h4>
+                        <div class="stat-content">
+                            <h3>عدد الأرواح</h3>
                             <p class="stat-value">3</p>
                             <small>فرص للفوز</small>
                         </div>
                     </div>
-                    
-                    <div class="stat-card glowing">
+                    <div class="stat-box">
                         <div class="stat-icon">
                             <i class="fas fa-coins"></i>
                         </div>
-                        <div class="stat-info">
-                            <h4>💰 الكنز المفقود</h4>
+                        <div class="stat-content">
+                            <h3>الكنز المفقود</h3>
                             <p class="stat-value">30</p>
                             <small>عملة ذهبية</small>
                         </div>
@@ -119,89 +105,98 @@
                 </div>
             </div>
 
-            <!-- أزرار التحكم الرئيسية -->
-            <div class="action-buttons">
-                <button id="start-btn" class="btn epic-btn">
-                    <i class="fas fa-rocket"></i>
-                    <span>🚀 ابدأ المغامرة</span>
-                </button>
-                
-                <button id="how-to-play" class="btn guide-btn">
-                    <i class="fas fa-graduation-cap"></i>
-                    <span>📚 دليل اللعب</span>
-                </button>
-                
-                <button id="settings-btn" class="btn settings-btn">
-                    <i class="fas fa-cogs"></i>
-                    <span>⚙️ الإعدادات</span>
-                </button>
-            </div>
-
-            <!-- لوحة التحكم -->
-            <div class="control-panel">
-                <h3><i class="fas fa-gamepad"></i> مركز التحكم</h3>
-                
-                <div class="controls-grid">
-                    <div class="control-group">
-                        <h4><i class="fas fa-keyboard"></i> لوحة المفاتيح</h4>
+            <!-- مركز التحكم -->
+            <div class="control-center">
+                <h2><i class="fas fa-gamepad"></i> مركز التحكم</h2>
+                <div class="control-sections">
+                    <div class="control-section">
+                        <h3><i class="fas fa-keyboard"></i> لوحة المفاتيح</h3>
                         <div class="keyboard-controls">
-                            <div class="key-combo">
-                                <kbd>←</kbd> <kbd>A</kbd>
-                                <span>التحرك لليسار</span>
+                            <div class="key-group">
+                                <div class="keys">
+                                    <kbd>←</kbd> <kbd>→</kbd>
+                                </div>
+                                <span>الحركة يمين/يسار</span>
                             </div>
-                            <div class="key-combo">
-                                <kbd>→</kbd> <kbd>D</kbd>
-                                <span>التحرك لليمين</span>
+                            <div class="key-group">
+                                <div class="keys">
+                                    <kbd>A</kbd> <kbd>D</kbd>
+                                </div>
+                                <span>بديل للحركة</span>
                             </div>
-                            <div class="key-combo">
-                                <kbd>Space</kbd> <kbd>W</kbd> <kbd>↑</kbd>
+                            <div class="key-group">
+                                <div class="keys">
+                                    <kbd>Space</kbd>
+                                </div>
                                 <span>القفز العالي</span>
                             </div>
-                            <div class="key-combo">
-                                <kbd>P</kbd>
+                            <div class="key-group">
+                                <div class="keys">
+                                    <kbd>P</kbd>
+                                </div>
                                 <span>إيقاف/متابعة</span>
                             </div>
-                            <div class="key-combo">
-                                <kbd>F</kbd>
+                            <div class="key-group">
+                                <div class="keys">
+                                    <kbd>F</kbd>
+                                </div>
                                 <span>ملء الشاشة</span>
                             </div>
                         </div>
                     </div>
                     
-                    <div class="control-group">
-                        <h4><i class="fas fa-mobile-alt"></i> الشاشات الذكية</h4>
+                    <div class="control-section">
+                        <h3><i class="fas fa-mobile-alt"></i> الجوال</h3>
                         <div class="touch-controls">
-                            <div class="touch-button">
-                                <i class="fas fa-arrow-left"></i>
-                                <span>يسار</span>
-                            </div>
-                            <div class="touch-button">
-                                <i class="fas fa-arrow-right"></i>
-                                <span>يمين</span>
-                            </div>
-                            <div class="touch-button jump-btn">
-                                <i class="fas fa-arrow-up"></i>
-                                <span>قفز</span>
+                            <div class="touch-pad">
+                                <div class="touch-button left-btn">
+                                    <i class="fas fa-arrow-left"></i>
+                                    <span>يسار</span>
+                                </div>
+                                <div class="touch-button right-btn">
+                                    <i class="fas fa-arrow-right"></i>
+                                    <span>يمين</span>
+                                </div>
+                                <div class="touch-button jump-btn">
+                                    <i class="fas fa-arrow-up"></i>
+                                    <span>قفز</span>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- معلومات سريعة -->
-            <div class="quick-info">
+            <!-- أزرار الإجراءات -->
+            <div class="action-buttons">
+                <button id="start-game" class="action-btn primary-btn">
+                    <i class="fas fa-rocket"></i>
+                    <span>🚀 ابدأ المغامرة الآن</span>
+                </button>
+                <button id="how-to-play" class="action-btn secondary-btn">
+                    <i class="fas fa-graduation-cap"></i>
+                    <span>📚 تعلم كيفية اللعب</span>
+                </button>
+                <button id="game-settings" class="action-btn tertiary-btn">
+                    <i class="fas fa-cogs"></i>
+                    <span>⚙️ إعدادات اللعبة</span>
+                </button>
+            </div>
+
+            <!-- معلومات مهمة -->
+            <div class="important-info">
                 <div class="info-card">
                     <i class="fas fa-trophy"></i>
                     <div>
                         <h4>🎯 الهدف النهائي</h4>
-                        <p>اجمع 30 عملة ووصل للقصر الملكي!</p>
+                        <p>اجمع 30 عملة ذهبية ووصل للقصر الملكي قبل انتهاء الوقت!</p>
                     </div>
                 </div>
-                <div class="info-card">
+                <div class="info-card warning">
                     <i class="fas fa-skull-crossbones"></i>
                     <div>
-                        <h4>⚠️ المخاطر</h4>
-                        <p>تجنب الأعداء والحفر العميقة!</p>
+                        <h4>⚠️ تحذيرات مهمة</h4>
+                        <p>تجنب الأعداء الحمراء والحفر العميقة!</p>
                     </div>
                 </div>
             </div>
@@ -212,227 +207,241 @@
     <div id="game-screen" class="screen">
         <!-- شريط المعلومات العلوي -->
         <div class="game-header">
-            <div class="header-left">
-                <div class="player-status">
-                    <div class="status-item">
-                        <i class="fas fa-heart"></i>
-                        <span id="lives">3</span>
-                    </div>
-                    <div class="status-item">
-                        <i class="fas fa-star"></i>
-                        <span id="score">0</span>
-                    </div>
-                    <div class="status-item">
-                        <i class="fas fa-coins"></i>
-                        <span id="coins">0/30</span>
-                    </div>
+            <div class="header-section">
+                <div class="status-item">
+                    <i class="fas fa-heart"></i>
+                    <span id="lives-count">3</span>
+                </div>
+                <div class="status-item">
+                    <i class="fas fa-star"></i>
+                    <span id="score-count">0</span>
+                </div>
+                <div class="status-item">
+                    <i class="fas fa-coins"></i>
+                    <span id="coins-count">0/30</span>
                 </div>
             </div>
             
-            <div class="header-center">
-                <div class="mission-timer">
+            <div class="header-section center">
+                <div class="timer-display">
                     <i class="fas fa-hourglass-half"></i>
-                    <span id="timer">02:00</span>
+                    <span id="time-count">02:00</span>
                 </div>
-                <div class="mission-info" id="mission-info">
+                <div class="mission-display" id="mission-text">
                     🎯 اجمع العملات الذهبية!
                 </div>
             </div>
             
-            <div class="header-right">
-                <button id="pause-game" class="header-btn" title="إيقاف اللعبة">
+            <div class="header-section">
+                <button id="pause-button" class="header-btn" title="إيقاف اللعبة">
                     <i class="fas fa-pause"></i>
                 </button>
-                <button id="game-menu" class="header-btn" title="القائمة">
-                    <i class="fas fa-bars"></i>
+                <button id="menu-button" class="header-btn" title="القائمة الرئيسية">
+                    <i class="fas fa-home"></i>
                 </button>
-                <button id="sound-toggle" class="header-btn" title="الصوت">
+                <button id="sound-button" class="header-btn" title="الصوت">
                     <i class="fas fa-volume-up"></i>
                 </button>
             </div>
         </div>
 
-        <!-- منطقة اللعبة -->
-        <div class="game-world">
+        <!-- منطقة اللعبة الرئيسية -->
+        <div class="game-area">
             <canvas id="game-canvas"></canvas>
             
-            <!-- طبقات التأثيرات -->
-            <div class="effects-layer">
-                <div class="particles-container"></div>
-                <div class="notifications"></div>
+            <!-- تأثيرات بصرية -->
+            <div class="game-effects">
+                <div class="particles" id="particles"></div>
             </div>
             
             <!-- بوصلة التوجيه -->
             <div class="compass">
-                <div class="compass-arrow" id="compass-arrow">↑</div>
-                <div class="compass-distance" id="compass-distance">200m</div>
+                <div class="compass-dial">
+                    <div class="compass-arrow" id="compass-arrow">↑</div>
+                </div>
+                <div class="compass-info">
+                    <span id="distance-text">المسافة: 200m</span>
+                </div>
             </div>
         </div>
 
         <!-- أزرار التحكم للجوال -->
-        <div class="mobile-game-controls">
-            <div class="movement-pad">
-                <button id="mobile-left" class="mobile-control-btn move-btn">
-                    <i class="fas fa-arrow-left"></i>
-                </button>
-                <div class="pad-center">
-                    <button id="mobile-action" class="mobile-control-btn action-btn">
-                        <i class="fas fa-bolt"></i>
+        <div class="mobile-controls">
+            <div class="control-pad">
+                <div class="d-pad">
+                    <button id="btn-left" class="control-btn direction-btn">
+                        <i class="fas fa-arrow-left"></i>
+                    </button>
+                    <div class="d-pad-center">
+                        <button id="btn-action" class="control-btn action-btn">
+                            <i class="fas fa-bolt"></i>
+                        </button>
+                    </div>
+                    <button id="btn-right" class="control-btn direction-btn">
+                        <i class="fas fa-arrow-right"></i>
                     </button>
                 </div>
-                <button id="mobile-right" class="mobile-control-btn move-btn">
-                    <i class="fas fa-arrow-right"></i>
-                </button>
-            </div>
-            
-            <div class="action-pad">
-                <button id="mobile-jump" class="mobile-control-btn jump-btn">
-                    <i class="fas fa-arrow-up"></i>
-                    <span>قفز</span>
-                </button>
-                <button id="mobile-special" class="mobile-control-btn special-btn">
-                    <i class="fas fa-star"></i>
-                    <span>خاص</span>
-                </button>
+                <div class="action-buttons-mobile">
+                    <button id="btn-jump" class="control-btn jump-btn">
+                        <i class="fas fa-arrow-up"></i>
+                        <span>قفز</span>
+                    </button>
+                    <button id="btn-special" class="control-btn special-btn">
+                        <i class="fas fa-star"></i>
+                        <span>خاص</span>
+                    </button>
+                </div>
             </div>
         </div>
 
         <!-- شريط التقدم -->
         <div class="progress-tracker">
-            <div class="progress-bar-game">
-                <div class="progress-fill" id="level-progress"></div>
+            <div class="progress-bar-container">
+                <div class="progress-fill" id="game-progress"></div>
             </div>
             <div class="progress-labels">
-                <span>البداية</span>
-                <span id="current-progress">0%</span>
-                <span>الهدف النهائي</span>
+                <span class="label-start">البداية</span>
+                <span class="label-current" id="current-progress">0%</span>
+                <span class="label-end">الهدف النهائي</span>
             </div>
         </div>
     </div>
 
     <!-- شاشة النهاية -->
     <div id="end-screen" class="screen">
-        <div class="victory-screen">
-            <div class="victory-content">
-                <!-- شارة النصر -->
-                <div class="victory-badge" id="victory-badge">
-                    <i class="fas fa-trophy"></i>
+        <div class="end-container">
+            <!-- شارة النصر -->
+            <div class="victory-badge" id="victory-icon">
+                <i class="fas fa-trophy"></i>
+            </div>
+            
+            <!-- عنوان النهاية -->
+            <h1 class="end-title" id="end-title">🎉 انتصار مذهل!</h1>
+            
+            <!-- رسالة النهاية -->
+            <p class="end-message" id="end-message">
+                لقد أكملت المغامرة بنجاح باهر!
+            </p>
+            
+            <!-- الإحصائيات النهائية -->
+            <div class="final-stats">
+                <div class="final-stat main-stat">
+                    <div class="stat-label">
+                        <i class="fas fa-crown"></i>
+                        النتيجة النهائية
+                    </div>
+                    <div class="stat-value" id="final-score">0</div>
+                    <div class="stat-medal">
+                        <i class="fas fa-medal"></i>
+                    </div>
                 </div>
                 
-                <!-- العنوان النهائي -->
-                <h1 id="end-title" class="victory-title">🎉 انتصار مذهل!</h1>
-                
-                <!-- الرسالة النهائية -->
-                <p id="end-message" class="victory-message">
-                    لقد أكملت المغامرة بنجاح باهر!
-                </p>
-                
-                <!-- الإحصائيات النهائية -->
-                <div class="victory-stats">
-                    <div class="victory-stat epic">
-                        <div class="stat-label">🏆 النتيجة النهائية</div>
-                        <div class="stat-value" id="final-score">0</div>
-                        <div class="stat-medal">
-                            <i class="fas fa-medal"></i>
+                <div class="stats-grid-final">
+                    <div class="final-stat">
+                        <div class="stat-label">
+                            <i class="fas fa-coins"></i>
+                            العملات
                         </div>
-                    </div>
-                    
-                    <div class="victory-stat">
-                        <div class="stat-label">💰 الكنوز المجمعة</div>
                         <div class="stat-value" id="final-coins">0/30</div>
-                        <div class="stat-icon">
-                            <i class="fas fa-coins"></i>
-                        </div>
                     </div>
                     
-                    <div class="victory-stat">
-                        <div class="stat-label">⏱️ الوقت المستغرق</div>
-                        <div class="stat-value" id="final-time">00:00</div>
-                        <div class="stat-icon">
+                    <div class="final-stat">
+                        <div class="stat-label">
                             <i class="fas fa-stopwatch"></i>
+                            الوقت المتبقي
                         </div>
+                        <div class="stat-value" id="final-time">00:00</div>
                     </div>
                     
-                    <div class="victory-stat">
-                        <div class="stat-label">👊 الأعداء المقهورين</div>
-                        <div class="stat-value" id="final-kills">0</div>
-                        <div class="stat-icon">
+                    <div class="final-stat">
+                        <div class="stat-label">
                             <i class="fas fa-skull"></i>
+                            الأعداء المهزومين
                         </div>
+                        <div class="stat-value" id="final-kills">0</div>
                     </div>
-                </div>
-                
-                <!-- جوائز الإنجاز -->
-                <div class="achievements">
-                    <h3><i class="fas fa-award"></i> إنجازاتك</h3>
-                    <div class="achievement-list">
-                        <div class="achievement unlocked">
-                            <i class="fas fa-check-circle"></i>
-                            <span>إكمال المستوى الأول</span>
-                        </div>
-                        <div class="achievement" id="coin-master">
-                            <i class="fas fa-coins"></i>
-                            <span>سيد العملات</span>
-                        </div>
-                        <div class="achievement" id="speed-runner">
+                    
+                    <div class="final-stat">
+                        <div class="stat-label">
                             <i class="fas fa-bolt"></i>
-                            <span>عداء سريع</span>
+                            سرعة الإنجاز
                         </div>
+                        <div class="stat-value" id="final-speed">0%</div>
                     </div>
                 </div>
-                
-                <!-- أزرار النهاية -->
-                <div class="victory-actions">
-                    <button id="play-again" class="btn epic-btn">
-                        <i class="fas fa-redo"></i>
-                        <span>🔄 مغامرة جديدة</span>
-                    </button>
-                    
-                    <button id="back-to-menu" class="btn menu-btn">
-                        <i class="fas fa-home"></i>
-                        <span>🏠 القائمة الرئيسية</span>
-                    </button>
-                    
-                    <button id="share-victory" class="btn share-btn">
-                        <i class="fas fa-share-alt"></i>
-                        <span>📢 شارك إنجازك</span>
-                    </button>
+            </div>
+            
+            <!-- الإنجازات -->
+            <div class="achievements-section">
+                <h3><i class="fas fa-award"></i> إنجازاتك</h3>
+                <div class="achievements-list">
+                    <div class="achievement completed">
+                        <i class="fas fa-check-circle"></i>
+                        <span>إكمال المستوى الأول</span>
+                    </div>
+                    <div class="achievement" id="achievement-coins">
+                        <i class="fas fa-coins"></i>
+                        <span>سيد العملات</span>
+                    </div>
+                    <div class="achievement" id="achievement-speed">
+                        <i class="fas fa-bolt"></i>
+                        <span>عداء سريع</span>
+                    </div>
+                    <div class="achievement" id="achievement-perfect">
+                        <i class="fas fa-star"></i>
+                        <span>أداء مثالي</span>
+                    </div>
                 </div>
+            </div>
+            
+            <!-- أزرار النهاية -->
+            <div class="end-actions">
+                <button id="play-again-btn" class="end-btn primary-btn">
+                    <i class="fas fa-redo"></i>
+                    <span>🔄 مغامرة جديدة</span>
+                </button>
+                
+                <button id="return-menu-btn" class="end-btn secondary-btn">
+                    <i class="fas fa-home"></i>
+                    <span>🏠 القائمة الرئيسية</span>
+                </button>
+                
+                <button id="share-btn" class="end-btn share-btn">
+                    <i class="fas fa-share-alt"></i>
+                    <span>📢 شارك إنجازك</span>
+                </button>
             </div>
         </div>
     </div>
 
     <!-- نافذة التعليمات -->
-    <div id="help-modal" class="modal">
+    <div id="help-window" class="modal-window">
         <div class="modal-content">
             <div class="modal-header">
                 <h2><i class="fas fa-graduation-cap"></i> أكاديمية الأبطال</h2>
-                <button class="close-modal">
+                <button class="close-btn" onclick="closeHelp()">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
             <div class="modal-body">
-                <!-- دليل اللعب -->
                 <div class="guide-section">
                     <h3><i class="fas fa-book"></i> دليل اللعب الشامل</h3>
-                    <div class="guide-content">
-                        <div class="guide-step">
+                    <div class="guide-steps">
+                        <div class="step">
                             <div class="step-number">1</div>
                             <div class="step-content">
                                 <h4>🎯 الهدف الرئيسي</h4>
-                                <p>اجمع <strong>30 عملة ذهبية</strong> في عالم مليء بالتحديات، ووصل للقصر الملكي قبل انتهاء الوقت!</p>
+                                <p>اجمع <strong>30 عملة ذهبية</strong> في عالم مليء بالتحديات، ووصل للقصر الملكي قبل انتهاء الوقت المحدد!</p>
                             </div>
                         </div>
-                        
-                        <div class="guide-step">
+                        <div class="step">
                             <div class="step-number">2</div>
                             <div class="step-content">
                                 <h4>⚔️ نظام القتال</h4>
                                 <p>اقفز فوق رؤوس الأعداء لهزيمتهم، واحصل على <strong>200 نقطة</strong> لكل عدو تقهره!</p>
                             </div>
                         </div>
-                        
-                        <div class="guide-step">
+                        <div class="step">
                             <div class="step-number">3</div>
                             <div class="step-content">
                                 <h4>💰 نظام الاقتصاد</h4>
@@ -442,24 +451,23 @@
                     </div>
                 </div>
                 
-                <!-- أسرار وخبايا -->
-                <div class="secrets-section">
-                    <h3><i class="fas fa-key"></i> أسرار الخبراء</h3>
-                    <div class="secrets-grid">
-                        <div class="secret">
-                            <i class="fas fa-lightbulb"></i>
-                            <h4>القفز المزدوج</h4>
-                            <p>اضغط زر القفز مرتين بسرعة للحصول على قفزة أعلى!</p>
-                        </div>
-                        <div class="secret">
+                <div class="tips-section">
+                    <h3><i class="fas fa-lightbulb"></i> نصائح الخبراء</h3>
+                    <div class="tips-grid">
+                        <div class="tip">
                             <i class="fas fa-running"></i>
                             <h4>العدو السريع</h4>
                             <p>اضغط زرين اتجاه في نفس الوقت لزيادة السرعة!</p>
                         </div>
-                        <div class="secret">
+                        <div class="tip">
                             <i class="fas fa-shield-alt"></i>
                             <h4>المناعة الذكية</h4>
                             <p>بعد التعرض لضرر، لديك 3 ثوانٍ مناعة!</p>
+                        </div>
+                        <div class="tip">
+                            <i class="fas fa-map"></i>
+                            <h4>اكتشاف الأسرار</h4>
+                            <p>ابحث عن المناطق المخفية لتحصل على كنوز إضافية!</p>
                         </div>
                     </div>
                 </div>
@@ -468,62 +476,62 @@
     </div>
 
     <!-- نافذة الإعدادات -->
-    <div id="settings-modal" class="modal">
+    <div id="settings-window" class="modal-window">
         <div class="modal-content">
             <div class="modal-header">
                 <h2><i class="fas fa-cogs"></i> مركز التحكم</h2>
-                <button class="close-modal">
+                <button class="close-btn" onclick="closeSettings()">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
             <div class="modal-body">
                 <div class="settings-section">
                     <h3><i class="fas fa-sliders-h"></i> إعدادات اللعبة</h3>
-                    
-                    <div class="setting-item">
-                        <label>
-                            <input type="checkbox" id="sound-effects" checked>
-                            <span>🔊 مؤثرات صوتية</span>
-                        </label>
-                    </div>
-                    
-                    <div class="setting-item">
-                        <label>
-                            <input type="checkbox" id="background-music" checked>
-                            <span>🎵 موسيقى الخلفية</span>
-                        </label>
-                    </div>
-                    
-                    <div class="setting-item">
-                        <label>
-                            <input type="checkbox" id="vibration" checked>
-                            <span>📳 اهتزاز الأزرار</span>
-                        </label>
-                    </div>
-                    
-                    <div class="setting-item">
-                        <label>
-                            <input type="checkbox" id="particles" checked>
-                            <span>✨ تأثيرات الجسيمات</span>
-                        </label>
+                    <div class="settings-list">
+                        <div class="setting">
+                            <label>
+                                <input type="checkbox" id="sound-toggle" checked>
+                                <span>🔊 المؤثرات الصوتية</span>
+                            </label>
+                        </div>
+                        <div class="setting">
+                            <label>
+                                <input type="checkbox" id="music-toggle" checked>
+                                <span>🎵 موسيقى الخلفية</span>
+                            </label>
+                        </div>
+                        <div class="setting">
+                            <label>
+                                <input type="checkbox" id="vibration-toggle" checked>
+                                <span>📳 اهتزاز الأزرار</span>
+                            </label>
+                        </div>
+                        <div class="setting">
+                            <label>
+                                <input type="checkbox" id="particles-toggle" checked>
+                                <span>✨ تأثيرات الجسيمات</span>
+                            </label>
+                        </div>
                     </div>
                 </div>
                 
                 <div class="settings-section">
                     <h3><i class="fas fa-gamepad"></i> إعدادات التحكم</h3>
-                    
-                    <div class="setting-item">
-                        <label>حساسية الحركة</label>
-                        <input type="range" id="sensitivity" min="1" max="10" value="5">
-                    </div>
-                    
-                    <div class="setting-item">
-                        <label>حجم أزرار الجوال</label>
-                        <input type="range" id="button-size" min="60" max="120" value="80">
+                    <div class="settings-list">
+                        <div class="setting">
+                            <label>حساسية الحركة</label>
+                            <input type="range" id="sensitivity-slider" min="1" max="10" value="5">
+                            <span id="sensitivity-value">5</span>
+                        </div>
+                        <div class="setting">
+                            <label>حجم أزرار الجوال</label>
+                            <input type="range" id="buttonsize-slider" min="60" max="120" value="80">
+                            <span id="buttonsize-value">80px</span>
+                        </div>
                     </div>
                 </div>
                 
-                <button class="btn save-settings">
+                <button class="save-btn" onclick="saveSettings()">
                     <i class="fas fa-save"></i> حفظ الإعدادات
                 </button>
             </div>
@@ -531,520 +539,179 @@
     </div>
 
     <!-- نظام الإشعارات -->
-    <div id="notification-system">
-        <div class="notification" style="display: none;">
+    <div id="notification-area">
+        <div class="notification" id="notification">
             <i class="fas fa-info-circle"></i>
-            <span class="notification-text"></span>
+            <span id="notification-text">مرحباً بك في اللعبة!</span>
         </div>
     </div>
 
-    <!-- أحزمة التقدم -->
-    <div class="progress-ribbons">
-        <div class="ribbon level-ribbon">
-            <span>المستوى: <strong>1</strong></span>
-        </div>
-        <div class="ribbon score-ribbon">
-            <span>النقاط: <strong id="ribbon-score">0</strong></span>
-        </div>
-    </div>
-
-    <!-- نظام الطوارئ -->
-    <div class="emergency-panel">
-        <button class="emergency-btn" onclick="forceStartGame()">
+    <!-- أزرار الطوارئ -->
+    <div class="emergency-tools">
+        <button class="emergency-btn" onclick="emergencyStart()" title="بدء طارئ">
             <i class="fas fa-play-circle"></i>
-            <span>بدء طارئ</span>
         </button>
-        <button class="emergency-btn" onclick="resetGame()">
-            <i class="fas fa-redo-alt"></i>
-            <span>إعادة تعيين</span>
+        <button class="emergency-btn" onclick="resetAll()" title="إعادة تعيين">
+            <i class="fas fa-redo"></i>
         </button>
-        <button class="emergency-btn" onclick="showDebugInfo()">
+        <button class="emergency-btn" onclick="showDebug()" title="معلومات التصحيح">
             <i class="fas fa-bug"></i>
-            <span>معلومات التصحيح</span>
         </button>
     </div>
 
-    <!-- =========================================== -->
-    <!-- هنا الكود المعدل بدل الـ Script الطويل -->
-    <!-- =========================================== -->
-    
+    <!-- الصوت والموسيقى -->
+    <audio id="jump-sound" src="https://assets.mixkit.co/sfx/preview/mixkit-player-jumping-in-a-video-game-2043.mp3" preload="auto"></audio>
+    <audio id="coin-sound" src="https://assets.mixkit.co/sfx/preview/mixkit-winning-chimes-2015.mp3" preload="auto"></audio>
+    <audio id="hit-sound" src="https://assets.mixkit.co/sfx/preview/mixkit-retro-game-emergency-alarm-1000.mp3" preload="auto"></audio>
+
+    <script src="game.js"></script>
     <script>
-        // نظام تحميل مبسط جداً
+        // تهيئة سريعة عند تحميل الصفحة
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('🚀 بدء تشغيل اللعبة...');
+            console.log('🎮 تهيئة النظام...');
             
-            // 1. إخفاء شاشة التحميل فوراً
-            const loadingScreen = document.getElementById('loading-screen');
-            if (loadingScreen) {
-                loadingScreen.style.display = 'none';
-            }
+            // إخفاء شاشة التحميل فوراً
+            document.getElementById('loading').style.display = 'none';
             
-            // 2. إظهار شاشة البداية مباشرة
-            const startScreen = document.getElementById('start-screen');
-            if (startScreen) {
-                startScreen.style.display = 'flex';
-            }
+            // تحميل أفضل نتيجة
+            loadHighScore();
             
-            // 3. تحميل أفضل نتيجة
+            // إعداد الأزرار الأساسية
+            setupBasicControls();
+            
+            console.log('✅ النظام جاهز للعمل!');
+            
+            // إظهار إشعار ترحيبي
+            showNotification('مرحباً بك في لعبة ماريو الخارقة! 🎮');
+        });
+        
+        function loadHighScore() {
             try {
                 const saved = localStorage.getItem('mario_high_score');
                 const highScore = saved ? parseInt(saved) : 0;
-                const highScoreElement = document.getElementById('high-score');
-                if (highScoreElement) {
-                    highScoreElement.textContent = highScore;
-                }
-            } catch (e) {
+                document.getElementById('high-score').textContent = highScore;
+            } catch(e) {
                 console.log('⚠️ فشل تحميل أفضل نتيجة');
             }
-            
-            // 4. تهيئة الأزرار الأساسية
-            setupBasicControls();
-            
-            // 5. إنشاء نسخة اللعبة
-            setTimeout(initGame, 500);
-        });
+        }
         
         function setupBasicControls() {
             // زر البدء
-            const startBtn = document.getElementById('start-btn');
-            if (startBtn) {
-                startBtn.addEventListener('click', function() {
-                    if (window.game && window.game.startGame) {
-                        window.game.startGame();
-                    } else {
-                        alert('🎮 جاري تهيئة اللعبة...');
-                        setTimeout(function() {
-                            if (window.game && window.game.startGame) {
-                                window.game.startGame();
-                            }
-                        }, 1000);
-                    }
-                });
-            }
-            
-            // زر الإعدادات
-            const settingsBtn = document.getElementById('settings-btn');
-            if (settingsBtn) {
-                settingsBtn.addEventListener('click', function() {
-                    const modal = document.getElementById('settings-modal');
-                    if (modal) modal.style.display = 'flex';
-                });
-            }
+            document.getElementById('start-game').addEventListener('click', function() {
+                if (typeof startMarioGame === 'function') {
+                    startMarioGame();
+                } else {
+                    showNotification('جاري تحميل اللعبة...');
+                    setTimeout(function() {
+                        if (typeof startMarioGame === 'function') {
+                            startMarioGame();
+                        }
+                    }, 1000);
+                }
+            });
             
             // زر التعليمات
-            const helpBtn = document.getElementById('how-to-play');
-            if (helpBtn) {
-                helpBtn.addEventListener('click', function() {
-                    const modal = document.getElementById('help-modal');
-                    if (modal) modal.style.display = 'flex';
-                });
-            }
-            
-            // زر ملء الشاشة
-            const fullscreenBtn = document.getElementById('fullscreen-btn');
-            if (fullscreenBtn) {
-                fullscreenBtn.addEventListener('click', toggleFullscreen);
-            }
-            
-            // زر الموسيقى
-            const musicBtn = document.getElementById('music-btn');
-            if (musicBtn) {
-                musicBtn.addEventListener('click', toggleMusic);
-            }
-            
-            // أزرار إغلاق النوافذ
-            document.querySelectorAll('.close-modal').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const modal = this.closest('.modal');
-                    if (modal) modal.style.display = 'none';
-                });
+            document.getElementById('how-to-play').addEventListener('click', function() {
+                document.getElementById('help-window').style.display = 'flex';
             });
             
-            // زر حفظ الإعدادات
-            const saveSettingsBtn = document.querySelector('.save-settings');
-            if (saveSettingsBtn) {
-                saveSettingsBtn.addEventListener('click', function() {
-                    alert('⚙️ تم حفظ الإعدادات');
-                    const modal = document.getElementById('settings-modal');
-                    if (modal) modal.style.display = 'none';
-                });
-            }
+            // زر الإعدادات
+            document.getElementById('game-settings').addEventListener('click', function() {
+                document.getElementById('settings-window').style.display = 'flex';
+            });
             
-            // زر إعادة التشغيل
-            const playAgainBtn = document.getElementById('play-again');
-            if (playAgainBtn) {
-                playAgainBtn.addEventListener('click', function() {
-                    if (window.game && window.game.restartGame) {
-                        window.game.restartGame();
-                    }
-                });
-            }
+            // زر الإيقاف
+            document.getElementById('pause-button').addEventListener('click', function() {
+                if (typeof togglePause === 'function') {
+                    togglePause();
+                }
+            });
             
-            // زر العودة للقائمة
-            const backToMenuBtn = document.getElementById('back-to-menu');
-            if (backToMenuBtn) {
-                backToMenuBtn.addEventListener('click', function() {
-                    if (window.game && window.game.backToMenu) {
-                        window.game.backToMenu();
-                    } else {
-                        document.getElementById('game-screen').style.display = 'none';
-                        document.getElementById('start-screen').style.display = 'flex';
-                    }
-                });
-            }
-            
-            // زر المشاركة
-            const shareBtn = document.getElementById('share-victory');
-            if (shareBtn) {
-                shareBtn.addEventListener('click', function() {
-                    alert('📢 شارك إنجازك مع أصدقائك!\n\nيمكنك التقاط صورة للشاشة ومشاركتها.');
-                });
-            }
-        }
-        
-        function initGame() {
-            console.log('🎮 إنشاء نسخة اللعبة...');
-            try {
-                // تحميل ملف game.js
-                const script = document.createElement('script');
-                script.src = 'game.js';
-                script.onload = function() {
-                    console.log('✅ game.js محمل بنجاح');
-                    if (typeof MarioGame !== 'undefined') {
-                        window.game = new MarioGame();
-                        console.log('✅ اللعبة جاهزة للعب!');
-                        
-                        // تحديث صورة اللاعب
-                        const heroImage = document.getElementById('hero-image');
-                        if (heroImage) {
-                            heroImage.onerror = function() {
-                                this.style.display = 'none';
-                                const parent = this.parentElement;
-                                if (parent) {
-                                    parent.innerHTML += '<div style="width:100%;height:100%;display:flex;flex-direction:column;justify-content:center;align-items:center;color:white;font-size:24px;"><i class="fas fa-user-ninja"></i><div>البطل</div></div>';
-                                }
-                            };
-                        }
-                    }
-                };
-                script.onerror = function() {
-                    console.error('❌ فشل تحميل game.js');
-                    createFallbackGame();
-                };
-                document.head.appendChild(script);
-                
-            } catch (error) {
-                console.error('❌ خطأ في إنشاء اللعبة:', error);
-                createFallbackGame();
-            }
-        }
-        
-        function createFallbackGame() {
-            console.log('🔄 إنشاء لعبة بديلة...');
-            
-            window.game = {
-                gameState: 'menu',
-                score: 0,
-                lives: 3,
-                coins: 0,
-                timeLeft: 120,
-                
-                startGame: function() {
-                    console.log('🚀 بدء لعبة بديلة');
-                    this.gameState = 'playing';
-                    
-                    // إخفاء شاشة البداية
-                    document.getElementById('start-screen').style.display = 'none';
-                    
-                    // إظهار شاشة اللعب
-                    document.getElementById('game-screen').style.display = 'flex';
-                    
-                    // إنشاء canvas طارئ إذا لم يكن موجوداً
-                    let canvas = document.getElementById('game-canvas');
-                    if (!canvas) {
-                        canvas = document.createElement('canvas');
-                        canvas.id = 'game-canvas';
-                        document.querySelector('.game-world').appendChild(canvas);
-                    }
-                    
-                    // بدء حلقة اللعبة البسيطة
-                    startSimpleGameLoop(canvas);
-                },
-                
-                restartGame: function() {
-                    this.startGame();
-                },
-                
-                backToMenu: function() {
-                    this.gameState = 'menu';
+            // زر القائمة
+            document.getElementById('menu-button').addEventListener('click', function() {
+                if (typeof backToMenu === 'function') {
+                    backToMenu();
+                } else {
                     document.getElementById('game-screen').style.display = 'none';
                     document.getElementById('start-screen').style.display = 'flex';
-                },
-                
-                updateUI: function() {
-                    document.getElementById('score').textContent = this.score;
-                    document.getElementById('lives').textContent = this.lives;
-                    document.getElementById('coins').textContent = this.coins + '/30';
-                    
-                    const minutes = Math.floor(this.timeLeft / 60);
-                    const seconds = this.timeLeft % 60;
-                    document.getElementById('timer').textContent = 
-                        minutes.toString().padStart(2, '0') + ':' + seconds.toString().padStart(2, '0');
                 }
-            };
-            
-            console.log('✅ اللعبة البديلة جاهزة');
-        }
-        
-        function startSimpleGameLoop(canvas) {
-            if (!canvas) return;
-            
-            const ctx = canvas.getContext('2d');
-            canvas.width = canvas.parentElement.clientWidth;
-            canvas.height = canvas.parentElement.clientHeight;
-            
-            const player = {
-                x: 100,
-                y: canvas.height - 150,
-                width: 40,
-                height: 60,
-                speed: 5,
-                velY: 0,
-                jumping: false
-            };
-            
-            const coins = [];
-            for (let i = 0; i < 10; i++) {
-                coins.push({
-                    x: 200 + i * 80,
-                    y: canvas.height - 200,
-                    collected: false
-                });
-            }
-            
-            const keys = {};
-            
-            // التحكم
-            document.addEventListener('keydown', (e) => {
-                keys[e.key] = true;
             });
             
-            document.addEventListener('keyup', (e) => {
-                keys[e.key] = false;
+            // زر إعادة اللعب
+            document.getElementById('play-again-btn').addEventListener('click', function() {
+                if (typeof restartGame === 'function') {
+                    restartGame();
+                }
             });
             
-            // تحديث UI
-            function updateUI() {
-                document.getElementById('score').textContent = window.game.score;
-                document.getElementById('lives').textContent = window.game.lives;
-                document.getElementById('coins').textContent = window.game.coins + '/30';
-                
-                const minutes = Math.floor(window.game.timeLeft / 60);
-                const seconds = window.game.timeLeft % 60;
-                document.getElementById('timer').textContent = 
-                    minutes.toString().padStart(2, '0') + ':' + seconds.toString().padStart(2, '0');
-            }
-            
-            // مؤقت الوقت
-            const timeInterval = setInterval(() => {
-                if (window.game.gameState === 'playing') {
-                    window.game.timeLeft--;
-                    updateUI();
-                    
-                    if (window.game.timeLeft <= 0) {
-                        clearInterval(timeInterval);
-                        endGame(false);
-                    }
-                }
-            }, 1000);
-            
-            function endGame(win) {
-                window.game.gameState = 'ended';
-                clearInterval(timeInterval);
-                
-                if (win) {
-                    document.getElementById('end-title').textContent = 'تهانينا! 🏆';
-                    document.getElementById('end-message').textContent = 'لقد ربحت اللعبة!';
-                } else {
-                    document.getElementById('end-title').textContent = 'انتهت اللعبة';
-                    document.getElementById('end-message').textContent = 'حاول مرة أخرى!';
-                }
-                
-                document.getElementById('final-score').textContent = window.game.score;
-                document.getElementById('final-coins').textContent = window.game.coins + '/30';
-                document.getElementById('final-time').textContent = '02:00';
-                document.getElementById('final-kills').textContent = '0';
-                
-                document.getElementById('game-screen').style.display = 'none';
-                document.getElementById('end-screen').style.display = 'flex';
-            }
-            
-            function gameLoop() {
-                if (window.game.gameState !== 'playing') return;
-                
-                // تحديث
-                player.velY += 0.8;
-                
-                if (keys['ArrowLeft'] || keys['a']) player.x -= player.speed;
-                if (keys['ArrowRight'] || keys['d']) player.x += player.speed;
-                
-                if ((keys[' '] || keys['ArrowUp'] || keys['w']) && !player.jumping) {
-                    player.velY = -15;
-                    player.jumping = true;
-                }
-                
-                player.y += player.velY;
-                
-                // الأرض
-                if (player.y > canvas.height - player.height - 50) {
-                    player.y = canvas.height - player.height - 50;
-                    player.velY = 0;
-                    player.jumping = false;
-                }
-                
-                // جمع العملات
-                coins.forEach(coin => {
-                    if (!coin.collected) {
-                        const dx = player.x + player.width/2 - coin.x;
-                        const dy = player.y + player.height/2 - coin.y;
-                        const distance = Math.sqrt(dx*dx + dy*dy);
-                        
-                        if (distance < 30) {
-                            coin.collected = true;
-                            window.game.coins++;
-                            window.game.score += 100;
-                            updateUI();
-                            
-                            if (window.game.coins >= 30) {
-                                endGame(true);
-                            }
-                        }
-                    }
-                });
-                
-                // رسم
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                
-                // السماء
-                ctx.fillStyle = '#87CEEB';
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-                
-                // الأرض
-                ctx.fillStyle = '#8B4513';
-                ctx.fillRect(0, canvas.height - 50, canvas.width, 50);
-                
-                // العملات
-                ctx.fillStyle = '#FFD700';
-                coins.forEach(coin => {
-                    if (!coin.collected) {
-                        ctx.beginPath();
-                        ctx.arc(coin.x, coin.y, 15, 0, Math.PI * 2);
-                        ctx.fill();
-                    }
-                });
-                
-                // اللاعب
-                ctx.fillStyle = '#E74C3C';
-                ctx.fillRect(player.x, player.y, player.width, player.height);
-                
-                requestAnimationFrame(gameLoop);
-            }
-            
-            updateUI();
-            gameLoop();
+            // زر العودة للقائمة
+            document.getElementById('return-menu-btn').addEventListener('click', function() {
+                document.getElementById('end-screen').style.display = 'none';
+                document.getElementById('start-screen').style.display = 'flex';
+            });
         }
         
-        function toggleFullscreen() {
-            const btn = document.getElementById('fullscreen-btn');
-            try {
-                if (!document.fullscreenElement) {
-                    document.documentElement.requestFullscreen();
-                    btn.innerHTML = '<i class="fas fa-compress"></i>';
-                    showNotification('🖥️ وضع ملء الشاشة مفعل');
-                } else {
-                    document.exitFullscreen();
-                    btn.innerHTML = '<i class="fas fa-expand"></i>';
-                    showNotification('📱 الخروج من ملء الشاشة');
-                }
-            } catch (error) {
-                console.log('⚠️ خطأ في ملء الشاشة');
-                showNotification('⚠️ لا يدعم المتصفح ملء الشاشة');
+        function showNotification(message) {
+            const notification = document.getElementById('notification');
+            const text = document.getElementById('notification-text');
+            
+            if (notification && text) {
+                text.textContent = message;
+                notification.style.display = 'flex';
+                
+                setTimeout(function() {
+                    notification.style.display = 'none';
+                }, 3000);
             }
+            
+            console.log('📢 ' + message);
         }
         
-        function toggleMusic() {
-            const btn = document.getElementById('music-btn');
-            if (btn.innerHTML.includes('volume-up')) {
-                btn.innerHTML = '<i class="fas fa-volume-mute"></i>';
-                btn.title = 'تشغيل الصوت';
-                showNotification('🔇 الصوت متوقف');
-            } else {
-                btn.innerHTML = '<i class="fas fa-volume-up"></i>';
-                btn.title = 'إيقاف الصوت';
-                showNotification('🔊 الصوت مفعل');
-            }
+        function closeHelp() {
+            document.getElementById('help-window').style.display = 'none';
         }
         
-        function showNotification(text) {
-            const notification = document.querySelector('.notification');
-            const notificationText = document.querySelector('.notification-text');
-            
-            if (!notification || !notificationText) {
-                console.log('📢', text);
-                return;
-            }
-            
-            notificationText.textContent = text;
-            notification.style.display = 'flex';
-            
-            setTimeout(() => {
-                notification.style.display = 'none';
-            }, 3000);
+        function closeSettings() {
+            document.getElementById('settings-window').style.display = 'none';
+        }
+        
+        function saveSettings() {
+            showNotification('⚙️ تم حفظ الإعدادات بنجاح!');
+            closeSettings();
         }
         
         // دالات الطوارئ
-        window.forceStartGame = function() {
-            console.log('🆘 بدء طارئ');
-            if (window.game && window.game.startGame) {
-                window.game.startGame();
-            } else {
-                alert('جاري تهيئة اللعبة...');
-                setTimeout(function() {
-                    if (window.game && window.game.startGame) {
-                        window.game.startGame();
-                    }
-                }, 1000);
+        function emergencyStart() {
+            showNotification('🚀 بدء طارئ للعبة!');
+            if (typeof startMarioGame === 'function') {
+                startMarioGame();
             }
-        };
+        }
         
-        window.resetGame = function() {
-            console.log('🔄 إعادة تعيين');
-            if (window.game && window.game.restartGame) {
-                window.game.restartGame();
-            } else {
+        function resetAll() {
+            if (confirm('⚠️ هل تريد إعادة تعيين اللعبة؟')) {
+                localStorage.removeItem('mario_high_score');
                 location.reload();
             }
-        };
+        }
         
-        window.showDebugInfo = function() {
+        function showDebug() {
             console.log('🔍 معلومات التصحيح:', {
-                game: window.game,
-                canvas: document.getElementById('game-canvas')
+                gameLoaded: typeof startMarioGame !== 'undefined',
+                highScore: localStorage.getItem('mario_high_score'),
+                screen: document.querySelector('.screen[style*="flex"]')?.id
             });
-            alert('معلومات التصحيح في الكونسول (F12)');
-        };
+            showNotification('🐛 معلومات التصحيح في الكونسول (F12)');
+        }
         
-        // حدث ملء الشاشة
-        document.addEventListener('fullscreenchange', () => {
-            const btn = document.getElementById('fullscreen-btn');
-            if (btn) {
-                if (document.fullscreenElement) {
-                    btn.innerHTML = '<i class="fas fa-compress"></i>';
-                } else {
-                    btn.innerHTML = '<i class="fas fa-expand"></i>';
-                }
-            }
-        });
+        // CSS للرسوم المتحركة
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes spin { 100% { transform: rotate(360deg); } }
+            @keyframes slideIn { from { transform: translateY(-100px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+            @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+        `;
+        document.head.appendChild(style);
     </script>
 </body>
 </html>
