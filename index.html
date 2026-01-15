@@ -7,11 +7,20 @@
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        @keyframes slideIn { from { transform: translateY(-100px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+        @keyframes slideDown { from { transform: translateY(-100px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
 </head>
 <body>
-    <!-- شاشة التحميل السريع -->
-    <div id="loading" style="position:fixed; top:0; left:0; width:100%; height:100%; background:#0a0a1a; z-index:9999; display:none;">
-        <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); text-align:center;">
+    <!-- شاشة التحميل -->
+    <div id="loading" style="position:fixed; top:0; left:0; width:100%; height:100%; background:#0a0a1a; z-index:9999; display:flex; justify-content:center; align-items:center;">
+        <div style="text-align:center;">
             <div style="width:80px; height:80px; border:5px solid #FFD700; border-top-color:transparent; border-radius:50%; animation:spin 1s linear infinite; margin:0 auto 20px;"></div>
             <h2 style="color:#FFD700;">🎮 جاري تحضير المغامرة...</h2>
         </div>
@@ -249,18 +258,13 @@
         <div class="game-area">
             <canvas id="game-canvas"></canvas>
             
-            <!-- تأثيرات بصرية -->
-            <div class="game-effects">
-                <div class="particles" id="particles"></div>
-            </div>
-            
             <!-- بوصلة التوجيه -->
             <div class="compass">
                 <div class="compass-dial">
                     <div class="compass-arrow" id="compass-arrow">↑</div>
                 </div>
                 <div class="compass-info">
-                    <span id="distance-text">المسافة: 200m</span>
+                    <span id="distance-text">المسافة: 0m</span>
                 </div>
             </div>
         </div>
@@ -415,7 +419,7 @@
     </div>
 
     <!-- نافذة التعليمات -->
-    <div id="help-window" class="modal-window">
+    <div id="help-window" class="modal-window" style="display:none;">
         <div class="modal-content">
             <div class="modal-header">
                 <h2><i class="fas fa-graduation-cap"></i> أكاديمية الأبطال</h2>
@@ -476,7 +480,7 @@
     </div>
 
     <!-- نافذة الإعدادات -->
-    <div id="settings-window" class="modal-window">
+    <div id="settings-window" class="modal-window" style="display:none;">
         <div class="modal-content">
             <div class="modal-header">
                 <h2><i class="fas fa-cogs"></i> مركز التحكم</h2>
@@ -540,7 +544,7 @@
 
     <!-- نظام الإشعارات -->
     <div id="notification-area">
-        <div class="notification" id="notification">
+        <div class="notification" id="notification" style="display:none;">
             <i class="fas fa-info-circle"></i>
             <span id="notification-text">مرحباً بك في اللعبة!</span>
         </div>
@@ -559,57 +563,36 @@
         </button>
     </div>
 
-    <!-- الصوت والموسيقى -->
-    <audio id="jump-sound" src="https://assets.mixkit.co/sfx/preview/mixkit-player-jumping-in-a-video-game-2043.mp3" preload="auto"></audio>
-    <audio id="coin-sound" src="https://assets.mixkit.co/sfx/preview/mixkit-winning-chimes-2015.mp3" preload="auto"></audio>
-    <audio id="hit-sound" src="https://assets.mixkit.co/sfx/preview/mixkit-retro-game-emergency-alarm-1000.mp3" preload="auto"></audio>
+    <!-- الصوت -->
+    <audio id="jump-sound" preload="auto">
+        <source src="https://assets.mixkit.co/sfx/preview/mixkit-player-jumping-in-a-video-game-2043.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="coin-sound" preload="auto">
+        <source src="https://assets.mixkit.co/sfx/preview/mixkit-winning-chimes-2015.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="hit-sound" preload="auto">
+        <source src="https://assets.mixkit.co/sfx/preview/mixkit-retro-game-emergency-alarm-1000.mp3" type="audio/mpeg">
+    </audio>
 
+    <!-- ملفات JS -->
     <script src="game.js"></script>
     <script>
-        // تهيئة سريعة عند تحميل الصفحة
+        // تهيئة سريعة
         document.addEventListener('DOMContentLoaded', function() {
             console.log('🎮 تهيئة النظام...');
             
-            // إخفاء شاشة التحميل فوراً
-            document.getElementById('loading').style.display = 'none';
+            // إخفاء شاشة التحميل بعد 1.5 ثانية
+            setTimeout(function() {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('start-screen').style.display = 'flex';
+                console.log('✅ الصفحة جاهزة!');
+            }, 1500);
             
-            // تحميل أفضل نتيجة
-            loadHighScore();
-            
-            // إعداد الأزرار الأساسية
-            setupBasicControls();
-            
-            console.log('✅ النظام جاهز للعمل!');
-            
-            // إظهار إشعار ترحيبي
-            showNotification('مرحباً بك في لعبة ماريو الخارقة! 🎮');
+            // تهيئة الأزرار الأساسية
+            initBasicButtons();
         });
         
-        function loadHighScore() {
-            try {
-                const saved = localStorage.getItem('mario_high_score');
-                const highScore = saved ? parseInt(saved) : 0;
-                document.getElementById('high-score').textContent = highScore;
-            } catch(e) {
-                console.log('⚠️ فشل تحميل أفضل نتيجة');
-            }
-        }
-        
-        function setupBasicControls() {
-            // زر البدء
-            document.getElementById('start-game').addEventListener('click', function() {
-                if (typeof startMarioGame === 'function') {
-                    startMarioGame();
-                } else {
-                    showNotification('جاري تحميل اللعبة...');
-                    setTimeout(function() {
-                        if (typeof startMarioGame === 'function') {
-                            startMarioGame();
-                        }
-                    }, 1000);
-                }
-            });
-            
+        function initBasicButtons() {
             // زر التعليمات
             document.getElementById('how-to-play').addEventListener('click', function() {
                 document.getElementById('help-window').style.display = 'flex';
@@ -619,54 +602,9 @@
             document.getElementById('game-settings').addEventListener('click', function() {
                 document.getElementById('settings-window').style.display = 'flex';
             });
-            
-            // زر الإيقاف
-            document.getElementById('pause-button').addEventListener('click', function() {
-                if (typeof togglePause === 'function') {
-                    togglePause();
-                }
-            });
-            
-            // زر القائمة
-            document.getElementById('menu-button').addEventListener('click', function() {
-                if (typeof backToMenu === 'function') {
-                    backToMenu();
-                } else {
-                    document.getElementById('game-screen').style.display = 'none';
-                    document.getElementById('start-screen').style.display = 'flex';
-                }
-            });
-            
-            // زر إعادة اللعب
-            document.getElementById('play-again-btn').addEventListener('click', function() {
-                if (typeof restartGame === 'function') {
-                    restartGame();
-                }
-            });
-            
-            // زر العودة للقائمة
-            document.getElementById('return-menu-btn').addEventListener('click', function() {
-                document.getElementById('end-screen').style.display = 'none';
-                document.getElementById('start-screen').style.display = 'flex';
-            });
         }
         
-        function showNotification(message) {
-            const notification = document.getElementById('notification');
-            const text = document.getElementById('notification-text');
-            
-            if (notification && text) {
-                text.textContent = message;
-                notification.style.display = 'flex';
-                
-                setTimeout(function() {
-                    notification.style.display = 'none';
-                }, 3000);
-            }
-            
-            console.log('📢 ' + message);
-        }
-        
+        // دالات مساعدة
         function closeHelp() {
             document.getElementById('help-window').style.display = 'none';
         }
@@ -676,20 +614,22 @@
         }
         
         function saveSettings() {
-            showNotification('⚙️ تم حفظ الإعدادات بنجاح!');
+            alert('⚙️ تم حفظ الإعدادات بنجاح!');
             closeSettings();
         }
         
         // دالات الطوارئ
         function emergencyStart() {
-            showNotification('🚀 بدء طارئ للعبة!');
-            if (typeof startMarioGame === 'function') {
-                startMarioGame();
+            alert('🚀 بدء طارئ للعبة!');
+            if (typeof MarioGame !== 'undefined' && typeof MarioGame.startGame === 'function') {
+                MarioGame.startGame();
+            } else {
+                location.reload();
             }
         }
         
         function resetAll() {
-            if (confirm('⚠️ هل تريد إعادة تعيين اللعبة؟')) {
+            if (confirm('⚠️ هل تريد إعادة تعيين اللعبة؟ ستفقد أفضل النتائج.')) {
                 localStorage.removeItem('mario_high_score');
                 location.reload();
             }
@@ -697,21 +637,26 @@
         
         function showDebug() {
             console.log('🔍 معلومات التصحيح:', {
-                gameLoaded: typeof startMarioGame !== 'undefined',
-                highScore: localStorage.getItem('mario_high_score'),
-                screen: document.querySelector('.screen[style*="flex"]')?.id
+                gameLoaded: typeof MarioGame !== 'undefined',
+                canvas: document.getElementById('game-canvas'),
+                state: typeof MarioGame !== 'undefined' ? MarioGame.state : 'غير محمل',
+                highScore: localStorage.getItem('mario_high_score')
             });
-            showNotification('🐛 معلومات التصحيح في الكونسول (F12)');
+            alert('🐛 معلومات التصحيح في الكونسول (F12)');
         }
         
-        // CSS للرسوم المتحركة
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes spin { 100% { transform: rotate(360deg); } }
-            @keyframes slideIn { from { transform: translateY(-100px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-            @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
-        `;
-        document.head.appendChild(style);
+        // دالة العرض للمساعدة
+        window.showNotification = function(message) {
+            const notification = document.getElementById('notification');
+            const text = document.getElementById('notification-text');
+            if (notification && text) {
+                text.textContent = message;
+                notification.style.display = 'flex';
+                setTimeout(() => {
+                    notification.style.display = 'none';
+                }, 3000);
+            }
+        };
     </script>
 </body>
 </html>
