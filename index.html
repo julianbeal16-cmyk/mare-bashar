@@ -48,7 +48,7 @@
             <div class="hero-section">
                 <div class="character-display">
                     <div class="character-frame">
-                        <img id="hero-image" src="player.png" alt="بطل اللعبة">
+                        <img id="hero-image" src="assets/player.png" alt="بطل اللعبة" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"100\" height=\"100\"><rect width=\"100\" height=\"100\" fill=\"%23E74C3C\"/><text x=\"50\" y=\"55\" font-family=\"Arial\" font-size=\"14\" fill=\"white\" text-anchor=\"middle\">🎮</text></svg>';">
                         <div class="character-overlay">
                             <div class="character-name">🔰 البطل</div>
                             <div class="character-level">المستوى 1</div>
@@ -246,7 +246,7 @@
                 <button id="game-menu" class="header-btn" title="القائمة">
                     <i class="fas fa-bars"></i>
                 </button>
-                <button id="sound-toggle" class="header-btn" titleالصوت">
+                <button id="sound-toggle" class="header-btn" title="الصوت">
                     <i class="fas fa-volume-up"></i>
                 </button>
             </div>
@@ -565,170 +565,6 @@
     </div>
 
     <script src="game.js"></script>
-    <script>
-        // ============================================
-        // 🎮 نظام التحميل المتقدم
-        // ============================================
-        
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('🚀 بدء تحميل اللعبة الخارقة...');
-            
-            let progress = 0;
-            const progressBar = document.querySelector('.progress-bar');
-            const progressText = document.getElementById('progress-text');
-            const loadingTips = [
-                'جاري تحميل عالم المغامرة...',
-                'تهيئة شخصية البطل...',
-                'إعداد نظام النقاط...',
-                'تحميل الأعداء والمخاطر...',
-                'تهيئة القصر الملكي...',
-                'جاري إعداد المؤثرات البصرية...',
-                'تهيئة نظام الصوت والموسيقى...',
-                'إعداد مركز التحكم...',
-                'جاري تحميل آخر التحديثات...',
-                'كل شيء جاهز! المغامرة تبدأ الآن...'
-            ];
-            
-            const loadingInterval = setInterval(() => {
-                progress += 10;
-                const tipIndex = Math.floor(progress / 10) - 1;
-                
-                if (tipIndex >= 0 && tipIndex < loadingTips.length) {
-                    document.getElementById('loading-tip').textContent = loadingTips[tipIndex];
-                }
-                
-                progressBar.style.width = progress + '%';
-                progressText.textContent = progress + '%';
-                
-                if (progress >= 100) {
-                    clearInterval(loadingInterval);
-                    setTimeout(() => {
-                        document.getElementById('loading-screen').style.opacity = '0';
-                        setTimeout(() => {
-                            document.getElementById('loading-screen').style.display = 'none';
-                            initializeGame();
-                        }, 500);
-                    }, 500);
-                }
-            }, 200);
-        });
-        
-        function initializeGame() {
-            console.log('🎮 تهيئة اللعبة...');
-            
-            // معالجة صورة اللاعب
-            const heroImage = document.getElementById('hero-image');
-            heroImage.onerror = function() {
-                console.log('⚠️ صورة اللاعب غير موجودة، سيتم استخدام بديل');
-                this.style.display = 'none';
-                document.querySelector('.character-frame').innerHTML = `
-                    <div class="character-placeholder">
-                        <i class="fas fa-user-ninja"></i>
-                        <div class="placeholder-text">البطل</div>
-                    </div>
-                `;
-            };
-            
-            // إدارة النوافذ
-            document.getElementById('how-to-play').addEventListener('click', () => {
-                document.getElementById('help-modal').style.display = 'flex';
-            });
-            
-            document.getElementById('settings-btn').addEventListener('click', () => {
-                document.getElementById('settings-modal').style.display = 'flex';
-            });
-            
-            // إغلاق النوافذ
-            document.querySelectorAll('.close-modal').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    this.closest('.modal').style.display = 'none';
-                });
-            });
-            
-            // ملء الشاشة
-            document.getElementById('fullscreen-btn').addEventListener('click', toggleFullscreen);
-            
-            // الموسيقى
-            document.getElementById('music-btn').addEventListener('click', toggleMusic);
-            
-            // حفظ الإعدادات
-            document.querySelector('.save-settings').addEventListener('click', saveSettings);
-            
-            console.log('✅ اللعبة جاهزة للانطلاق!');
-        }
-        
-        function toggleFullscreen() {
-            const btn = document.getElementById('fullscreen-btn');
-            if (!document.fullscreenElement) {
-                document.documentElement.requestFullscreen();
-                btn.innerHTML = '<i class="fas fa-compress"></i>';
-                showNotification('تم تفعيل وضع ملء الشاشة!');
-            } else {
-                document.exitFullscreen();
-                btn.innerHTML = '<i class="fas fa-expand"></i>';
-                showNotification('تم الخروج من وضع ملء الشاشة');
-            }
-        }
-        
-        function toggleMusic() {
-            const btn = document.getElementById('music-btn');
-            if (btn.innerHTML.includes('volume-up')) {
-                btn.innerHTML = '<i class="fas fa-volume-mute"></i>';
-                showNotification('تم إيقاف الموسيقى');
-            } else {
-                btn.innerHTML = '<i class="fas fa-volume-up"></i>';
-                showNotification('تم تشغيل الموسيقى');
-            }
-        }
-        
-        function saveSettings() {
-            showNotification('تم حفظ الإعدادات بنجاح!');
-            document.getElementById('settings-modal').style.display = 'none';
-        }
-        
-        function showNotification(text) {
-            const notification = document.querySelector('.notification');
-            const notificationText = document.querySelector('.notification-text');
-            
-            notificationText.textContent = text;
-            notification.style.display = 'flex';
-            
-            setTimeout(() => {
-                notification.style.display = 'none';
-            }, 3000);
-        }
-        
-        // دالات الطوارئ
-        window.forceStartGame = function() {
-            if (window.gameEngine) {
-                window.gameEngine.startGame();
-                showNotification('بدأت اللعبة في وضع الطوارئ!');
-            }
-        };
-        
-        window.resetGame = function() {
-            if (window.gameEngine) {
-                window.gameEngine.reset();
-                showNotification('تم إعادة تعيين اللعبة');
-            }
-        };
-        
-        window.showDebugInfo = function() {
-            if (window.gameEngine) {
-                console.log('🔍 معلومات التصحيح:', window.gameEngine);
-                showNotification('تم عرض معلومات التصحيح في الكونسول');
-            }
-        };
-        
-        // حدث ملء الشاشة
-        document.addEventListener('fullscreenchange', () => {
-            const btn = document.getElementById('fullscreen-btn');
-            if (document.fullscreenElement) {
-                btn.innerHTML = '<i class="fas fa-compress"></i>';
-            } else {
-                btn.innerHTML = '<i class="fas fa-expand"></i>';
-            }
-        });
-    </script>
+    <script src="ui-manager.js"></script>
 </body>
 </html>
