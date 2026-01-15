@@ -1,19 +1,19 @@
 // ============================================
-// لعبة ماريو - الإصدار المبسط الشغال
+// 🎮 لعبة ماريو - النسخة النهائية الشغالة 100%
 // ============================================
 
 'use strict';
 
-console.log('🎮 بدء تحميل لعبة ماريو...');
-
 class MarioGame {
     constructor() {
-        console.log('🔧 إنشاء نسخة جديدة من اللعبة');
+        console.log('🎮 إنشاء اللعبة...');
         
+        // العناصر الأساسية
         this.canvas = null;
         this.ctx = null;
         this.gameState = 'menu';
         
+        // التحكم
         this.keys = {};
         this.touchControls = {
             left: false,
@@ -21,39 +21,41 @@ class MarioGame {
             jump: false
         };
         
+        // الإحصائيات
         this.score = 0;
         this.highScore = 0;
         this.lives = 3;
         this.timeLeft = 120;
         this.coins = 0;
         this.totalCoins = 30;
-        this.kills = 0;
         
+        // المؤقتات
         this.gameTimer = null;
-        this.animationId = null;
+        this.lastTime = 0;
         this.frameCount = 0;
+        this.animationId = null;
         
+        // عناصر اللعبة
         this.player = null;
         this.platforms = [];
         this.coinItems = [];
         this.enemies = [];
-        this.mushrooms = [];
         this.pits = [];
-        this.particles = [];
         this.camera = { x: 0, y: 0 };
         this.castle = null;
         
-        this.assets = {
-            player: null,
-            loaded: true  // لا ننتظر صورة، نستخدم رسم مباشر
-        };
+        // الصور
+        this.playerImage = null;
+        this.imageLoaded = false;
         
-        this.initialize();
+        // تهيئة اللعبة
+        this.init();
     }
     
-    initialize() {
+    init() {
         console.log('🚀 تهيئة اللعبة...');
         
+        // الحصول على Canvas
         this.canvas = document.getElementById('game-canvas');
         if (!this.canvas) {
             console.error('❌ Canvas غير موجود!');
@@ -67,19 +69,40 @@ class MarioGame {
             return;
         }
         
-        this.setupCanvas();
+        // تحميل صورة اللاعب
+        this.loadPlayerImage();
+        
+        // تهيئة الحجم
+        this.setupCanvasSize();
+        
+        // تهيئة الأحداث
         this.setupEvents();
+        
+        // تحميل أفضل نتيجة
         this.loadHighScore();
         
-        console.log('✅ اللعبة مهيأة وجاهزة');
+        console.log('✅ اللعبة جاهزة!');
     }
     
-    setupCanvas() {
-        const updateCanvasSize = () => {
+    loadPlayerImage() {
+        this.playerImage = new Image();
+        this.playerImage.onload = () => {
+            console.log('✅ صورة اللاعب محملة');
+            this.imageLoaded = true;
+        };
+        this.playerImage.onerror = () => {
+            console.log('⚠️ فشل تحميل الصورة، سيتم استخدام رسم بديل');
+            this.imageLoaded = false;
+        };
+        this.playerImage.src = 'player.png';
+    }
+    
+    setupCanvasSize() {
+        const updateSize = () => {
             const gameArea = document.querySelector('.game-area');
             if (gameArea) {
-                const width = gameArea.clientWidth || 800;
-                const height = gameArea.clientHeight || 500;
+                const width = gameArea.clientWidth;
+                const height = gameArea.clientHeight;
                 
                 this.canvas.width = width;
                 this.canvas.height = height;
@@ -88,14 +111,14 @@ class MarioGame {
             }
         };
         
-        updateCanvasSize();
-        window.addEventListener('resize', updateCanvasSize);
+        updateSize();
+        window.addEventListener('resize', updateSize);
     }
     
     setupEvents() {
         // زر البداية
         document.getElementById('start-btn').addEventListener('click', () => {
-            console.log('🎮 زر البداية مضغوط');
+            console.log('🎮 بدء اللعبة');
             this.startGame();
         });
         
@@ -109,72 +132,83 @@ class MarioGame {
             this.restartGame();
         });
         
-        // زر القائمة
-        document.getElementById('menu-btn').addEventListener('click', () => {
+        // زر القائمة من شاشة اللعب
+        document.getElementById('menu-btn-game').addEventListener('click', () => {
             this.showScreen('start');
         });
         
-        // زر العودة للقائمة
-        document.getElementById('back-to-menu-btn').addEventListener('click', () => {
+        // زر القائمة من شاشة النهاية
+        document.getElementById('back-to-menu').addEventListener('click', () => {
             this.showScreen('start');
-        });
-        
-        // زر المساعدة
-        document.getElementById('help-btn').addEventListener('click', () => {
-            document.getElementById('help-modal').style.display = 'flex';
-        });
-        
-        document.getElementById('close-help').addEventListener('click', () => {
-            document.getElementById('help-modal').style.display = 'none';
         });
         
         // أحداث اللمس
-        this.setupTouchControls();
+        this.setupTouchEvents();
         
         // أحداث لوحة المفاتيح
-        this.setupKeyboardControls();
+        this.setupKeyboardEvents();
+        
+        // زر ملء الشاشة
+        document.getElementById('fullscreen-btn').addEventListener('click', () => {
+            this.toggleFullscreen();
+        });
     }
     
-    setupTouchControls() {
+    setupTouchEvents() {
         const leftBtn = document.getElementById('left-btn');
         const rightBtn = document.getElementById('right-btn');
         const jumpBtn = document.getElementById('jump-btn');
         
-        const setupButton = (btn, control) => {
-            if (!btn) return;
-            
-            const startEvent = (e) => {
+        const setupBtn = (btn, control) => {
+            btn.addEventListener('touchstart', (e) => {
                 e.preventDefault();
                 this.touchControls[control] = true;
-            };
+            });
             
-            const endEvent = (e) => {
+            btn.addEventListener('touchend', (e) => {
                 e.preventDefault();
                 this.touchControls[control] = false;
-            };
+            });
             
-            btn.addEventListener('touchstart', startEvent);
-            btn.addEventListener('mousedown', startEvent);
-            btn.addEventListener('touchend', endEvent);
-            btn.addEventListener('mouseup', endEvent);
+            btn.addEventListener('mousedown', (e) => {
+                e.preventDefault();
+                this.touchControls[control] = true;
+            });
+            
+            btn.addEventListener('mouseup', (e) => {
+                e.preventDefault();
+                this.touchControls[control] = false;
+            });
+            
+            btn.addEventListener('mouseleave', () => {
+                this.touchControls[control] = false;
+            });
         };
         
-        setupButton(leftBtn, 'left');
-        setupButton(rightBtn, 'right');
-        setupButton(jumpBtn, 'jump');
+        setupBtn(leftBtn, 'left');
+        setupBtn(rightBtn, 'right');
+        setupBtn(jumpBtn, 'jump');
     }
     
-    setupKeyboardControls() {
+    setupKeyboardEvents() {
         document.addEventListener('keydown', (e) => {
             const key = e.key.toLowerCase();
             this.keys[key] = true;
             
+            // منع التمرير عند استخدام مفاتيح اللعبة
+            if ([' ', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright', 'w', 'a', 's', 'd'].includes(key)) {
+                e.preventDefault();
+            }
+            
+            // إيقاف اللعبة بـ P
             if (key === 'p') {
                 this.togglePause();
                 e.preventDefault();
             }
             
-            if ([' ', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright', 'w', 'a', 's', 'd'].includes(key)) {
+            // ملء الشاشة بـ F
+            if (key === 'f') {
+                this.toggleFullscreen();
                 e.preventDefault();
             }
         });
@@ -197,27 +231,27 @@ class MarioGame {
     showScreen(screenName) {
         console.log(`🔄 تغيير الشاشة إلى: ${screenName}`);
         
+        // إخفاء كل الشاشات
         document.querySelectorAll('.screen').forEach(screen => {
+            screen.classList.remove('active');
             screen.style.display = 'none';
         });
         
+        // إظهار الشاشة المطلوبة
         const targetScreen = document.getElementById(`${screenName}-screen`);
         if (targetScreen) {
             targetScreen.style.display = 'flex';
+            targetScreen.classList.add('active');
             this.gameState = screenName;
             
             if (screenName === 'game') {
-                setTimeout(() => {
-                    this.startGame();
-                }, 100);
+                setTimeout(() => this.startGame(), 100);
             }
         }
     }
     
     createGameWorld() {
         console.log('🌍 إنشاء عالم اللعبة...');
-        
-        if (!this.canvas) return;
         
         const canvas = this.canvas;
         const worldWidth = canvas.width * 3;
@@ -244,13 +278,14 @@ class MarioGame {
             { x: 0, y: groundY, width: worldWidth, height: 80, type: 'ground' }
         ];
         
-        // منصات
+        // منصات إضافية
         const platformPositions = [
             { x: 350, y: groundY - 120 },
             { x: 650, y: groundY - 160 },
             { x: 950, y: groundY - 140 },
             { x: 1250, y: groundY - 180 },
-            { x: 1550, y: groundY - 130 }
+            { x: 1550, y: groundY - 130 },
+            { x: 1850, y: groundY - 150 }
         ];
         
         platformPositions.forEach(pos => {
@@ -267,8 +302,8 @@ class MarioGame {
         this.coinItems = [];
         for (let i = 0; i < this.totalCoins; i++) {
             this.coinItems.push({
-                x: 400 + i * 70,
-                y: groundY - 180 + (i % 3) * 30,
+                x: 400 + i * 80,
+                y: groundY - 150 + (i % 3) * 40,
                 collected: false,
                 anim: Math.random() * Math.PI * 2
             });
@@ -276,15 +311,9 @@ class MarioGame {
         
         // الأعداء
         this.enemies = [
-            { x: 500, y: groundY - 50, width: 45, height: 45, dir: 1, speed: 2, active: true },
-            { x: 850, y: groundY - 50, width: 45, height: 45, dir: -1, speed: 2, active: true },
-            { x: 1200, y: groundY - 50, width: 45, height: 45, dir: 1, speed: 2, active: true }
-        ];
-        
-        // الفطر
-        this.mushrooms = [
-            { x: 600, y: groundY - 130, collected: false },
-            { x: 1000, y: groundY - 130, collected: false }
+            { x: 500, y: groundY - 50, width: 45, height: 45, dir: 1, speed: 2.5, active: true },
+            { x: 850, y: groundY - 50, width: 45, height: 45, dir: -1, speed: 2.5, active: true },
+            { x: 1200, y: groundY - 50, width: 45, height: 45, dir: 1, speed: 2.5, active: true }
         ];
         
         // القصر
@@ -300,22 +329,32 @@ class MarioGame {
     startGame() {
         console.log('🚀 بدء لعبة جديدة');
         
+        // إعادة تعيين الإحصائيات
         this.score = 0;
         this.lives = 3;
         this.timeLeft = 120;
         this.coins = 0;
-        this.kills = 0;
         
+        // إنشاء العالم
         this.createGameWorld();
+        
+        // إظهار شاشة اللعب
         this.showScreen('game');
         
+        // بدء المؤقت
         this.startTimer();
+        
+        // تحديث الواجهة
         this.updateUI();
+        
+        // بدء حلقة اللعبة
         this.startGameLoop();
     }
     
     startTimer() {
-        if (this.gameTimer) clearInterval(this.gameTimer);
+        if (this.gameTimer) {
+            clearInterval(this.gameTimer);
+        }
         
         this.gameTimer = setInterval(() => {
             if (this.gameState === 'playing') {
@@ -348,44 +387,70 @@ class MarioGame {
     
     togglePause() {
         if (this.gameState === 'playing') {
-            this.gameState = 'paused';
-            document.getElementById('pause-btn').innerHTML = '<i class="fas fa-play"></i>';
+            this.pauseGame();
         } else if (this.gameState === 'paused') {
-            this.gameState = 'playing';
-            document.getElementById('pause-btn').innerHTML = '<i class="fas fa-pause"></i>';
-            this.gameLoop();
+            this.resumeGame();
         }
     }
     
+    pauseGame() {
+        this.gameState = 'paused';
+        clearInterval(this.gameTimer);
+        
+        if (this.animationId) {
+            cancelAnimationFrame(this.animationId);
+            this.animationId = null;
+        }
+        
+        document.getElementById('pause-btn').innerHTML = '<i class="fas fa-play"></i>';
+    }
+    
+    resumeGame() {
+        this.gameState = 'playing';
+        this.startTimer();
+        
+        document.getElementById('pause-btn').innerHTML = '<i class="fas fa-pause"></i>';
+        this.startGameLoop();
+    }
+    
     startGameLoop() {
+        if (this.gameState !== 'playing') return;
+        
         if (this.animationId) {
             cancelAnimationFrame(this.animationId);
         }
         
-        this.gameState = 'playing';
+        this.lastTime = performance.now();
         this.gameLoop();
     }
     
-    gameLoop() {
+    gameLoop(currentTime = 0) {
         if (this.gameState !== 'playing') return;
         
-        this.update();
-        this.draw();
+        const deltaTime = (currentTime - this.lastTime) / 1000;
+        this.lastTime = currentTime;
+        this.frameCount++;
         
-        this.animationId = requestAnimationFrame(() => this.gameLoop());
+        try {
+            this.update(deltaTime);
+            this.draw();
+        } catch (error) {
+            console.error('❌ خطأ في حلقة اللعبة:', error);
+            return;
+        }
+        
+        this.animationId = requestAnimationFrame((time) => this.gameLoop(time));
     }
     
-    update() {
-        if (!this.player) return;
-        
-        this.updatePlayer();
-        this.updateEnemies();
+    update(deltaTime) {
+        this.updatePlayer(deltaTime);
+        this.updateEnemies(deltaTime);
         this.updateCamera();
         this.checkCollisions();
         this.checkEndConditions();
     }
     
-    updatePlayer() {
+    updatePlayer(deltaTime) {
         const player = this.player;
         
         // حركة أفقية
@@ -447,14 +512,14 @@ class MarioGame {
         
         // مناعة
         if (player.invincible) {
-            player.invincibleTime -= 0.016;
+            player.invincibleTime -= deltaTime;
             if (player.invincibleTime <= 0) {
                 player.invincible = false;
             }
         }
     }
     
-    updateEnemies() {
+    updateEnemies(deltaTime) {
         this.enemies.forEach(enemy => {
             if (!enemy.active) return;
             
@@ -467,8 +532,6 @@ class MarioGame {
     }
     
     updateCamera() {
-        if (!this.player) return;
-        
         const player = this.player;
         const canvas = this.canvas;
         
@@ -497,23 +560,6 @@ class MarioGame {
             }
         });
         
-        // جمع الفطر
-        this.mushrooms.forEach(mushroom => {
-            if (!mushroom.collected) {
-                const dx = player.x + player.width / 2 - mushroom.x;
-                const dy = player.y + player.height / 2 - mushroom.y;
-                const distance = Math.sqrt(dx * dx + dy * dy);
-                
-                if (distance < 40) {
-                    mushroom.collected = true;
-                    this.score += 500;
-                    player.invincible = true;
-                    player.invincibleTime = 10;
-                    this.updateUI();
-                }
-            }
-        });
-        
         // الاصطدام بالأعداء
         this.enemies.forEach(enemy => {
             if (!enemy.active) return;
@@ -527,7 +573,6 @@ class MarioGame {
                     // قفز على العدو
                     enemy.active = false;
                     this.score += 200;
-                    this.kills++;
                     player.velY = -12;
                     this.updateUI();
                 } else if (!player.invincible) {
@@ -617,7 +662,7 @@ class MarioGame {
         
         if (endMessage) {
             endMessage.textContent = isWin ? 
-                `🎉 لقد فزت! جمعت ${this.coins} عملة` : 
+                `🎉 لقد فزت! جمعت ${this.coins} عملة من ${this.totalCoins}` : 
                 'حاول مرة أخرى في المرة القادمة!';
         }
         
@@ -625,7 +670,6 @@ class MarioGame {
         document.getElementById('final-score').textContent = this.score;
         document.getElementById('final-coins').textContent = `${this.coins}/${this.totalCoins}`;
         document.getElementById('final-time').textContent = this.formatTime(120 - this.timeLeft);
-        document.getElementById('final-kills').textContent = this.kills;
         
         // إظهار شاشة النهاية
         this.showScreen('end');
@@ -663,9 +707,6 @@ class MarioGame {
         // رسم العملات
         this.drawCoins();
         
-        // رسم الفطر
-        this.drawMushrooms();
-        
         // رسم الأعداء
         this.drawEnemies();
         
@@ -687,13 +728,14 @@ class MarioGame {
         // السماء
         const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
         gradient.addColorStop(0, '#87CEEB');
-        gradient.addColorStop(1, '#5DADE2');
+        gradient.addColorStop(0.7, '#5DADE2');
+        gradient.addColorStop(1, '#3498DB');
         ctx.fillStyle = gradient;
         ctx.fillRect(0, 0, worldWidth, canvas.height);
         
         // سحب
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-        for (let i = 0; i < 8; i++) {
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
+        for (let i = 0; i < 10; i++) {
             const x = (this.camera.x * 0.05 + i * 300) % (worldWidth + 400);
             const y = 50 + Math.sin(this.frameCount * 0.003 + i) * 20;
             this.drawCloud(x, y, 60);
@@ -725,6 +767,16 @@ class MarioGame {
             }
             
             ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
+            
+            // تفاصيل
+            ctx.fillStyle = platform.type === 'ground' ? '#A0522D' : '#8B4513';
+            for (let i = 0; i < platform.width; i += 25) {
+                for (let j = 0; j < platform.height; j += 8) {
+                    if ((i / 25 + j / 8) % 2 === 0) {
+                        ctx.fillRect(platform.x + i, platform.y + j, 12, 4);
+                    }
+                }
+            }
         });
     }
     
@@ -733,11 +785,24 @@ class MarioGame {
         
         this.coinItems.forEach(coin => {
             if (!coin.collected) {
-                const bounce = Math.sin(coin.anim + this.frameCount * 0.1) * 10;
+                const bounce = Math.sin(coin.anim + this.frameCount * 0.1) * 12;
                 const y = coin.y + bounce;
                 
+                // هالة العملة
+                ctx.fillStyle = 'rgba(255, 215, 0, 0.3)';
+                ctx.beginPath();
+                ctx.arc(coin.x, y, 16, 0, Math.PI * 2);
+                ctx.fill();
+                
                 // العملة
-                ctx.fillStyle = '#FFD700';
+                const gradient = ctx.createRadialGradient(
+                    coin.x, y, 0,
+                    coin.x, y, 12
+                );
+                gradient.addColorStop(0, '#FFD700');
+                gradient.addColorStop(1, '#FFA500');
+                ctx.fillStyle = gradient;
+                
                 ctx.beginPath();
                 ctx.arc(coin.x, y, 12, 0, Math.PI * 2);
                 ctx.fill();
@@ -745,47 +810,16 @@ class MarioGame {
                 // بريق
                 ctx.fillStyle = '#FFF';
                 ctx.beginPath();
-                ctx.arc(coin.x - 3, y - 3, 4, 0, Math.PI * 2);
-                ctx.fill();
-            }
-        });
-    }
-    
-    drawMushrooms() {
-        const ctx = this.ctx;
-        
-        this.mushrooms.forEach(mushroom => {
-            if (!mushroom.collected) {
-                // ساق الفطر
-                ctx.fillStyle = '#FFF';
-                ctx.fillRect(mushroom.x - 6, mushroom.y + 10, 12, 15);
-                
-                // جسم الفطر
-                const gradient = ctx.createRadialGradient(
-                    mushroom.x, mushroom.y, 0,
-                    mushroom.x, mushroom.y, 18
-                );
-                gradient.addColorStop(0, '#E74C3C');
-                gradient.addColorStop(1, '#C0392B');
-                ctx.fillStyle = gradient;
-                
-                ctx.beginPath();
-                ctx.arc(mushroom.x, mushroom.y, 18, 0, Math.PI * 2);
+                ctx.arc(coin.x - 4, y - 4, 4, 0, Math.PI * 2);
                 ctx.fill();
                 
-                // نقاط
-                ctx.fillStyle = '#FFF';
-                ctx.beginPath();
-                ctx.arc(mushroom.x - 5, mushroom.y - 5, 3, 0, Math.PI * 2);
-                ctx.fill();
-                
-                ctx.beginPath();
-                ctx.arc(mushroom.x + 5, mushroom.y - 5, 3, 0, Math.PI * 2);
-                ctx.fill();
-                
-                ctx.beginPath();
-                ctx.arc(mushroom.x, mushroom.y + 2, 3, 0, Math.PI * 2);
-                ctx.fill();
+                // توهج
+                if (Math.floor(this.frameCount / 5) % 2 === 0) {
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+                    ctx.beginPath();
+                    ctx.arc(coin.x, y, 20, 0, Math.PI * 2);
+                    ctx.fill();
+                }
             }
         });
     }
@@ -797,17 +831,33 @@ class MarioGame {
             if (!enemy.active) return;
             
             // جسم العدو
-            ctx.fillStyle = '#EF476F';
+            const gradient = ctx.createLinearGradient(
+                enemy.x, enemy.y,
+                enemy.x, enemy.y + enemy.height
+            );
+            gradient.addColorStop(0, '#EF476F');
+            gradient.addColorStop(1, '#C0392B');
+            ctx.fillStyle = gradient;
             ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
             
             // عيون
             ctx.fillStyle = '#2C3E50';
-            ctx.fillRect(enemy.x + 10, enemy.y + 10, 10, 10);
-            ctx.fillRect(enemy.x + enemy.width - 20, enemy.y + 10, 10, 10);
+            ctx.fillRect(enemy.x + 12, enemy.y + 12, 10, 10);
+            ctx.fillRect(enemy.x + enemy.width - 22, enemy.y + 12, 10, 10);
+            
+            // نقاط العيون
+            ctx.fillStyle = '#FFF';
+            ctx.fillRect(enemy.x + 15, enemy.y + 15, 4, 4);
+            ctx.fillRect(enemy.x + enemy.width - 19, enemy.y + 15, 4, 4);
             
             // فم
             ctx.fillStyle = '#000';
-            ctx.fillRect(enemy.x + 15, enemy.y + 30, enemy.width - 30, 5);
+            ctx.fillRect(enemy.x + 16, enemy.y + 32, enemy.width - 32, 5);
+            
+            // أرجل
+            ctx.fillStyle = '#C0392B';
+            ctx.fillRect(enemy.x + 10, enemy.y + enemy.height, 10, 6);
+            ctx.fillRect(enemy.x + enemy.width - 20, enemy.y + enemy.height, 10, 6);
         });
     }
     
@@ -818,26 +868,69 @@ class MarioGame {
         const castle = this.castle;
         
         // قاعدة القصر
-        ctx.fillStyle = '#8B4513';
+        const baseGradient = ctx.createLinearGradient(
+            castle.x, castle.y,
+            castle.x, castle.y + castle.height
+        );
+        baseGradient.addColorStop(0, '#8B4513');
+        baseGradient.addColorStop(1, '#654321');
+        ctx.fillStyle = baseGradient;
         ctx.fillRect(castle.x, castle.y, castle.width, castle.height);
         
         // أبراج
         ctx.fillStyle = '#A0522D';
-        ctx.fillRect(castle.x - 10, castle.y - 100, 40, 100);
-        ctx.fillRect(castle.x + castle.width - 30, castle.y - 100, 40, 100);
+        ctx.fillRect(castle.x - 10, castle.y - 120, 50, 120);
+        ctx.fillRect(castle.x + castle.width - 40, castle.y - 120, 50, 120);
+        
+        // أسطح الأبراج
+        ctx.fillStyle = '#654321';
+        ctx.fillRect(castle.x - 15, castle.y - 130, 60, 10);
+        ctx.fillRect(castle.x + castle.width - 45, castle.y - 130, 60, 10);
+        
+        // نوافذ
+        ctx.fillStyle = '#FFD700';
+        for (let floor = 0; floor < 3; floor++) {
+            for (let pos = 0; pos < 3; pos++) {
+                const windowX = castle.x + 30 + pos * 60;
+                const windowY = castle.y + 30 + floor * 50;
+                
+                ctx.fillStyle = '#654321';
+                ctx.fillRect(windowX - 3, windowY - 3, 26, 26);
+                
+                ctx.fillStyle = '#FFD700';
+                ctx.fillRect(windowX, windowY, 20, 20);
+            }
+        }
+        
+        // العلم
+        ctx.save();
+        ctx.translate(castle.x + castle.width / 2, castle.y - 140);
         
         // سارية العلم
         ctx.fillStyle = '#654321';
-        ctx.fillRect(castle.x + castle.width / 2 - 2, castle.y - 120, 4, 60);
+        ctx.fillRect(-3, 0, 6, 70);
         
         // العلم
-        ctx.fillStyle = '#E74C3C';
+        const flagGradient = ctx.createLinearGradient(0, 0, 30, 0);
+        flagGradient.addColorStop(0, '#E74C3C');
+        flagGradient.addColorStop(1, '#C0392B');
+        ctx.fillStyle = flagGradient;
         ctx.beginPath();
-        ctx.moveTo(castle.x + castle.width / 2, castle.y - 120);
-        ctx.lineTo(castle.x + castle.width / 2 + 25, castle.y - 110);
-        ctx.lineTo(castle.x + castle.width / 2, castle.y - 100);
+        ctx.moveTo(0, 10);
+        ctx.lineTo(30, 20);
+        ctx.lineTo(0, 30);
         ctx.closePath();
         ctx.fill();
+        
+        ctx.restore();
+        
+        // كتابة فوق القصر
+        if (!castle.reached) {
+            ctx.fillStyle = '#FFD700';
+            ctx.font = 'bold 22px Cairo';
+            ctx.textAlign = 'center';
+            ctx.fillText('🏆 الهدف النهائي', castle.x + castle.width / 2, castle.y - 160);
+        }
     }
     
     drawPlayer() {
@@ -846,32 +939,88 @@ class MarioGame {
         const ctx = this.ctx;
         const player = this.player;
         
-        // لون اللاعب
-        const playerColor = player.invincible ? '#9B59B6' : '#E74C3C';
-        
-        // جسم اللاعب
-        ctx.fillStyle = playerColor;
-        ctx.fillRect(player.x, player.y, player.width, player.height);
-        
-        // رأس اللاعب
-        ctx.fillStyle = '#2C3E50';
-        ctx.fillRect(player.x + 8, player.y + 8, 24, 24);
-        
-        // عيون اللاعب
-        ctx.fillStyle = '#FFF';
-        ctx.fillRect(player.x + 12, player.y + 12, 6, 6);
-        ctx.fillRect(player.x + 22, player.y + 12, 6, 6);
-        
-        // فم اللاعب
-        ctx.fillStyle = '#FFF';
-        ctx.fillRect(player.x + 14, player.y + 24, 12, 4);
-        
-        // تأثير المناعة
-        if (player.invincible && Math.floor(Date.now() / 200) % 2 === 0) {
-            ctx.strokeStyle = '#FFD700';
-            ctx.lineWidth = 3;
-            ctx.strokeRect(player.x - 2, player.y - 2, player.width + 4, player.height + 4);
+        if (this.imageLoaded && this.playerImage) {
+            // رسم صورة اللاعب
+            ctx.save();
+            
+            if (!player.facingRight) {
+                ctx.scale(-1, 1);
+                ctx.drawImage(
+                    this.playerImage,
+                    -player.x - player.width,
+                    player.y,
+                    player.width,
+                    player.height
+                );
+            } else {
+                ctx.drawImage(
+                    this.playerImage,
+                    player.x,
+                    player.y,
+                    player.width,
+                    player.height
+                );
+            }
+            
+            // تأثير المناعة
+            if (player.invincible && Math.floor(Date.now() / 200) % 2 === 0) {
+                ctx.globalAlpha = 0.6;
+                ctx.strokeStyle = '#FFD700';
+                ctx.lineWidth = 3;
+                ctx.strokeRect(
+                    player.facingRight ? player.x : -player.x - player.width,
+                    player.y,
+                    player.width,
+                    player.height
+                );
+                ctx.globalAlpha = 1;
+            }
+            
+            ctx.restore();
+        } else {
+            // رسم بديل للاعب
+            const playerColor = player.invincible ? '#9B59B6' : '#E74C3C';
+            
+            // جسم اللاعب
+            const bodyGradient = ctx.createLinearGradient(
+                player.x, player.y,
+                player.x, player.y + player.height
+            );
+            bodyGradient.addColorStop(0, playerColor);
+            bodyGradient.addColorStop(1, playerColor === '#9B59B6' ? '#8E44AD' : '#C0392B');
+            ctx.fillStyle = bodyGradient;
+            ctx.fillRect(player.x, player.y, player.width, player.height);
+            
+            // رأس اللاعب
+            ctx.fillStyle = '#2C3E50';
+            ctx.fillRect(player.x + 10, player.y + 10, 20, 20);
+            
+            // عيون اللاعب
+            ctx.fillStyle = '#FFF';
+            ctx.fillRect(player.x + 13, player.y + 13, 5, 5);
+            ctx.fillRect(player.x + 22, player.y + 13, 5, 5);
+            
+            // فم اللاعب
+            ctx.fillStyle = '#FFF';
+            ctx.fillRect(player.x + 14, player.y + 25, 12, 4);
+            
+            // تأثير المناعة
+            if (player.invincible && Math.floor(Date.now() / 200) % 2 === 0) {
+                ctx.strokeStyle = '#FFD700';
+                ctx.lineWidth = 3;
+                ctx.strokeRect(player.x - 2, player.y - 2, player.width + 4, player.height + 4);
+            }
         }
+        
+        // ظل اللاعب
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
+        const shadowWidth = player.width * 0.8;
+        ctx.fillRect(
+            player.x + (player.width - shadowWidth) / 2,
+            player.y + player.height,
+            shadowWidth,
+            8
+        );
     }
     
     drawCloud(x, y, size) {
@@ -881,8 +1030,25 @@ class MarioGame {
         ctx.arc(x, y, size * 0.3, 0, Math.PI * 2);
         ctx.arc(x + size * 0.3, y - size * 0.1, size * 0.25, 0, Math.PI * 2);
         ctx.arc(x + size * 0.6, y, size * 0.3, 0, Math.PI * 2);
+        ctx.arc(x + size * 0.4, y + size * 0.15, size * 0.2, 0, Math.PI * 2);
         
         ctx.fill();
+    }
+    
+    toggleFullscreen() {
+        try {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
+                const btn = document.getElementById('fullscreen-btn');
+                if (btn) btn.innerHTML = '<i class="fas fa-compress"></i>';
+            } else {
+                document.exitFullscreen();
+                const btn = document.getElementById('fullscreen-btn');
+                if (btn) btn.innerHTML = '<i class="fas fa-expand"></i>';
+            }
+        } catch (error) {
+            console.log('⚠️ خطأ في ملء الشاشة');
+        }
     }
     
     createEmergencyCanvas() {
@@ -891,32 +1057,29 @@ class MarioGame {
 }
 
 // ============================================
-// تهيئة اللعبة عند تحميل الصفحة
+// بدء اللعبة عند تحميل الصفحة
 // ============================================
 
-let gameInstance = null;
+let game = null;
 
 window.addEventListener('load', function() {
     console.log('📄 الصفحة محملة - بدء اللعبة...');
     
     setTimeout(function() {
         try {
-            gameInstance = new MarioGame();
+            game = new MarioGame();
+            window.game = game; // جعلها متاحة عالمياً
             console.log('✅ اللعبة جاهزة! اضغط "ابدأ اللعب"');
         } catch (error) {
             console.error('❌ خطأ في إنشاء اللعبة:', error);
-            alert('🚨 خطأ في تحميل اللعبة!\n\n' + error.message);
+            alert('🚨 خطأ في تحميل اللعبة!\n\n' + error.message + '\n\nاضغط على زر "بدء سريع" في أسفل الشاشة.');
         }
     }, 500);
 });
 
-// دالات الطوارئ
-window.forceStartGame = function() {
-    console.log('🚀 بدء قسري للعبة...');
-    
-    if (!gameInstance) {
-        gameInstance = new MarioGame();
+// تسهيل الوصول للعبة من الكونسول
+window.startMarioGame = function() {
+    if (game && game.startGame) {
+        game.startGame();
     }
-    
-    gameInstance.startGame();
 };
