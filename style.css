@@ -45,12 +45,6 @@ html, body {
     width: 100%;
     margin: 0 auto;
     padding: 20px;
-    animation: fadeIn 0.5s ease;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
 }
 
 /* العنوان الرئيسي */
@@ -141,11 +135,6 @@ html, body {
     border: 8px solid #FFD700;
     box-shadow: 0 10px 30px rgba(231, 76, 60, 0.5);
     animation: float 3s ease-in-out infinite;
-}
-
-@keyframes float {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-20px); }
 }
 
 .hero-badge {
@@ -362,6 +351,9 @@ kbd {
     cursor: pointer;
     transition: all 0.2s ease;
     border: 4px solid;
+    background: rgba(52, 152, 219, 0.8);
+    border-color: #3498DB;
+    color: white;
 }
 
 .touch-button:active {
@@ -371,19 +363,16 @@ kbd {
 .left-btn {
     background: rgba(52, 152, 219, 0.8);
     border-color: #3498DB;
-    color: white;
 }
 
 .right-btn {
     background: rgba(52, 152, 219, 0.8);
     border-color: #3498DB;
-    color: white;
 }
 
 .jump-btn {
     background: rgba(231, 76, 60, 0.8);
     border-color: #E74C3C;
-    color: white;
 }
 
 /* أزرار الإجراءات */
@@ -605,17 +594,6 @@ kbd {
     background: #87CEEB;
 }
 
-/* تأثيرات بصرية */
-.game-effects {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-    z-index: 10;
-}
-
 /* بوصلة التوجيه */
 .compass {
     position: absolute;
@@ -650,11 +628,6 @@ kbd {
     animation: bounce 1s infinite;
 }
 
-@keyframes bounce {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-5px); }
-}
-
 .compass-info {
     color: white;
     font-size: 0.9rem;
@@ -670,6 +643,7 @@ kbd {
     display: flex;
     justify-content: center;
     z-index: 50;
+    padding: 10px;
 }
 
 .control-pad {
@@ -707,6 +681,7 @@ kbd {
     justify-content: center;
     transition: all 0.1s ease;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+    background: rgba(52, 152, 219, 0.8);
 }
 
 .control-btn:active {
@@ -819,7 +794,6 @@ kbd {
     box-shadow: 0 25px 60px rgba(255, 215, 0, 0.3);
     text-align: center;
     backdrop-filter: blur(20px);
-    animation: slideIn 0.8s ease;
 }
 
 /* شارة النصر */
@@ -946,7 +920,6 @@ kbd {
     align-items: center;
     gap: 15px;
     border: 1px solid rgba(255, 255, 255, 0.1);
-    transition: all 0.3s ease;
 }
 
 .achievement.completed {
@@ -998,14 +971,24 @@ kbd {
     min-width: 220px;
 }
 
+.end-btn.primary-btn {
+    background: linear-gradient(135deg, #FF6B6B, #E74C3C);
+    color: white;
+}
+
+.end-btn.secondary-btn {
+    background: linear-gradient(135deg, #4ECDC4, #2ECC71);
+    color: white;
+}
+
 .end-btn.share-btn {
     background: linear-gradient(135deg, #9B59B6, #8E44AD);
     color: white;
 }
 
-.end-btn.share-btn:hover {
+.end-btn:hover {
     transform: translateY(-5px);
-    box-shadow: 0 15px 30px rgba(155, 89, 182, 0.6);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
 }
 
 /* ====================== */
@@ -1013,7 +996,6 @@ kbd {
 /* ====================== */
 
 .modal-window {
-    display: none;
     position: fixed;
     top: 0;
     left: 0;
@@ -1024,7 +1006,6 @@ kbd {
     justify-content: center;
     align-items: center;
     padding: 20px;
-    animation: fadeIn 0.3s ease;
 }
 
 .modal-content {
@@ -1298,24 +1279,10 @@ kbd {
     gap: 20px;
     box-shadow: 0 15px 40px rgba(231, 76, 60, 0.5);
     border: 3px solid rgba(255, 255, 255, 0.3);
-    animation: slideDown 0.5s ease;
-    display: none;
-    max-width: 500px;
 }
 
 .notification i {
     font-size: 1.8rem;
-}
-
-@keyframes slideDown {
-    from {
-        transform: translateY(-100px);
-        opacity: 0;
-    }
-    to {
-        transform: translateY(0);
-        opacity: 1;
-    }
 }
 
 /* ====================== */
@@ -1329,29 +1296,28 @@ kbd {
     display: flex;
     flex-direction: column;
     gap: 10px;
-    z-index: 999;
+    z-index: 9999;
 }
 
 .emergency-btn {
-    width: 55px;
-    height: 55px;
+    width: 50px;
+    height: 50px;
     border-radius: 50%;
     background: rgba(231, 76, 60, 0.9);
-    border: 3px solid #E74C3C;
+    border: 2px solid #E74C3C;
     color: white;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.4rem;
+    font-size: 1.2rem;
     transition: all 0.3s ease;
-    box-shadow: 0 5px 15px rgba(231, 76, 60, 0.5);
 }
 
 .emergency-btn:hover {
-    background: #E74C3C;
     transform: scale(1.1);
-    box-shadow: 0 8px 20px rgba(231, 76, 60, 0.7);
+    background: #E74C3C;
+    box-shadow: 0 5px 15px rgba(231, 76, 60, 0.7);
 }
 
 /* ====================== */
@@ -1516,33 +1482,5 @@ kbd {
     
     .final-stat .stat-value {
         font-size: 2.2rem;
-    }
-}
-
-/* تحسينات للطباعة */
-@media print {
-    .screen {
-        display: none !important;
-    }
-    
-    #start-screen {
-        display: block !important;
-        background: white;
-        color: black;
-    }
-}
-
-/* تحسينات للأجهزة التي تدعم اللمس */
-@media (hover: none) and (pointer: coarse) {
-    .header-btn:hover,
-    .action-btn:hover,
-    .control-btn:hover,
-    .stat-box:hover,
-    .tip:hover {
-        transform: none;
-    }
-    
-    .control-btn:active {
-        transform: scale(0.85);
     }
 }
