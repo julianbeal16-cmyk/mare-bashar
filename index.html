@@ -10,7 +10,7 @@
 </head>
 <body>
     <!-- شاشة التحميل -->
-    <div id="loading-screen">
+    <div id="loading-screen" class="screen">
         <div class="loading-content">
             <div class="loading-spinner"></div>
             <h2>🎮 جاري تحميل المغامرة...</h2>
@@ -48,7 +48,7 @@
             <div class="hero-section">
                 <div class="character-display">
                     <div class="character-frame">
-                        <img id="hero-image" src="assets/player.png" alt="بطل اللعبة" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"100\" height=\"100\"><rect width=\"100\" height=\"100\" fill=\"%23E74C3C\"/><text x=\"50\" y=\"55\" font-family=\"Arial\" font-size=\"14\" fill=\"white\" text-anchor=\"middle\">🎮</text></svg>';">
+                        <img id="hero-image" src="player.png" alt="بطل اللعبة">
                         <div class="character-overlay">
                             <div class="character-name">🔰 البطل</div>
                             <div class="character-level">المستوى 1</div>
@@ -564,7 +564,487 @@
         </button>
     </div>
 
-    <script src="game.js"></script>
-    <script src="ui-manager.js"></script>
+    <!-- =========================================== -->
+    <!-- هنا الكود المعدل بدل الـ Script الطويل -->
+    <!-- =========================================== -->
+    
+    <script>
+        // نظام تحميل مبسط جداً
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 بدء تشغيل اللعبة...');
+            
+            // 1. إخفاء شاشة التحميل فوراً
+            const loadingScreen = document.getElementById('loading-screen');
+            if (loadingScreen) {
+                loadingScreen.style.display = 'none';
+            }
+            
+            // 2. إظهار شاشة البداية مباشرة
+            const startScreen = document.getElementById('start-screen');
+            if (startScreen) {
+                startScreen.style.display = 'flex';
+            }
+            
+            // 3. تحميل أفضل نتيجة
+            try {
+                const saved = localStorage.getItem('mario_high_score');
+                const highScore = saved ? parseInt(saved) : 0;
+                const highScoreElement = document.getElementById('high-score');
+                if (highScoreElement) {
+                    highScoreElement.textContent = highScore;
+                }
+            } catch (e) {
+                console.log('⚠️ فشل تحميل أفضل نتيجة');
+            }
+            
+            // 4. تهيئة الأزرار الأساسية
+            setupBasicControls();
+            
+            // 5. إنشاء نسخة اللعبة
+            setTimeout(initGame, 500);
+        });
+        
+        function setupBasicControls() {
+            // زر البدء
+            const startBtn = document.getElementById('start-btn');
+            if (startBtn) {
+                startBtn.addEventListener('click', function() {
+                    if (window.game && window.game.startGame) {
+                        window.game.startGame();
+                    } else {
+                        alert('🎮 جاري تهيئة اللعبة...');
+                        setTimeout(function() {
+                            if (window.game && window.game.startGame) {
+                                window.game.startGame();
+                            }
+                        }, 1000);
+                    }
+                });
+            }
+            
+            // زر الإعدادات
+            const settingsBtn = document.getElementById('settings-btn');
+            if (settingsBtn) {
+                settingsBtn.addEventListener('click', function() {
+                    const modal = document.getElementById('settings-modal');
+                    if (modal) modal.style.display = 'flex';
+                });
+            }
+            
+            // زر التعليمات
+            const helpBtn = document.getElementById('how-to-play');
+            if (helpBtn) {
+                helpBtn.addEventListener('click', function() {
+                    const modal = document.getElementById('help-modal');
+                    if (modal) modal.style.display = 'flex';
+                });
+            }
+            
+            // زر ملء الشاشة
+            const fullscreenBtn = document.getElementById('fullscreen-btn');
+            if (fullscreenBtn) {
+                fullscreenBtn.addEventListener('click', toggleFullscreen);
+            }
+            
+            // زر الموسيقى
+            const musicBtn = document.getElementById('music-btn');
+            if (musicBtn) {
+                musicBtn.addEventListener('click', toggleMusic);
+            }
+            
+            // أزرار إغلاق النوافذ
+            document.querySelectorAll('.close-modal').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const modal = this.closest('.modal');
+                    if (modal) modal.style.display = 'none';
+                });
+            });
+            
+            // زر حفظ الإعدادات
+            const saveSettingsBtn = document.querySelector('.save-settings');
+            if (saveSettingsBtn) {
+                saveSettingsBtn.addEventListener('click', function() {
+                    alert('⚙️ تم حفظ الإعدادات');
+                    const modal = document.getElementById('settings-modal');
+                    if (modal) modal.style.display = 'none';
+                });
+            }
+            
+            // زر إعادة التشغيل
+            const playAgainBtn = document.getElementById('play-again');
+            if (playAgainBtn) {
+                playAgainBtn.addEventListener('click', function() {
+                    if (window.game && window.game.restartGame) {
+                        window.game.restartGame();
+                    }
+                });
+            }
+            
+            // زر العودة للقائمة
+            const backToMenuBtn = document.getElementById('back-to-menu');
+            if (backToMenuBtn) {
+                backToMenuBtn.addEventListener('click', function() {
+                    if (window.game && window.game.backToMenu) {
+                        window.game.backToMenu();
+                    } else {
+                        document.getElementById('game-screen').style.display = 'none';
+                        document.getElementById('start-screen').style.display = 'flex';
+                    }
+                });
+            }
+            
+            // زر المشاركة
+            const shareBtn = document.getElementById('share-victory');
+            if (shareBtn) {
+                shareBtn.addEventListener('click', function() {
+                    alert('📢 شارك إنجازك مع أصدقائك!\n\nيمكنك التقاط صورة للشاشة ومشاركتها.');
+                });
+            }
+        }
+        
+        function initGame() {
+            console.log('🎮 إنشاء نسخة اللعبة...');
+            try {
+                // تحميل ملف game.js
+                const script = document.createElement('script');
+                script.src = 'game.js';
+                script.onload = function() {
+                    console.log('✅ game.js محمل بنجاح');
+                    if (typeof MarioGame !== 'undefined') {
+                        window.game = new MarioGame();
+                        console.log('✅ اللعبة جاهزة للعب!');
+                        
+                        // تحديث صورة اللاعب
+                        const heroImage = document.getElementById('hero-image');
+                        if (heroImage) {
+                            heroImage.onerror = function() {
+                                this.style.display = 'none';
+                                const parent = this.parentElement;
+                                if (parent) {
+                                    parent.innerHTML += '<div style="width:100%;height:100%;display:flex;flex-direction:column;justify-content:center;align-items:center;color:white;font-size:24px;"><i class="fas fa-user-ninja"></i><div>البطل</div></div>';
+                                }
+                            };
+                        }
+                    }
+                };
+                script.onerror = function() {
+                    console.error('❌ فشل تحميل game.js');
+                    createFallbackGame();
+                };
+                document.head.appendChild(script);
+                
+            } catch (error) {
+                console.error('❌ خطأ في إنشاء اللعبة:', error);
+                createFallbackGame();
+            }
+        }
+        
+        function createFallbackGame() {
+            console.log('🔄 إنشاء لعبة بديلة...');
+            
+            window.game = {
+                gameState: 'menu',
+                score: 0,
+                lives: 3,
+                coins: 0,
+                timeLeft: 120,
+                
+                startGame: function() {
+                    console.log('🚀 بدء لعبة بديلة');
+                    this.gameState = 'playing';
+                    
+                    // إخفاء شاشة البداية
+                    document.getElementById('start-screen').style.display = 'none';
+                    
+                    // إظهار شاشة اللعب
+                    document.getElementById('game-screen').style.display = 'flex';
+                    
+                    // إنشاء canvas طارئ إذا لم يكن موجوداً
+                    let canvas = document.getElementById('game-canvas');
+                    if (!canvas) {
+                        canvas = document.createElement('canvas');
+                        canvas.id = 'game-canvas';
+                        document.querySelector('.game-world').appendChild(canvas);
+                    }
+                    
+                    // بدء حلقة اللعبة البسيطة
+                    startSimpleGameLoop(canvas);
+                },
+                
+                restartGame: function() {
+                    this.startGame();
+                },
+                
+                backToMenu: function() {
+                    this.gameState = 'menu';
+                    document.getElementById('game-screen').style.display = 'none';
+                    document.getElementById('start-screen').style.display = 'flex';
+                },
+                
+                updateUI: function() {
+                    document.getElementById('score').textContent = this.score;
+                    document.getElementById('lives').textContent = this.lives;
+                    document.getElementById('coins').textContent = this.coins + '/30';
+                    
+                    const minutes = Math.floor(this.timeLeft / 60);
+                    const seconds = this.timeLeft % 60;
+                    document.getElementById('timer').textContent = 
+                        minutes.toString().padStart(2, '0') + ':' + seconds.toString().padStart(2, '0');
+                }
+            };
+            
+            console.log('✅ اللعبة البديلة جاهزة');
+        }
+        
+        function startSimpleGameLoop(canvas) {
+            if (!canvas) return;
+            
+            const ctx = canvas.getContext('2d');
+            canvas.width = canvas.parentElement.clientWidth;
+            canvas.height = canvas.parentElement.clientHeight;
+            
+            const player = {
+                x: 100,
+                y: canvas.height - 150,
+                width: 40,
+                height: 60,
+                speed: 5,
+                velY: 0,
+                jumping: false
+            };
+            
+            const coins = [];
+            for (let i = 0; i < 10; i++) {
+                coins.push({
+                    x: 200 + i * 80,
+                    y: canvas.height - 200,
+                    collected: false
+                });
+            }
+            
+            const keys = {};
+            
+            // التحكم
+            document.addEventListener('keydown', (e) => {
+                keys[e.key] = true;
+            });
+            
+            document.addEventListener('keyup', (e) => {
+                keys[e.key] = false;
+            });
+            
+            // تحديث UI
+            function updateUI() {
+                document.getElementById('score').textContent = window.game.score;
+                document.getElementById('lives').textContent = window.game.lives;
+                document.getElementById('coins').textContent = window.game.coins + '/30';
+                
+                const minutes = Math.floor(window.game.timeLeft / 60);
+                const seconds = window.game.timeLeft % 60;
+                document.getElementById('timer').textContent = 
+                    minutes.toString().padStart(2, '0') + ':' + seconds.toString().padStart(2, '0');
+            }
+            
+            // مؤقت الوقت
+            const timeInterval = setInterval(() => {
+                if (window.game.gameState === 'playing') {
+                    window.game.timeLeft--;
+                    updateUI();
+                    
+                    if (window.game.timeLeft <= 0) {
+                        clearInterval(timeInterval);
+                        endGame(false);
+                    }
+                }
+            }, 1000);
+            
+            function endGame(win) {
+                window.game.gameState = 'ended';
+                clearInterval(timeInterval);
+                
+                if (win) {
+                    document.getElementById('end-title').textContent = 'تهانينا! 🏆';
+                    document.getElementById('end-message').textContent = 'لقد ربحت اللعبة!';
+                } else {
+                    document.getElementById('end-title').textContent = 'انتهت اللعبة';
+                    document.getElementById('end-message').textContent = 'حاول مرة أخرى!';
+                }
+                
+                document.getElementById('final-score').textContent = window.game.score;
+                document.getElementById('final-coins').textContent = window.game.coins + '/30';
+                document.getElementById('final-time').textContent = '02:00';
+                document.getElementById('final-kills').textContent = '0';
+                
+                document.getElementById('game-screen').style.display = 'none';
+                document.getElementById('end-screen').style.display = 'flex';
+            }
+            
+            function gameLoop() {
+                if (window.game.gameState !== 'playing') return;
+                
+                // تحديث
+                player.velY += 0.8;
+                
+                if (keys['ArrowLeft'] || keys['a']) player.x -= player.speed;
+                if (keys['ArrowRight'] || keys['d']) player.x += player.speed;
+                
+                if ((keys[' '] || keys['ArrowUp'] || keys['w']) && !player.jumping) {
+                    player.velY = -15;
+                    player.jumping = true;
+                }
+                
+                player.y += player.velY;
+                
+                // الأرض
+                if (player.y > canvas.height - player.height - 50) {
+                    player.y = canvas.height - player.height - 50;
+                    player.velY = 0;
+                    player.jumping = false;
+                }
+                
+                // جمع العملات
+                coins.forEach(coin => {
+                    if (!coin.collected) {
+                        const dx = player.x + player.width/2 - coin.x;
+                        const dy = player.y + player.height/2 - coin.y;
+                        const distance = Math.sqrt(dx*dx + dy*dy);
+                        
+                        if (distance < 30) {
+                            coin.collected = true;
+                            window.game.coins++;
+                            window.game.score += 100;
+                            updateUI();
+                            
+                            if (window.game.coins >= 30) {
+                                endGame(true);
+                            }
+                        }
+                    }
+                });
+                
+                // رسم
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                // السماء
+                ctx.fillStyle = '#87CEEB';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                // الأرض
+                ctx.fillStyle = '#8B4513';
+                ctx.fillRect(0, canvas.height - 50, canvas.width, 50);
+                
+                // العملات
+                ctx.fillStyle = '#FFD700';
+                coins.forEach(coin => {
+                    if (!coin.collected) {
+                        ctx.beginPath();
+                        ctx.arc(coin.x, coin.y, 15, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                });
+                
+                // اللاعب
+                ctx.fillStyle = '#E74C3C';
+                ctx.fillRect(player.x, player.y, player.width, player.height);
+                
+                requestAnimationFrame(gameLoop);
+            }
+            
+            updateUI();
+            gameLoop();
+        }
+        
+        function toggleFullscreen() {
+            const btn = document.getElementById('fullscreen-btn');
+            try {
+                if (!document.fullscreenElement) {
+                    document.documentElement.requestFullscreen();
+                    btn.innerHTML = '<i class="fas fa-compress"></i>';
+                    showNotification('🖥️ وضع ملء الشاشة مفعل');
+                } else {
+                    document.exitFullscreen();
+                    btn.innerHTML = '<i class="fas fa-expand"></i>';
+                    showNotification('📱 الخروج من ملء الشاشة');
+                }
+            } catch (error) {
+                console.log('⚠️ خطأ في ملء الشاشة');
+                showNotification('⚠️ لا يدعم المتصفح ملء الشاشة');
+            }
+        }
+        
+        function toggleMusic() {
+            const btn = document.getElementById('music-btn');
+            if (btn.innerHTML.includes('volume-up')) {
+                btn.innerHTML = '<i class="fas fa-volume-mute"></i>';
+                btn.title = 'تشغيل الصوت';
+                showNotification('🔇 الصوت متوقف');
+            } else {
+                btn.innerHTML = '<i class="fas fa-volume-up"></i>';
+                btn.title = 'إيقاف الصوت';
+                showNotification('🔊 الصوت مفعل');
+            }
+        }
+        
+        function showNotification(text) {
+            const notification = document.querySelector('.notification');
+            const notificationText = document.querySelector('.notification-text');
+            
+            if (!notification || !notificationText) {
+                console.log('📢', text);
+                return;
+            }
+            
+            notificationText.textContent = text;
+            notification.style.display = 'flex';
+            
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 3000);
+        }
+        
+        // دالات الطوارئ
+        window.forceStartGame = function() {
+            console.log('🆘 بدء طارئ');
+            if (window.game && window.game.startGame) {
+                window.game.startGame();
+            } else {
+                alert('جاري تهيئة اللعبة...');
+                setTimeout(function() {
+                    if (window.game && window.game.startGame) {
+                        window.game.startGame();
+                    }
+                }, 1000);
+            }
+        };
+        
+        window.resetGame = function() {
+            console.log('🔄 إعادة تعيين');
+            if (window.game && window.game.restartGame) {
+                window.game.restartGame();
+            } else {
+                location.reload();
+            }
+        };
+        
+        window.showDebugInfo = function() {
+            console.log('🔍 معلومات التصحيح:', {
+                game: window.game,
+                canvas: document.getElementById('game-canvas')
+            });
+            alert('معلومات التصحيح في الكونسول (F12)');
+        };
+        
+        // حدث ملء الشاشة
+        document.addEventListener('fullscreenchange', () => {
+            const btn = document.getElementById('fullscreen-btn');
+            if (btn) {
+                if (document.fullscreenElement) {
+                    btn.innerHTML = '<i class="fas fa-compress"></i>';
+                } else {
+                    btn.innerHTML = '<i class="fas fa-expand"></i>';
+                }
+            }
+        });
+    </script>
 </body>
 </html>
