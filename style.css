@@ -818,6 +818,11 @@ kbd {
     animation: bounce 2s infinite;
 }
 
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-20px); }
+}
+
 .victory-title {
     font-size: 3rem;
     color: #FFD700;
