@@ -135,6 +135,7 @@ html, body {
     border: 8px solid #FFD700;
     box-shadow: 0 10px 30px rgba(231, 76, 60, 0.5);
     animation: float 3s ease-in-out infinite;
+    overflow: hidden;
 }
 
 .hero-badge {
@@ -148,6 +149,7 @@ html, body {
     border-radius: 20px;
     font-weight: bold;
     border: 2px solid #FFD700;
+    z-index: 2;
 }
 
 .hero-info {
@@ -387,6 +389,7 @@ kbd {
     .action-buttons {
         flex-direction: row;
         justify-content: center;
+        flex-wrap: wrap;
     }
 }
 
@@ -403,6 +406,7 @@ kbd {
     gap: 15px;
     transition: all 0.3s ease;
     min-width: 250px;
+    margin: 5px;
 }
 
 .primary-btn {
@@ -437,6 +441,17 @@ kbd {
 .tertiary-btn:hover {
     transform: translateY(-5px);
     box-shadow: 0 15px 30px rgba(52, 152, 219, 0.6);
+}
+
+.special-btn {
+    background: linear-gradient(135deg, #9B59B6, #8E44AD);
+    color: white;
+    box-shadow: 0 10px 25px rgba(155, 89, 182, 0.4);
+}
+
+.special-btn:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(155, 89, 182, 0.6);
 }
 
 /* معلومات مهمة */
@@ -577,6 +592,11 @@ kbd {
     color: #000;
     transform: scale(1.1);
     box-shadow: 0 8px 20px rgba(255, 215, 0, 0.5);
+}
+
+#fullscreen-button.fullscreen-active {
+    background: #FFD700;
+    color: #000;
 }
 
 /* منطقة اللعبة */
@@ -1255,6 +1275,147 @@ kbd {
 }
 
 /* ====================== */
+/* نافذة تحميل الصورة */
+/* ====================== */
+
+.upload-section {
+    text-align: center;
+}
+
+.upload-section h3 {
+    color: #FFD700;
+    font-size: 1.8rem;
+    margin-bottom: 25px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+}
+
+.upload-area {
+    border: 3px dashed #3498DB;
+    border-radius: 20px;
+    padding: 40px;
+    margin: 20px 0;
+    background: rgba(52, 152, 219, 0.1);
+    transition: all 0.3s ease;
+}
+
+.upload-area:hover {
+    border-color: #FFD700;
+    background: rgba(255, 215, 0, 0.1);
+}
+
+.upload-area i {
+    font-size: 4rem;
+    color: #3498DB;
+    margin-bottom: 15px;
+}
+
+.upload-area p {
+    color: #aaa;
+    margin: 10px 0;
+}
+
+.upload-btn {
+    background: linear-gradient(135deg, #3498DB, #2980B9);
+    color: white;
+    border: none;
+    padding: 15px 30px;
+    border-radius: 10px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 10px;
+    transition: all 0.3s ease;
+}
+
+.upload-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(52, 152, 219, 0.4);
+}
+
+.upload-hint {
+    font-size: 0.9rem;
+    color: #777;
+    margin-top: 15px;
+}
+
+.image-preview {
+    margin: 30px 0;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 15px;
+}
+
+.image-preview h4 {
+    color: #FFD700;
+    margin-bottom: 15px;
+}
+
+.image-preview img {
+    max-width: 200px;
+    max-height: 200px;
+    border-radius: 50%;
+    border: 3px solid #FFD700;
+    margin: 0 auto;
+    display: block;
+}
+
+.upload-actions {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    margin-top: 30px;
+}
+
+.confirm-btn {
+    background: linear-gradient(135deg, #2ECC71, #27AE60);
+    color: white;
+    border: none;
+    padding: 15px 30px;
+    border-radius: 10px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.3s ease;
+}
+
+.confirm-btn:disabled {
+    background: #666;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.confirm-btn:not(:disabled):hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(46, 204, 113, 0.4);
+}
+
+.cancel-btn {
+    background: linear-gradient(135deg, #E74C3C, #C0392B);
+    color: white;
+    border: none;
+    padding: 15px 30px;
+    border-radius: 10px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.3s ease;
+}
+
+.cancel-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(231, 76, 60, 0.4);
+}
+
+/* ====================== */
 /* نظام الإشعارات */
 /* ====================== */
 
@@ -1318,6 +1479,42 @@ kbd {
     transform: scale(1.1);
     background: #E74C3C;
     box-shadow: 0 5px 15px rgba(231, 76, 60, 0.7);
+}
+
+/* ====================== */
+/* أزرار عائمة */
+/* ====================== */
+
+.floating-buttons {
+    position: fixed;
+    bottom: 80px;
+    right: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    z-index: 9998;
+}
+
+.floating-btn {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: rgba(52, 152, 219, 0.9);
+    border: 2px solid #3498DB;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(52, 152, 219, 0.5);
+}
+
+.floating-btn:hover {
+    transform: scale(1.1);
+    background: #3498DB;
+    box-shadow: 0 6px 20px rgba(52, 152, 219, 0.7);
 }
 
 /* ====================== */
@@ -1437,6 +1634,14 @@ kbd {
         min-width: 180px;
         padding: 15px 25px;
         font-size: 1.2rem;
+    }
+    
+    .upload-area {
+        padding: 20px;
+    }
+    
+    .upload-actions {
+        flex-direction: column;
     }
 }
 
