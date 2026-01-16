@@ -42,8 +42,13 @@
             <div class="hero-display">
                 <div class="hero-card">
                     <div class="hero-image">
-                        <div class="hero-avatar">
-                            <i class="fas fa-user-ninja"></i>
+                        <div class="hero-avatar" id="player-avatar">
+                            <!-- سيتم عرض الصورة هنا -->
+                            <img src="player.png" alt="شخصية اللاعب" id="player-img" 
+                                 style="width:100%; height:100%; border-radius:50%; display:none;">
+                            <div id="avatar-fallback" style="width:100%; height:100%; display:flex; align-items:center; justify-content:center;">
+                                <i class="fas fa-user-ninja"></i>
+                            </div>
                         </div>
                         <div class="hero-badge">البطل</div>
                     </div>
@@ -190,6 +195,10 @@
                     <i class="fas fa-cogs"></i>
                     <span>⚙️ إعدادات اللعبة</span>
                 </button>
+                <button id="upload-character" class="action-btn special-btn">
+                    <i class="fas fa-user-circle"></i>
+                    <span>🖼️ تغيير الشخصية</span>
+                </button>
             </div>
 
             <!-- معلومات مهمة -->
@@ -209,6 +218,9 @@
                     </div>
                 </div>
             </div>
+            
+            <!-- تحميل الصورة -->
+            <input type="file" id="image-upload" accept="image/*" style="display:none;">
         </div>
     </div>
 
@@ -250,6 +262,9 @@
                 </button>
                 <button id="sound-button" class="header-btn" title="الصوت">
                     <i class="fas fa-volume-up"></i>
+                </button>
+                <button id="fullscreen-button" class="header-btn" title="ملء الشاشة">
+                    <i class="fas fa-expand"></i>
                 </button>
             </div>
         </div>
@@ -542,6 +557,46 @@
         </div>
     </div>
 
+    <!-- نافذة تحميل الصورة -->
+    <div id="upload-window" class="modal-window" style="display:none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-user-circle"></i> تخصيص الشخصية</h2>
+                <button class="close-btn" onclick="closeUpload()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="upload-section">
+                    <h3><i class="fas fa-image"></i> اختر صورة شخصية</h3>
+                    <div class="upload-area" id="drop-area">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <p>اسحب وأفلت الصورة هنا أو</p>
+                        <button class="upload-btn" onclick="document.getElementById('file-input').click()">
+                            <i class="fas fa-folder-open"></i> اختر صورة
+                        </button>
+                        <input type="file" id="file-input" accept="image/*" style="display:none;">
+                        <p class="upload-hint">يفضل صورة مربعة بحجم 200x200 بكسل</p>
+                    </div>
+                    
+                    <div class="image-preview" id="image-preview" style="display:none;">
+                        <h4>معاينة الصورة:</h4>
+                        <img id="preview-img" src="" alt="معاينة">
+                    </div>
+                    
+                    <div class="upload-actions">
+                        <button class="confirm-btn" onclick="confirmImage()" disabled id="confirm-btn">
+                            <i class="fas fa-check"></i> تأكيد الصورة
+                        </button>
+                        <button class="cancel-btn" onclick="closeUpload()">
+                            <i class="fas fa-times"></i> إلغاء
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- نظام الإشعارات -->
     <div id="notification-area">
         <div class="notification" id="notification" style="display:none;">
@@ -563,6 +618,13 @@
         </button>
     </div>
 
+    <!-- زر ملء الشاشة العائم -->
+    <div class="floating-buttons">
+        <button id="quick-fullscreen" class="floating-btn" title="ملء الشاشة">
+            <i class="fas fa-expand"></i>
+        </button>
+    </div>
+
     <!-- الصوت -->
     <audio id="jump-sound" preload="auto">
         <source src="https://assets.mixkit.co/sfx/preview/mixkit-player-jumping-in-a-video-game-2043.mp3" type="audio/mpeg">
@@ -581,6 +643,9 @@
         document.addEventListener('DOMContentLoaded', function() {
             console.log('🎮 تهيئة النظام...');
             
+            // تحميل الصورة الشخصية
+            loadPlayerImage();
+            
             // إخفاء شاشة التحميل بعد 1.5 ثانية
             setTimeout(function() {
                 document.getElementById('loading').style.display = 'none';
@@ -592,6 +657,29 @@
             initBasicButtons();
         });
         
+        function loadPlayerImage() {
+            const playerImg = document.getElementById('player-img');
+            const avatarFallback = document.getElementById('avatar-fallback');
+            
+            // محاولة تحميل الصورة
+            playerImg.onload = function() {
+                // الصورة محملة بنجاح
+                playerImg.style.display = 'block';
+                avatarFallback.style.display = 'none';
+                console.log('✅ صورة اللاعب محملة بنجاح');
+            };
+            
+            playerImg.onerror = function() {
+                // فشل تحميل الصورة، استخدم البديل
+                playerImg.style.display = 'none';
+                avatarFallback.style.display = 'flex';
+                console.log('⚠️ لم يتم العثور على player.png، استخدام أيقونة بديلة');
+            };
+            
+            // بدء تحميل الصورة
+            playerImg.src = 'player.png';
+        }
+        
         function initBasicButtons() {
             // زر التعليمات
             document.getElementById('how-to-play').addEventListener('click', function() {
@@ -602,6 +690,104 @@
             document.getElementById('game-settings').addEventListener('click', function() {
                 document.getElementById('settings-window').style.display = 'flex';
             });
+            
+            // زر تحميل الشخصية
+            document.getElementById('upload-character').addEventListener('click', function() {
+                document.getElementById('upload-window').style.display = 'flex';
+            });
+            
+            // زر اختيار الصورة
+            document.getElementById('file-input').addEventListener('change', function(e) {
+                handleImageUpload(e.target.files[0]);
+            });
+            
+            // سحب وإفلات الصورة
+            const dropArea = document.getElementById('drop-area');
+            if (dropArea) {
+                ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                    dropArea.addEventListener(eventName, preventDefaults, false);
+                });
+                
+                function preventDefaults(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+                
+                ['dragenter', 'dragover'].forEach(eventName => {
+                    dropArea.addEventListener(eventName, highlight, false);
+                });
+                
+                ['dragleave', 'drop'].forEach(eventName => {
+                    dropArea.addEventListener(eventName, unhighlight, false);
+                });
+                
+                function highlight() {
+                    dropArea.style.borderColor = '#FFD700';
+                    dropArea.style.backgroundColor = 'rgba(255, 215, 0, 0.1)';
+                }
+                
+                function unhighlight() {
+                    dropArea.style.borderColor = '#3498DB';
+                    dropArea.style.backgroundColor = 'rgba(52, 152, 219, 0.1)';
+                }
+                
+                dropArea.addEventListener('drop', function(e) {
+                    const dt = e.dataTransfer;
+                    const files = dt.files;
+                    handleImageUpload(files[0]);
+                }, false);
+            }
+        }
+        
+        function handleImageUpload(file) {
+            if (!file || !file.type.match('image.*')) {
+                alert('⚠️ الرجاء اختيار ملف صورة فقط!');
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const previewImg = document.getElementById('preview-img');
+                const imagePreview = document.getElementById('image-preview');
+                const confirmBtn = document.getElementById('confirm-btn');
+                
+                previewImg.src = e.target.result;
+                imagePreview.style.display = 'block';
+                confirmBtn.disabled = false;
+                
+                // حفظ الصورة مؤقتاً
+                window.tempImage = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+        
+        function confirmImage() {
+            if (!window.tempImage) return;
+            
+            // حفظ الصورة في localStorage
+            try {
+                localStorage.setItem('player_custom_image', window.tempImage);
+                
+                // تحديث العرض
+                const playerImg = document.getElementById('player-img');
+                const avatarFallback = document.getElementById('avatar-fallback');
+                
+                playerImg.src = window.tempImage;
+                playerImg.style.display = 'block';
+                avatarFallback.style.display = 'none';
+                
+                // إعلام اللعبة بتحديث الصورة
+                if (typeof MarioGame !== 'undefined' && MarioGame.playerImage) {
+                    MarioGame.playerImage.src = window.tempImage;
+                }
+                
+                showNotification('✅ تم تغيير الصورة الشخصية بنجاح!');
+                closeUpload();
+                
+            } catch (e) {
+                alert('❌ خطأ في حفظ الصورة!');
+                console.error(e);
+            }
         }
         
         // دالات مساعدة
@@ -611,6 +797,15 @@
         
         function closeSettings() {
             document.getElementById('settings-window').style.display = 'none';
+        }
+        
+        function closeUpload() {
+            document.getElementById('upload-window').style.display = 'none';
+            // تنظيف البيانات المؤقتة
+            window.tempImage = null;
+            document.getElementById('image-preview').style.display = 'none';
+            document.getElementById('confirm-btn').disabled = true;
+            document.getElementById('file-input').value = '';
         }
         
         function saveSettings() {
@@ -631,6 +826,7 @@
         function resetAll() {
             if (confirm('⚠️ هل تريد إعادة تعيين اللعبة؟ ستفقد أفضل النتائج.')) {
                 localStorage.removeItem('mario_high_score');
+                localStorage.removeItem('player_custom_image');
                 location.reload();
             }
         }
@@ -640,7 +836,8 @@
                 gameLoaded: typeof MarioGame !== 'undefined',
                 canvas: document.getElementById('game-canvas'),
                 state: typeof MarioGame !== 'undefined' ? MarioGame.state : 'غير محمل',
-                highScore: localStorage.getItem('mario_high_score')
+                highScore: localStorage.getItem('mario_high_score'),
+                customImage: localStorage.getItem('player_custom_image') ? 'موجود' : 'غير موجود'
             });
             alert('🐛 معلومات التصحيح في الكونسول (F12)');
         }
