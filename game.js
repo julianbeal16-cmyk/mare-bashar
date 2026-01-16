@@ -4,266 +4,203 @@
 
 'use strict';
 
-// إضافة دالة roundRect إذا لم تكن موجودة
-if (!CanvasRenderingContext2D.prototype.roundRect) {
-    CanvasRenderingContext2D.prototype.roundRect = function(x, y, width, height, radius) {
-        if (typeof radius === 'undefined') radius = 5;
-        if (typeof radius === 'number') {
-            radius = {tl: radius, tr: radius, br: radius, bl: radius};
-        } else {
-            var defaultRadius = {tl: 0, tr: 0, br: 0, bl: 0};
-            for (var side in defaultRadius) {
-                radius[side] = radius[side] || defaultRadius[side];
-            }
-        }
-        
-        this.beginPath();
-        this.moveTo(x + radius.tl, y);
-        this.lineTo(x + width - radius.tr, y);
-        this.quadraticCurveTo(x + width, y, x + width, y + radius.tr);
-        this.lineTo(x + width, y + height - radius.br);
-        this.quadraticCurveTo(x + width, y + height, x + width - radius.br, y + height);
-        this.lineTo(x + radius.bl, y + height);
-        this.quadraticCurveTo(x, y + height, x, y + height - radius.bl);
-        this.lineTo(x, y + radius.tl);
-        this.quadraticCurveTo(x, y, x + radius.tl, y);
-        this.closePath();
-        return this;
-    };
-}
-
-// الكائن الرئيسي للعبة
+// نظام اللعبة الرئيسي
 const MarioGame = {
     // ======================
     // إعدادات النظام
     // ======================
-    
     canvas: null,
     ctx: null,
-    state: 'start',
+    state: 'menu',
+    
+    // الإحصائيات
     score: 0,
-    highScore: 0,
+    bestScore: 0,
     lives: 3,
     timeLeft: 120,
     coins: 0,
     totalCoins: 30,
-    kills: 0,
-    level: 1,
+    enemiesKilled: 0,
+    
+    // المؤقتات
     gameTimer: null,
     animationId: null,
     frameCount: 0,
     lastTime: 0,
+    deltaTime: 0,
+    
+    // عناصر اللعبة
     player: null,
     platforms: [],
-    coinsArr: [],
+    coins: [],
     enemies: [],
-    camera: { x: 0, y: 0 },
     castle: null,
+    camera: { x: 0, y: 0 },
     worldWidth: 3000,
+    worldHeight: 600,
+    
+    // التحكم
     keys: {},
-    touchControls: { left: false, right: false, jump: false, action: false },
+    touchControls: {
+        left: false,
+        right: false,
+        jump: false
+    },
+    
+    // الصوت
     soundEnabled: true,
-    musicEnabled: true,
     sounds: {},
-    playerImage: null, // صورة اللاعب المخصصة
-    useCustomImage: false, // هل نستخدم صورة مخصصة؟
     
     // ======================
     // التهيئة الأساسية
     // ======================
-    
     init() {
-        console.log('🚀 تهيئة لعبة ماريو الخارقة...');
+        console.log('🎮 تهيئة اللعبة...');
         
         try {
-            document.getElementById('loading').style.display = 'none';
-            this.setupCanvas();
-            this.loadHighScore();
-            this.loadPlayerImage(); // تحميل الصورة الشخصية
-            this.setupControls();
-            this.setupButtons();
-            this.setupAudio();
-            this.systemCheck();
+            this.canvas = document.getElementById('game-canvas');
+            this.ctx = this.canvas.getContext('2d');
             
-            console.log('✅ اللعبة مهيأة وجاهزة للعب!');
-            this.showNotification('مرحباً بك في لعبة ماريو الخارقة! 🎮');
+            if (!this.canvas || !this.ctx) {
+                throw new Error('فشل تحميل Canvas');
+            }
+            
+            // ضبط حجم Canvas للتجاوب
+            this.setupCanvas();
+            
+            // تحميل أفضل نتيجة
+            this.loadBestScore();
+            
+            // إعداد التحكم
+            this.setupControls();
+            
+            // إعداد الصوت
+            this.setupAudio();
+            
+            console.log('✅ اللعبة مهيأة بنجاح!');
+            this.showNotification('مرحباً في لعبة ماريو الخارقة! 🎮');
             
         } catch (error) {
             console.error('❌ خطأ في التهيئة:', error);
-            this.showEmergencyScreen(error);
+            this.showEmergencyMessage(error.message);
         }
     },
     
     setupCanvas() {
-        this.canvas = document.getElementById('game-canvas');
-        if (!this.canvas) throw new Error('Canvas غير موجود!');
-        
-        this.ctx = this.canvas.getContext('2d');
-        if (!this.ctx) throw new Error('سياق Canvas غير مدعوم!');
-        
         const resizeCanvas = () => {
             const gameArea = document.querySelector('.game-area');
             if (gameArea) {
-                this.canvas.width = gameArea.clientWidth;
-                this.canvas.height = gameArea.clientHeight;
+                // احصل على أبعاد منطقة اللعبة
+                const width = gameArea.clientWidth;
+                const height = gameArea.clientHeight;
+                
+                // ضبط دقة Canvas
+                this.canvas.width = width;
+                this.canvas.height = height;
+                
+                // ضبط حجم العالم بناءً على حجم الشاشة
+                this.worldWidth = width * 3;
+                this.worldHeight = height;
+                
+                console.log(`📐 Canvas: ${width}x${height}, World: ${this.worldWidth}x${this.worldHeight}`);
             }
         };
         
         resizeCanvas();
         window.addEventListener('resize', resizeCanvas);
+        window.addEventListener('orientationchange', resizeCanvas);
+        
+        // إعادة الضبط بعد تحميل الصفحة
+        setTimeout(resizeCanvas, 100);
     },
     
-    loadHighScore() {
+    loadBestScore() {
         try {
-            const saved = localStorage.getItem('mario_high_score');
-            this.highScore = saved ? parseInt(saved) : 0;
-            document.getElementById('high-score').textContent = this.highScore;
+            const saved = localStorage.getItem('mario_best_score');
+            this.bestScore = saved ? parseInt(saved) : 0;
+            document.getElementById('best-score').textContent = this.bestScore;
         } catch (e) {
-            console.warn('⚠️ فشل تحميل أفضل نتيجة:', e);
-            this.highScore = 0;
+            console.warn('⚠️ لا يمكن تحميل أفضل نتيجة');
         }
-    },
-    
-    loadPlayerImage() {
-        this.playerImage = new Image();
-        this.playerImage.crossOrigin = "anonymous";
-        
-        // تحميل الصورة المخصصة من localStorage إذا كانت موجودة
-        try {
-            const savedImage = localStorage.getItem('player_custom_image');
-            if (savedImage) {
-                this.playerImage.src = savedImage;
-                this.useCustomImage = true;
-                console.log('✅ تم تحميل الصورة الشخصية المخصصة');
-            } else {
-                // محاولة تحميل الصورة الافتراضية
-                this.playerImage.src = 'player.png';
-                this.useCustomImage = false;
-            }
-        } catch (e) {
-            console.warn('⚠️ خطأ في تحميل الصورة:', e);
-            this.useCustomImage = false;
-        }
-        
-        // معالجة نجاح تحميل الصورة
-        this.playerImage.onload = () => {
-            console.log('✅ صورة اللاعب محملة بنجاح');
-            // تحديث أيقونة اللاعب في القائمة الرئيسية
-            const playerImg = document.getElementById('player-img');
-            const avatarFallback = document.getElementById('avatar-fallback');
-            if (playerImg && avatarFallback) {
-                playerImg.src = this.playerImage.src;
-                playerImg.style.display = 'block';
-                avatarFallback.style.display = 'none';
-            }
-        };
-        
-        // معالجة فشل تحميل الصورة
-        this.playerImage.onerror = () => {
-            console.warn('⚠️ فشل تحميل صورة اللاعب، استخدام التصميم الافتراضي');
-            this.useCustomImage = false;
-        };
     },
     
     setupControls() {
+        // لوحة المفاتيح
         document.addEventListener('keydown', (e) => {
             const key = e.key.toLowerCase();
             this.keys[key] = true;
             
+            // منع السلوك الافتراضي لأزرار التحكم
             if ([' ', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright', 'w', 'a', 's', 'd'].includes(key)) {
                 e.preventDefault();
             }
             
-            if (key === 'p') {
-                this.togglePause();
-                e.preventDefault();
-            }
-            
-            if (key === 'f') {
-                this.toggleFullscreen();
-                e.preventDefault();
-            }
-            
-            if (key === 'r' && this.state === 'ended') {
-                this.restartGame();
-                e.preventDefault();
-            }
-            
-            if (key === 'escape') {
-                this.backToMenu();
-                e.preventDefault();
-            }
+            // اختصارات خاصة
+            if (key === 'p') this.togglePause();
+            if (key === 'f') this.toggleFullscreen();
+            if (key === 'r' && this.state === 'gameOver') this.restartGame();
+            if (key === 'escape') this.backToMenu();
         });
         
         document.addEventListener('keyup', (e) => {
             this.keys[e.key.toLowerCase()] = false;
         });
         
-        this.setupMobileControls();
+        // التحكم باللمس للجوال
+        this.setupTouchControls();
     },
     
-    setupMobileControls() {
-        const setupButton = (id, control) => {
-            const btn = document.getElementById(id);
-            if (!btn) return;
-            
-            ['touchstart', 'mousedown'].forEach(event => {
-                btn.addEventListener(event, (e) => {
-                    this.touchControls[control] = true;
-                    if (event === 'touchstart') e.preventDefault();
-                });
+    setupTouchControls() {
+        // زر اليسار
+        const leftBtn = document.getElementById('btn-left');
+        if (leftBtn) {
+            leftBtn.addEventListener('touchstart', (e) => {
+                this.touchControls.left = true;
+                e.preventDefault();
             });
-            
-            ['touchend', 'touchcancel', 'mouseup', 'mouseleave'].forEach(event => {
-                btn.addEventListener(event, (e) => {
-                    this.touchControls[control] = false;
-                    if (event.startsWith('touch')) e.preventDefault();
-                });
+            leftBtn.addEventListener('touchend', (e) => {
+                this.touchControls.left = false;
+                e.preventDefault();
             });
-        };
-        
-        setupButton('btn-left', 'left');
-        setupButton('btn-right', 'right');
-        setupButton('btn-jump', 'jump');
-        setupButton('btn-action', 'action');
-        
-        const specialBtn = document.getElementById('btn-special');
-        if (specialBtn) {
-            specialBtn.addEventListener('click', () => {
-                this.showNotification('🌟 مهارة خاصة مفعلة!');
+            leftBtn.addEventListener('touchcancel', (e) => {
+                this.touchControls.left = false;
+                e.preventDefault();
             });
         }
-    },
-    
-    setupButtons() {
-        // زر البدء
-        document.getElementById('start-game').addEventListener('click', () => this.startGame());
         
-        // زر الإيقاف/المتابعة
-        document.getElementById('pause-button').addEventListener('click', () => this.togglePause());
+        // زر اليمين
+        const rightBtn = document.getElementById('btn-right');
+        if (rightBtn) {
+            rightBtn.addEventListener('touchstart', (e) => {
+                this.touchControls.right = true;
+                e.preventDefault();
+            });
+            rightBtn.addEventListener('touchend', (e) => {
+                this.touchControls.right = false;
+                e.preventDefault();
+            });
+            rightBtn.addEventListener('touchcancel', (e) => {
+                this.touchControls.right = false;
+                e.preventDefault();
+            });
+        }
         
-        // زر القائمة
-        document.getElementById('menu-button').addEventListener('click', () => this.backToMenu());
-        
-        // زر الصوت
-        document.getElementById('sound-button').addEventListener('click', () => this.toggleSound());
-        
-        // زر ملء الشاشة في الهيدر
-        document.getElementById('fullscreen-button').addEventListener('click', () => this.toggleFullscreen());
-        
-        // زر ملء الشاشة العائم
-        document.getElementById('quick-fullscreen').addEventListener('click', () => this.toggleFullscreen());
-        
-        // زر إعادة اللعب
-        document.getElementById('play-again-btn').addEventListener('click', () => this.restartGame());
-        
-        // زر العودة للقائمة
-        document.getElementById('return-menu-btn').addEventListener('click', () => {
-            this.showScreen('start');
-        });
-        
-        // زر المشاركة
-        document.getElementById('share-btn').addEventListener('click', () => this.shareScore());
+        // زر القفز
+        const jumpBtn = document.getElementById('btn-jump');
+        if (jumpBtn) {
+            jumpBtn.addEventListener('touchstart', (e) => {
+                this.touchControls.jump = true;
+                e.preventDefault();
+            });
+            jumpBtn.addEventListener('touchend', (e) => {
+                this.touchControls.jump = false;
+                e.preventDefault();
+            });
+            jumpBtn.addEventListener('touchcancel', (e) => {
+                this.touchControls.jump = false;
+                e.preventDefault();
+            });
+        }
     },
     
     setupAudio() {
@@ -273,138 +210,63 @@ const MarioGame = {
             hit: document.getElementById('hit-sound')
         };
         
+        // خفض صوت المؤثرات
         Object.values(this.sounds).forEach(sound => {
             if (sound) {
-                sound.volume = 0.5;
-                sound.preload = 'auto';
+                sound.volume = 0.3;
             }
         });
-    },
-    
-    systemCheck() {
-        console.log('🔍 فحص النظام:', {
-            canvas: !!this.canvas,
-            context: !!this.ctx,
-            playerImage: !!this.playerImage
-        });
-    },
-    
-    // ======================
-    // إدارة الشاشات
-    // ======================
-    
-    showScreen(screenId) {
-        document.querySelectorAll('.screen').forEach(screen => {
-            screen.style.display = 'none';
-        });
-        
-        const screen = document.getElementById(screenId + '-screen');
-        if (screen) {
-            screen.style.display = 'flex';
-            this.state = screenId === 'game' ? 'playing' : screenId;
-            
-            if (screenId === 'game') {
-                setTimeout(() => {
-                    if (this.state === 'playing') {
-                        this.startGameLoop();
-                    }
-                }, 100);
-            }
-        }
-    },
-    
-    backToMenu() {
-        this.state = 'start';
-        
-        if (this.gameTimer) {
-            clearInterval(this.gameTimer);
-            this.gameTimer = null;
-        }
-        
-        if (this.animationId) {
-            cancelAnimationFrame(this.animationId);
-            this.animationId = null;
-        }
-        
-        this.showScreen('start');
     },
     
     // ======================
     // بدء اللعبة
     // ======================
-    
     startGame() {
         console.log('🚀 بدء لعبة جديدة...');
         
-        // إعادة تعيين كل شيء
+        // إعادة تعيين الإحصائيات
         this.score = 0;
         this.lives = 3;
         this.timeLeft = 120;
         this.coins = 0;
-        this.kills = 0;
-        this.camera = { x: 0, y: 0 };
+        this.enemiesKilled = 0;
         this.frameCount = 0;
+        this.camera = { x: 0, y: 0 };
         
-        // إعادة تعيين القصر والأعداء والعملات
-        if (this.castle) {
-            this.castle.reached = false;
-        }
+        // إنشاء عالم اللعبة
+        this.createGameWorld();
         
-        if (this.enemies && this.enemies.length > 0) {
-            this.enemies.forEach(enemy => {
-                enemy.active = true;
-            });
-        }
-        
-        if (this.coinsArr && this.coinsArr.length > 0) {
-            this.coinsArr.forEach(coin => {
-                coin.collected = false;
-            });
-        }
-        
-        // إنشاء عالم جديد إذا لم يكن موجوداً
-        if (!this.player) {
-            this.createGameWorld();
-        } else {
-            const groundY = this.canvas.height - 80;
-            this.player.x = 200;
-            this.player.y = groundY - 100;
-            this.player.velX = 0;
-            this.player.velY = 0;
-            this.player.grounded = false;
-            this.player.invincible = false;
-            this.player.invincibleTime = 0;
-        }
-        
+        // تحديث واجهة المستخدم
         this.updateUI();
+        
+        // الانتقال لشاشة اللعب
         this.showScreen('game');
         
-        // بدء المؤقت بعد تأخير
-        setTimeout(() => {
-            this.startTimer();
-            this.startGameLoop();
-            this.showNotification('🚀 ابدأ مغامرتك! اجمع العملات وتجنب الأعداء!');
-        }, 500);
+        // بدء المؤقتات
+        this.startTimer();
+        this.startGameLoop();
+        
+        // إشعار البدء
+        this.showNotification('🚀 ابدأ مغامرتك! اجمع العملات وتجنب الأعداء!');
         
         console.log('🎮 اللعبة بدأت!');
     },
     
     createGameWorld() {
-        if (!this.canvas) return;
+        const canvas = this.canvas;
+        const groundY = canvas.height - 80;
         
-        this.worldWidth = this.canvas.width * 3;
-        const groundY = this.canvas.height - 80;
-        
-        // اللاعب
+        // 🔥 اللاعب - إصلاح: وضع أعلى قليلاً
         this.player = {
-            x: 200,
-            y: groundY - 100,
+            x: 100,
+            y: groundY - 150, // أعلى من الأرض
             width: 40,
             height: 60,
             speed: 6,
             velX: 0,
             velY: 0,
-            jumpPower: -14,
+            jumpPower: -15,
+            gravity: 0.8,
             grounded: false,
             facingRight: true,
             invincible: false,
@@ -412,178 +274,97 @@ const MarioGame = {
             color: '#E74C3C'
         };
         
-        // الأرض
+        // 🔥 الأرض - إصلاح: تأكد من وجود أرض
         this.platforms = [
-            { x: 0, y: groundY, width: this.worldWidth, height: 80, type: 'ground', color: '#8B4513' }
+            {
+                x: 0,
+                y: groundY,
+                width: this.worldWidth,
+                height: 100,
+                type: 'ground',
+                color: '#8B4513'
+            }
         ];
         
-        // منصات
-        const platformPositions = [
-            { x: 350, y: groundY - 120 },
-            { x: 650, y: groundY - 160 },
-            { x: 950, y: groundY - 140 },
-            { x: 1250, y: groundY - 180 },
-            { x: 1550, y: groundY - 130 },
-            { x: 1850, y: groundY - 150 },
-            { x: 2150, y: groundY - 170 }
+        // 🔥 منصات إضافية - إصلاح: وضعها بشكل صحيح
+        const platformTemplates = [
+            { x: 300, y: groundY - 120, width: 200 },
+            { x: 600, y: groundY - 150, width: 180 },
+            { x: 900, y: groundY - 130, width: 220 },
+            { x: 1200, y: groundY - 160, width: 190 },
+            { x: 1500, y: groundY - 140, width: 210 },
+            { x: 1800, y: groundY - 170, width: 200 },
+            { x: 2100, y: groundY - 125, width: 230 },
+            { x: 2400, y: groundY - 155, width: 195 }
         ];
         
-        platformPositions.forEach((pos, i) => {
+        platformTemplates.forEach(platform => {
             this.platforms.push({
-                x: pos.x,
-                y: pos.y,
-                width: 200,
+                x: platform.x,
+                y: platform.y,
+                width: platform.width,
                 height: 25,
                 type: 'platform',
-                color: i % 2 === 0 ? '#A0522D' : '#8B4513'
+                color: '#A0522D'
             });
         });
         
-        // عملات
-        this.coinsArr = [];
+        // 🔥 العملات - إصلاح: وضعها على المنصات
+        this.coins = [];
         for (let i = 0; i < this.totalCoins; i++) {
-            this.coinsArr.push({
-                x: 400 + i * 85,
-                y: groundY - 150 + (i % 4) * 35,
+            const platformIndex = Math.floor(Math.random() * (this.platforms.length - 1)) + 1;
+            const platform = this.platforms[platformIndex];
+            
+            this.coins.push({
+                x: platform.x + Math.random() * (platform.width - 40) + 20,
+                y: platform.y - 30,
                 collected: false,
                 radius: 12,
-                anim: Math.random() * Math.PI * 2,
+                animation: Math.random() * Math.PI * 2,
                 value: 100
             });
         }
         
-        // أعداء
+        // 🔥 الأعداء - إصلاح: وضعهم على الأرض
         this.enemies = [];
-        const enemyTypes = [
-            { color: '#EF476F', speed: 2.5, size: 45 },
-            { color: '#FF6B6B', speed: 3, size: 40 },
-            { color: '#E74C3C', speed: 2, size: 50 }
-        ];
+        const enemyCount = 8;
         
-        for (let i = 0; i < 6; i++) {
-            const type = enemyTypes[i % enemyTypes.length];
+        for (let i = 0; i < enemyCount; i++) {
             this.enemies.push({
-                x: 500 + i * 320,
-                y: groundY - type.size,
-                width: type.size,
-                height: type.size,
-                dir: i % 2 === 0 ? 1 : -1,
-                speed: type.speed,
-                color: type.color,
+                x: 400 + i * 350,
+                y: groundY - 45,
+                width: 45,
+                height: 45,
+                speed: 2 + Math.random() * 1.5,
+                direction: i % 2 === 0 ? 1 : -1,
+                color: ['#EF476F', '#FF6B6B', '#E74C3C'][i % 3],
                 active: true,
-                type: i % 3 === 0 ? 'fast' : 'normal'
+                moveRange: 200
             });
         }
         
-        // القصر
+        // 🔥 القصر - في نهاية العالم
         this.castle = {
-            x: this.worldWidth - 350,
-            y: groundY - 200,
-            width: 250,
-            height: 200,
-            reached: false,
+            x: this.worldWidth - 400,
+            y: groundY - 250,
+            width: 300,
+            height: 250,
             color: '#8B4513',
-            flagColor: '#E74C3C'
+            flagColor: '#E74C3C',
+            reached: false
         };
-    },
-    
-    startTimer() {
-        if (this.gameTimer) clearInterval(this.gameTimer);
         
-        this.gameTimer = setInterval(() => {
-            if (this.state === 'playing') {
-                this.timeLeft--;
-                this.updateUI();
-                this.updateCompass();
-                this.updateProgressBar();
-                this.updateMissionText();
-                
-                if (this.timeLeft <= 0) {
-                    this.endGame(false, '⏰ انتهى الوقت!');
-                }
-            }
-        }, 1000);
-    },
-    
-    updateUI() {
-        const minutes = Math.floor(this.timeLeft / 60);
-        const seconds = this.timeLeft % 60;
-        
-        const timeElement = document.getElementById('time-count');
-        if (timeElement) timeElement.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-        
-        const scoreElement = document.getElementById('score-count');
-        if (scoreElement) scoreElement.textContent = this.score;
-        
-        const livesElement = document.getElementById('lives-count');
-        if (livesElement) livesElement.textContent = this.lives;
-        
-        const coinsElement = document.getElementById('coins-count');
-        if (coinsElement) coinsElement.textContent = `${this.coins}/${this.totalCoins}`;
-    },
-    
-    updateMissionText() {
-        const missionText = document.getElementById('mission-text');
-        if (!missionText) return;
-        
-        const remainingCoins = this.totalCoins - this.coins;
-        
-        if (remainingCoins > 20) {
-            missionText.textContent = '🎯 اجمع العملات الذهبية!';
-        } else if (remainingCoins > 10) {
-            missionText.textContent = '💰 استمر! العملات تكاد تنتهي!';
-        } else if (remainingCoins > 5) {
-            missionText.textContent = '🔥 قريب من النهاية!';
-        } else if (remainingCoins > 0) {
-            missionText.textContent = '⚡ آخر عملات قليلة!';
-        } else {
-            missionText.textContent = '🏃‍♂️ تقدم نحو القصر!';
-        }
-    },
-    
-    updateCompass() {
-        if (!this.player || !this.castle) return;
-        
-        const arrow = document.getElementById('compass-arrow');
-        const distanceText = document.getElementById('distance-text');
-        
-        if (!arrow || !distanceText) return;
-        
-        const distance = this.castle.x - this.player.x;
-        const distanceMeters = Math.abs(Math.round(distance / 10));
-        
-        if (distance > 200) {
-            arrow.textContent = '→';
-            arrow.style.transform = 'rotate(0deg)';
-        } else if (distance < -200) {
-            arrow.textContent = '←';
-            arrow.style.transform = 'rotate(180deg)';
-        } else {
-            arrow.textContent = '↓';
-            arrow.style.transform = 'rotate(0deg)';
-        }
-        
-        distanceText.textContent = `المسافة: ${distanceMeters}m`;
-    },
-    
-    updateProgressBar() {
-        const progressFill = document.getElementById('game-progress');
-        const currentProgress = document.getElementById('current-progress');
-        
-        if (!progressFill || !currentProgress) return;
-        
-        const coinProgress = (this.coins / this.totalCoins) * 50;
-        const positionProgress = this.player ? (this.player.x / this.worldWidth) * 50 : 0;
-        const totalProgress = Math.min(100, coinProgress + positionProgress);
-        
-        progressFill.style.width = `${totalProgress}%`;
-        currentProgress.textContent = `${Math.round(totalProgress)}%`;
+        console.log('🌍 تم إنشاء عالم اللعبة:', {
+            platforms: this.platforms.length,
+            coins: this.coins.length,
+            enemies: this.enemies.length,
+            worldSize: `${this.worldWidth}x${this.worldHeight}`
+        });
     },
     
     // ======================
-    // حلقة اللعبة الرئيسية
+    // حلقة اللعبة
     // ======================
-    
     startGameLoop() {
         if (this.state !== 'playing') return;
         
@@ -598,135 +379,173 @@ const MarioGame = {
     gameLoop(currentTime = 0) {
         if (this.state !== 'playing') return;
         
-        const deltaTime = Math.min((currentTime - this.lastTime) / 1000, 0.1);
+        // حساب الوقت المنقضي
+        this.deltaTime = (currentTime - this.lastTime) / 1000;
+        this.deltaTime = Math.min(this.deltaTime, 0.1); // منع القفزات الكبيرة
         this.lastTime = currentTime;
         this.frameCount++;
         
         try {
-            this.update(deltaTime);
+            // تحديث المنطق
+            this.update();
+            
+            // الرسم
             this.draw();
+            
         } catch (error) {
             console.error('❌ خطأ في حلقة اللعبة:', error);
-            setTimeout(() => this.startGameLoop(), 100);
-            return;
+            // استمرار اللعبة رغم الخطأ
         }
         
+        // الاستمرار في الحلقة
         this.animationId = requestAnimationFrame((time) => this.gameLoop(time));
     },
     
-    update(deltaTime) {
+    update() {
         if (!this.player) return;
         
-        this.updatePlayer(deltaTime);
-        this.updateEnemies(deltaTime);
+        // تحديث اللاعب
+        this.updatePlayer();
+        
+        // تحديث الأعداء
+        this.updateEnemies();
+        
+        // تحديث الكاميرا
         this.updateCamera();
-        this.updateAnimations(deltaTime);
+        
+        // التحقق من التصادمات
         this.checkCollisions();
-        this.checkEndConditions();
+        
+        // التحقق من شروط النهاية
+        this.checkGameConditions();
+        
+        // تحديث الرسوم المتحركة
+        this.updateAnimations();
     },
     
-    updatePlayer(deltaTime) {
-        const p = this.player;
+    updatePlayer() {
+        const player = this.player;
+        const canvas = this.canvas;
         
-        p.velX = 0;
+        // الحركة الأفقية
+        player.velX = 0;
         
         if (this.keys['arrowleft'] || this.keys['a'] || this.touchControls.left) {
-            p.velX = -p.speed;
-            p.facingRight = false;
+            player.velX = -player.speed;
+            player.facingRight = false;
         }
         
         if (this.keys['arrowright'] || this.keys['d'] || this.touchControls.right) {
-            p.velX = p.speed;
-            p.facingRight = true;
+            player.velX = player.speed;
+            player.facingRight = true;
         }
         
+        // القفز
         const jumpPressed = this.keys[' '] || this.keys['arrowup'] || this.keys['w'] || this.touchControls.jump;
         
-        if (jumpPressed && p.grounded) {
-            p.velY = p.jumpPower;
-            p.grounded = false;
+        if (jumpPressed && player.grounded) {
+            player.velY = player.jumpPower;
+            player.grounded = false;
             this.playSound('jump');
         }
         
-        p.velY += 0.8;
-        p.velY = Math.min(p.velY, 16);
+        // الجاذبية
+        player.velY += player.gravity;
+        player.velY = Math.min(player.velY, 20); // حد السرعة القصوى للسقوط
         
-        p.x += p.velX;
-        p.y += p.velY;
+        // التحرك
+        player.x += player.velX;
+        player.y += player.velY;
         
-        p.x = Math.max(0, Math.min(this.worldWidth - p.width, p.x));
+        // حدود العالم الأفقية
+        player.x = Math.max(0, Math.min(this.worldWidth - player.width, player.x));
         
-        p.grounded = false;
+        // اكتشاف التصادم مع المنصات
+        player.grounded = false;
         
         for (const platform of this.platforms) {
-            if (p.x < platform.x + platform.width &&
-                p.x + p.width > platform.x &&
-                p.y + p.height > platform.y &&
-                p.y + p.height < platform.y + platform.height + p.velY &&
-                p.velY > 0) {
+            // التحقق من الاصطدام من الأعلى
+            if (player.x < platform.x + platform.width &&
+                player.x + player.width > platform.x &&
+                player.y + player.height > platform.y &&
+                player.y + player.height < platform.y + platform.height + player.velY &&
+                player.velY > 0) {
                 
-                p.y = platform.y - p.height;
-                p.velY = 0;
-                p.grounded = true;
+                player.y = platform.y - player.height;
+                player.velY = 0;
+                player.grounded = true;
                 break;
             }
         }
         
-        if (p.y > this.canvas.height + 100) {
-            this.playerDamaged('💀 سقوط في الهاوية!');
-            p.x = 200;
-            p.y = this.canvas.height - 200;
+        // التحقق من السقوط في الهاوية
+        if (player.y > canvas.height + 100) {
+            this.playerHit('💀 سقوط في الهاوية!');
+            // إعادة تعيين موقع اللاعب
+            player.x = 100;
+            player.y = canvas.height - 200;
+            player.velY = 0;
         }
         
-        if (p.invincible) {
-            p.invincibleTime -= deltaTime;
-            if (p.invincibleTime <= 0) {
-                p.invincible = false;
+        // تحديث وقت المناعة
+        if (player.invincible) {
+            player.invincibleTime -= this.deltaTime;
+            if (player.invincibleTime <= 0) {
+                player.invincible = false;
             }
         }
     },
     
-    updateEnemies(deltaTime) {
+    updateEnemies() {
         this.enemies.forEach(enemy => {
             if (!enemy.active) return;
             
-            enemy.x += enemy.speed * enemy.dir * deltaTime * 60;
+            // حركة العدو
+            enemy.x += enemy.speed * enemy.direction * this.deltaTime * 60;
             
-            if (enemy.x < 50 || enemy.x + enemy.width > this.worldWidth - 50) {
-                enemy.dir *= -1;
+            // تغيير الاتجاه عند الحافة
+            if (enemy.x <= 50 || enemy.x >= this.worldWidth - 50) {
+                enemy.direction *= -1;
             }
             
+            // حركة تموجية بسيطة
             enemy.y += Math.sin(this.frameCount * 0.05 + enemy.x * 0.01) * 0.5;
-        });
-    },
-    
-    updateAnimations(deltaTime) {
-        this.coinsArr.forEach(coin => {
-            if (!coin.collected) {
-                coin.anim += deltaTime * 2;
-            }
         });
     },
     
     updateCamera() {
         if (!this.player) return;
         
-        const p = this.player;
-        const targetX = p.x - this.canvas.width / 2 + p.width / 2;
+        const canvas = this.canvas;
+        const player = this.player;
         
+        // تتبع اللاعب
+        const targetX = player.x - canvas.width / 2 + player.width / 2;
+        
+        // كاميرا سلسة
         this.camera.x += (targetX - this.camera.x) * 0.1;
-        this.camera.x = Math.max(0, Math.min(this.worldWidth - this.canvas.width, this.camera.x));
+        
+        // حدود الكاميرا
+        this.camera.x = Math.max(0, Math.min(this.worldWidth - canvas.width, this.camera.x));
+    },
+    
+    updateAnimations() {
+        // تحريك العملات
+        this.coins.forEach(coin => {
+            if (!coin.collected) {
+                coin.animation += this.deltaTime * 3;
+            }
+        });
     },
     
     checkCollisions() {
-        const p = this.player;
-        if (!p) return;
+        const player = this.player;
         
         // جمع العملات
-        this.coinsArr.forEach(coin => {
+        this.coins.forEach(coin => {
             if (!coin.collected) {
-                const dx = p.x + p.width / 2 - coin.x;
-                const dy = p.y + p.height / 2 - coin.y;
+                const dx = player.x + player.width / 2 - coin.x;
+                const dy = player.y + player.height / 2 - coin.y;
                 const distance = Math.sqrt(dx * dx + dy * dy);
                 
                 if (distance < 30) {
@@ -734,83 +553,53 @@ const MarioGame = {
                     this.coins++;
                     this.score += coin.value;
                     this.updateUI();
-                    this.updateProgressBar();
                     this.playSound('coin');
+                    this.showNotification(`💰 +${coin.value} نقطة!`);
                 }
             }
         });
         
-        // الاصطدام بالأعداء
+        // التصادم مع الأعداء
         this.enemies.forEach(enemy => {
             if (!enemy.active) return;
             
-            if (p.x < enemy.x + enemy.width &&
-                p.x + p.width > enemy.x &&
-                p.y < enemy.y + enemy.height &&
-                p.y + p.height > enemy.y) {
+            if (player.x < enemy.x + enemy.width &&
+                player.x + player.width > enemy.x &&
+                player.y < enemy.y + enemy.height &&
+                player.y + player.height > enemy.y) {
                 
-                if (p.velY > 0 && p.y + p.height < enemy.y + enemy.height / 2) {
+                if (player.velY > 0 && player.y + player.height < enemy.y + enemy.height / 2) {
                     // قفز على العدو
                     enemy.active = false;
                     this.score += 200;
-                    this.kills++;
-                    p.velY = -12;
+                    this.enemiesKilled++;
+                    player.velY = -12; // ارتداد
                     this.updateUI();
                     this.playSound('hit');
-                } else if (!p.invincible) {
+                    this.showNotification(`👊 +200 نقطة! عدو مهزوم!`);
+                } else if (!player.invincible) {
                     // اصطدام بالعدو
-                    this.playerDamaged('👾 اصطدمت بعدو!');
+                    this.playerHit('👾 اصطدمت بعدو!');
                 }
             }
         });
-    },
-    
-    checkEndConditions() {
-        // 🔥 إصلاح: منع الفوز التلقائي في البداية
-        if (this.frameCount < 60) return;
         
-        // الفوز بجمع كل العملات
-        if (this.coins >= this.totalCoins) {
-            // 🔥 إصلاح: تأكد من تحقيق إنجاز حقيقي
-            if (this.player.x > 500 && this.lives > 0) {
-                this.endGame(true, '🎊 جمعت كل العملات!');
-            }
-            return;
-        }
-        
-        // الفوز بالوصول للقصر
+        // الوصول للقصر
         if (this.castle && !this.castle.reached) {
-            const p = this.player;
-            const c = this.castle;
-            
-            const dx = p.x + p.width / 2 - (c.x + c.width / 2);
-            const dy = p.y + p.height / 2 - (c.y + c.height / 2);
+            const dx = player.x + player.width / 2 - (this.castle.x + this.castle.width / 2);
+            const dy = player.y + player.height / 2 - (this.castle.y + this.castle.height / 2);
             const distance = Math.sqrt(dx * dx + dy * dy);
             
-            if (distance < 180) {
-                // 🔥 إصلاح: تأكد من تحقيق إنجاز حقيقي
-                if (this.coins > 10 && this.lives > 0) {
-                    c.reached = true;
-                    this.score += 2000;
-                    this.endGame(true, '🏰 وصلت للقصر الملكي!');
-                }
-                return;
+            if (distance < 200 && this.coins >= this.totalCoins) {
+                this.castle.reached = true;
+                this.endGame(true, '🏰 وصلت للقصر الملكي!');
             }
-        }
-        
-        // الفوز بالوصول لنهاية العالم
-        if (this.player.x >= this.worldWidth - 200) {
-            // 🔥 إصلاح: تأكد من تحقيق إنجاز حقيقي
-            if (this.coins > 15 && this.timeLeft > 30) {
-                this.endGame(true, '🚀 وصلت لنهاية العالم!');
-            }
-            return;
         }
     },
     
-    playerDamaged(message) {
-        const p = this.player;
-        if (p.invincible) return;
+    playerHit(message) {
+        const player = this.player;
+        if (player.invincible) return;
         
         this.lives--;
         this.updateUI();
@@ -820,21 +609,42 @@ const MarioGame = {
         if (this.lives <= 0) {
             this.endGame(false, '💔 نفدت الأرواح!');
         } else {
-            p.invincible = true;
-            p.invincibleTime = 3;
-            p.velY = -10;
+            // مناعة مؤقتة بعد الضرر
+            player.invincible = true;
+            player.invincibleTime = 2;
+            player.velY = -10; // ارتداد بسيط
+        }
+    },
+    
+    checkGameConditions() {
+        // الفوز بجمع كل العملات
+        if (this.coins >= this.totalCoins) {
+            this.endGame(true, '🎊 جمعت كل العملات!');
+            return;
+        }
+        
+        // الخسارة بانتهاء الوقت
+        if (this.timeLeft <= 0) {
+            this.endGame(false, '⏰ انتهى الوقت!');
+            return;
+        }
+        
+        // الفوز بالوصول لنهاية العالم (للتجربة)
+        if (this.player.x >= this.worldWidth - 200) {
+            this.endGame(true, '🚀 وصلت لنهاية العالم!');
+            return;
         }
     },
     
     // ======================
     // نهاية اللعبة
     // ======================
-    
     endGame(isWin, message) {
-        console.log(isWin ? '🏆 فوز!' : '💀 خسارة!');
+        console.log(isWin ? '🏆 فوز!' : '💔 خسارة!');
         
-        this.state = 'ended';
+        this.state = 'gameOver';
         
+        // إيقاف المؤقتات
         if (this.gameTimer) {
             clearInterval(this.gameTimer);
             this.gameTimer = null;
@@ -845,95 +655,94 @@ const MarioGame = {
             this.animationId = null;
         }
         
-        if (this.score > this.highScore) {
-            this.highScore = this.score;
+        // حفظ أفضل نتيجة
+        if (this.score > this.bestScore) {
+            this.bestScore = this.score;
             try {
-                localStorage.setItem('mario_high_score', this.highScore.toString());
-                document.getElementById('high-score').textContent = this.highScore;
+                localStorage.setItem('mario_best_score', this.bestScore.toString());
+                document.getElementById('best-score').textContent = this.bestScore;
             } catch (e) {
-                console.warn('⚠️ فشل حفظ أفضل نتيجة:', e);
+                console.warn('⚠️ لا يمكن حفظ أفضل نتيجة');
             }
         }
         
+        // تحديث شاشة النهاية
         this.updateEndScreen(isWin, message);
-        this.updateAchievements();
+        
+        // الانتقال لشاشة النهاية
         this.showScreen('end');
+        
+        // إشعار النهاية
         this.showNotification(isWin ? '🎉 انتصار رائع!' : '💪 حاول مرة أخرى!');
     },
     
     updateEndScreen(isWin, message) {
-        const endIcon = document.getElementById('victory-icon');
-        const endTitle = document.getElementById('end-title');
-        const endMessage = document.getElementById('end-message');
-        
-        if (endIcon) {
-            endIcon.innerHTML = isWin ? '<i class="fas fa-trophy"></i>' : '<i class="fas fa-skull-crossbones"></i>';
+        // تحديث الأيقونة
+        const icon = document.getElementById('result-icon');
+        if (icon) {
+            icon.innerHTML = isWin ? 
+                '<i class="fas fa-trophy"></i>' : 
+                '<i class="fas fa-skull-crossbones"></i>';
         }
         
-        if (endTitle) {
-            endTitle.textContent = isWin ? '🎉 انتصار مذهل!' : '💔 انتهت اللعبة';
-        }
+        // تحديث النص
+        const title = document.getElementById('end-title');
+        const msg = document.getElementById('end-message');
         
-        if (endMessage) {
-            endMessage.textContent = message;
-        }
+        if (title) title.textContent = isWin ? '🎉 انتصار مذهل!' : '💔 انتهت اللعبة';
+        if (msg) msg.textContent = message;
         
+        // تحديث الإحصائيات
         document.getElementById('final-score').textContent = this.score;
         document.getElementById('final-coins').textContent = `${this.coins}/${this.totalCoins}`;
         document.getElementById('final-time').textContent = this.formatTime(120 - this.timeLeft);
-        document.getElementById('final-kills').textContent = this.kills;
+        document.getElementById('final-enemies').textContent = this.enemiesKilled;
         
-        const speed = Math.round((120 - this.timeLeft) / 120 * 100);
-        document.getElementById('final-speed').textContent = `${100 - speed}%`;
-    },
-    
-    updateAchievements() {
-        const coinAchievement = document.getElementById('achievement-coins');
-        if (coinAchievement && this.coins >= this.totalCoins) {
-            coinAchievement.classList.add('completed');
-            coinAchievement.innerHTML = '<i class="fas fa-check-circle"></i><span>سيد العملات</span>';
-        }
-        
-        const speedAchievement = document.getElementById('achievement-speed');
-        if (speedAchievement && this.timeLeft >= 60) {
-            speedAchievement.classList.add('completed');
-            speedAchievement.innerHTML = '<i class="fas fa-check-circle"></i><span>عداء سريع</span>';
-        }
-        
-        const perfectAchievement = document.getElementById('achievement-perfect');
-        if (perfectAchievement && this.lives === 3 && this.coins >= this.totalCoins) {
-            perfectAchievement.classList.add('completed');
-            perfectAchievement.innerHTML = '<i class="fas fa-check-circle"></i><span>أداء مثالي</span>';
-        }
-    },
-    
-    formatTime(seconds) {
-        const mins = Math.floor(seconds / 60);
-        const secs = seconds % 60;
-        return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        // حساب الكفاءة
+        const efficiency = Math.round((this.score / 5000) * 100);
+        document.getElementById('final-efficiency').textContent = `${efficiency}%`;
     },
     
     // ======================
-    // الرسم مع الصورة الشخصية
+    // الرسم
     // ======================
-    
     draw() {
         if (!this.canvas || !this.ctx || !this.player) return;
         
         const ctx = this.ctx;
+        const canvas = this.canvas;
         
-        ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        // مسح الشاشة
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        // حفظ حالة الـ Canvas
         ctx.save();
+        
+        // تطبيق حركة الكاميرا
         ctx.translate(-this.camera.x, 0);
         
+        // رسم الخلفية
         this.drawBackground();
+        
+        // رسم الأرض والمنصات
         this.drawPlatforms();
+        
+        // رسم العملات
         this.drawCoins();
+        
+        // رسم الأعداء
         this.drawEnemies();
+        
+        // رسم القصر
         this.drawCastle();
+        
+        // رسم اللاعب
         this.drawPlayer();
         
+        // استعادة حالة الـ Canvas
         ctx.restore();
+        
+        // رسم واجهة اللاعب (HUD)
         this.drawHUD();
     },
     
@@ -941,23 +750,39 @@ const MarioGame = {
         const ctx = this.ctx;
         const canvas = this.canvas;
         
+        // السماء المتدرجة
         const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
         gradient.addColorStop(0, '#87CEEB');
-        gradient.addColorStop(0.6, '#5DADE2');
+        gradient.addColorStop(0.7, '#5DADE2');
         gradient.addColorStop(1, '#3498DB');
         ctx.fillStyle = gradient;
         ctx.fillRect(0, 0, this.worldWidth, canvas.height);
         
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
-        for (let i = 0; i < 12; i++) {
-            const x = (this.camera.x * 0.03 + i * 280) % (this.worldWidth + 400);
-            const y = 40 + Math.sin(this.frameCount * 0.002 + i * 0.5) * 25;
-            const size = 18 + Math.sin(i * 0.7) * 4;
+        // سحب متحركة
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+        for (let i = 0; i < 10; i++) {
+            const x = (this.camera.x * 0.02 + i * 300) % (this.worldWidth + 500);
+            const y = 50 + Math.sin(this.frameCount * 0.001 + i) * 30;
+            const size = 20 + Math.sin(i * 0.5) * 5;
             
             ctx.beginPath();
             ctx.arc(x, y, size, 0, Math.PI * 2);
-            ctx.arc(x + size * 1.2, y - size * 0.4, size * 0.9, 0, Math.PI * 2);
-            ctx.arc(x + size * 2.4, y, size, 0, Math.PI * 2);
+            ctx.arc(x + size * 1.2, y - size * 0.3, size * 0.8, 0, Math.PI * 2);
+            ctx.arc(x + size * 2.3, y, size, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        
+        // جبال في الخلفية
+        ctx.fillStyle = 'rgba(44, 62, 80, 0.3)';
+        for (let i = 0; i < 6; i++) {
+            const x = (i * 600) % this.worldWidth;
+            const height = 100 + Math.sin(i) * 40;
+            
+            ctx.beginPath();
+            ctx.moveTo(x, canvas.height - 80);
+            ctx.lineTo(x + 300, canvas.height - 80 - height);
+            ctx.lineTo(x + 600, canvas.height - 80);
+            ctx.closePath();
             ctx.fill();
         }
     },
@@ -966,32 +791,46 @@ const MarioGame = {
         const ctx = this.ctx;
         
         this.platforms.forEach(platform => {
+            // تدرج اللون للمنصة
+            const gradient = ctx.createLinearGradient(
+                platform.x, platform.y,
+                platform.x, platform.y + platform.height
+            );
+            
             if (platform.type === 'ground') {
-                const gradient = ctx.createLinearGradient(platform.x, platform.y, platform.x, platform.y + platform.height);
                 gradient.addColorStop(0, '#8B4513');
                 gradient.addColorStop(0.5, '#734322');
                 gradient.addColorStop(1, '#654321');
-                ctx.fillStyle = gradient;
             } else {
-                const gradient = ctx.createLinearGradient(platform.x, platform.y, platform.x, platform.y + platform.height);
                 gradient.addColorStop(0, platform.color);
                 gradient.addColorStop(1, '#8B4513');
-                ctx.fillStyle = gradient;
             }
             
+            ctx.fillStyle = gradient;
             ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
+            
+            // تفاصيل المنصة (خطوط)
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+            for (let i = 0; i < platform.width; i += 40) {
+                ctx.fillRect(platform.x + i, platform.y, 30, 5);
+            }
         });
     },
     
     drawCoins() {
         const ctx = this.ctx;
         
-        this.coinsArr.forEach(coin => {
+        this.coins.forEach(coin => {
             if (!coin.collected) {
-                const bounce = Math.sin(coin.anim + this.frameCount * 0.1) * 12;
-                const y = coin.y + bounce;
+                // حركة تمايل
+                const bounceY = Math.sin(coin.animation) * 10;
+                const y = coin.y + bounceY;
                 
-                const gradient = ctx.createRadialGradient(coin.x, y, 0, coin.x, y, coin.radius);
+                // عملة ذهبية متلألئة
+                const gradient = ctx.createRadialGradient(
+                    coin.x, y, 0,
+                    coin.x, y, coin.radius
+                );
                 gradient.addColorStop(0, '#FFF');
                 gradient.addColorStop(0.3, '#FFD700');
                 gradient.addColorStop(1, '#FFA500');
@@ -1000,6 +839,21 @@ const MarioGame = {
                 ctx.beginPath();
                 ctx.arc(coin.x, y, coin.radius, 0, Math.PI * 2);
                 ctx.fill();
+                
+                // بريق
+                ctx.fillStyle = '#FFF';
+                ctx.beginPath();
+                ctx.arc(coin.x - 4, y - 4, 6, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // تأثير الوميض
+                if (Math.sin(this.frameCount * 0.1) > 0.8) {
+                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.arc(coin.x, y, coin.radius + 8, 0, Math.PI * 2);
+                    ctx.stroke();
+                }
             }
         });
     },
@@ -1010,14 +864,42 @@ const MarioGame = {
         this.enemies.forEach(enemy => {
             if (!enemy.active) return;
             
-            const gradient = ctx.createLinearGradient(enemy.x, enemy.y, enemy.x, enemy.y + enemy.height);
+            // جسم العدو
+            const gradient = ctx.createLinearGradient(
+                enemy.x, enemy.y,
+                enemy.x, enemy.y + enemy.height
+            );
             gradient.addColorStop(0, enemy.color);
             gradient.addColorStop(1, '#C0392B');
             ctx.fillStyle = gradient;
             
+            // جسم مستدير
             ctx.beginPath();
-            ctx.roundRect(enemy.x, enemy.y, enemy.width, enemy.height, 10);
+            ctx.roundRect(enemy.x, enemy.y, enemy.width, enemy.height, 8);
             ctx.fill();
+            
+            // عيون
+            ctx.fillStyle = '#2C3E50';
+            ctx.beginPath();
+            ctx.arc(enemy.x + 15, enemy.y + 15, 7, 0, Math.PI * 2);
+            ctx.arc(enemy.x + enemy.width - 15, enemy.y + 15, 7, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // بؤبؤ العين
+            ctx.fillStyle = '#FFF';
+            ctx.beginPath();
+            ctx.arc(enemy.x + 15, enemy.y + 15, 3, 0, Math.PI * 2);
+            ctx.arc(enemy.x + enemy.width - 15, enemy.y + 15, 3, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // فم
+            ctx.fillStyle = '#000';
+            ctx.fillRect(enemy.x + 20, enemy.y + 30, enemy.width - 40, 8);
+            
+            // قرون
+            ctx.fillStyle = enemy.color;
+            ctx.fillRect(enemy.x + 10, enemy.y - 12, 8, 12);
+            ctx.fillRect(enemy.x + enemy.width - 18, enemy.y - 12, 8, 12);
         });
     },
     
@@ -1025,245 +907,307 @@ const MarioGame = {
         if (!this.castle) return;
         
         const ctx = this.ctx;
-        const c = this.castle;
+        const castle = this.castle;
         
-        const gradient = ctx.createLinearGradient(c.x, c.y, c.x, c.y + c.height);
-        gradient.addColorStop(0, '#8B4513');
+        // قاعدة القصر
+        const gradient = ctx.createLinearGradient(
+            castle.x, castle.y,
+            castle.x, castle.y + castle.height
+        );
+        gradient.addColorStop(0, castle.color);
         gradient.addColorStop(1, '#654321');
         ctx.fillStyle = gradient;
-        ctx.fillRect(c.x, c.y, c.width, c.height);
+        ctx.fillRect(castle.x, castle.y, castle.width, castle.height);
+        
+        // نسيج القصر (طوب)
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.15)';
+        for (let i = 0; i < castle.width; i += 35) {
+            for (let j = 0; j < castle.height; j += 30) {
+                ctx.fillRect(castle.x + i + 2, castle.y + j + 2, 30, 25);
+            }
+        }
+        
+        // الأبراج
+        ctx.fillStyle = '#A0522D';
+        ctx.fillRect(castle.x - 20, castle.y - 150, 60, 150);
+        ctx.fillRect(castle.x + castle.width - 40, castle.y - 150, 60, 150);
+        
+        // النوافذ
+        ctx.fillStyle = '#FFD700';
+        for (let i = 0; i < 4; i++) {
+            for (let j = 0; j < 3; j++) {
+                ctx.fillRect(castle.x + 40 + i * 55, castle.y + 30 + j * 60, 25, 35);
+            }
+        }
+        
+        // البوابة
+        ctx.fillStyle = '#654321';
+        ctx.fillRect(castle.x + castle.width / 2 - 35, castle.y + castle.height - 70, 70, 70);
+        
+        // العلم
+        if (!castle.reached) {
+            ctx.fillStyle = '#654321';
+            ctx.fillRect(castle.x + castle.width / 2 - 4, castle.y - 160, 8, 100);
+            
+            ctx.fillStyle = castle.flagColor;
+            ctx.beginPath();
+            ctx.moveTo(castle.x + castle.width / 2, castle.y - 160);
+            ctx.lineTo(castle.x + castle.width / 2 + 40, castle.y - 140);
+            ctx.lineTo(castle.x + castle.width / 2, castle.y - 120);
+            ctx.closePath();
+            ctx.fill();
+            
+            // تفاصيل العلم
+            ctx.fillStyle = '#FFD700';
+            ctx.beginPath();
+            ctx.arc(castle.x + castle.width / 2 + 20, castle.y - 130, 5, 0, Math.PI * 2);
+            ctx.fill();
+        }
     },
     
     drawPlayer() {
         if (!this.player) return;
         
         const ctx = this.ctx;
-        const p = this.player;
-        const canvas = this.canvas;
+        const player = this.player;
         
         // لون اللاعب (يتغير إذا كان منيعاً)
-        const playerColor = p.invincible && Math.floor(Date.now() / 200) % 2 === 0 ? '#9B59B6' : p.color;
-        
-        // هل نستخدم الصورة الشخصية؟
-        if (this.useCustomImage && this.playerImage && this.playerImage.complete) {
-            try {
-                // رسم الصورة الشخصية
-                ctx.save();
-                
-                // انعكاس إذا كان اللاعب يواجه اليسار
-                if (!p.facingRight) {
-                    ctx.scale(-1, 1);
-                    ctx.translate(-p.x * 2 - p.width, 0);
-                }
-                
-                // تأثير المناعة (وميض)
-                if (p.invincible && Math.floor(Date.now() / 200) % 2 === 0) {
-                    ctx.globalAlpha = 0.5;
-                }
-                
-                ctx.drawImage(this.playerImage, p.x, p.y, p.width, p.height);
-                
-                // تأثير ظل تحت اللاعب عند القفز
-                if (!p.grounded) {
-                    ctx.globalAlpha = 0.2;
-                    ctx.fillStyle = '#000';
-                    ctx.beginPath();
-                    ctx.ellipse(
-                        p.x + p.width/2,
-                        p.y + p.height + 5,
-                        p.width/2.5,
-                        6,
-                        0, 0, Math.PI * 2
-                    );
-                    ctx.fill();
-                }
-                
-                ctx.restore();
-                
-            } catch (error) {
-                console.warn('⚠️ خطأ في رسم الصورة، استخدام التصميم الافتراضي:', error);
-                this.drawDefaultPlayer();
-            }
-        } else {
-            // استخدام التصميم الافتراضي
-            this.drawDefaultPlayer();
-        }
-        
-        // تأثير المناعة (حدود ذهبية)
-        if (p.invincible && Math.floor(Date.now() / 200) % 2 === 0) {
-            ctx.strokeStyle = '#FFD700';
-            ctx.lineWidth = 4;
-            ctx.beginPath();
-            ctx.roundRect(p.x - 2, p.y - 2, p.width + 4, p.height + 4, 12);
-            ctx.stroke();
-        }
-    },
-    
-    drawDefaultPlayer() {
-        const ctx = this.ctx;
-        const p = this.player;
-        
-        const playerColor = p.invincible && Math.floor(Date.now() / 200) % 2 === 0 ? '#9B59B6' : p.color;
+        const playerColor = player.invincible && Math.floor(Date.now() / 200) % 2 === 0 ? 
+                          '#9B59B6' : player.color;
         
         // جسم اللاعب
-        const gradient = ctx.createLinearGradient(p.x, p.y, p.x, p.y + p.height);
+        const gradient = ctx.createLinearGradient(
+            player.x, player.y,
+            player.x, player.y + player.height
+        );
         gradient.addColorStop(0, playerColor);
         gradient.addColorStop(1, '#C0392B');
         ctx.fillStyle = gradient;
         
+        // رسم جسم مستدير
         ctx.beginPath();
-        ctx.roundRect(p.x, p.y, p.width, p.height, 8);
+        ctx.roundRect(player.x, player.y, player.width, player.height, 10);
         ctx.fill();
         
-        // رأس اللاعب
+        // الرأس
         ctx.fillStyle = '#2C3E50';
         ctx.beginPath();
-        ctx.roundRect(p.x + 8, p.y + 8, 24, 24, 12);
+        ctx.roundRect(player.x + 10, player.y + 10, 20, 20, 10);
         ctx.fill();
         
-        // عيون اللاعب
-        const eyeOffset = p.facingRight ? 0 : 4;
+        // العيون (تتغير حسب الاتجاه)
+        const eyeOffset = player.facingRight ? 0 : 5;
         ctx.fillStyle = '#FFF';
-        ctx.fillRect(p.x + 12 + eyeOffset, p.y + 12, 6, 6);
-        ctx.fillRect(p.x + 22 + eyeOffset, p.y + 12, 6, 6);
+        ctx.fillRect(player.x + 14 + eyeOffset, player.y + 14, 6, 6);
+        ctx.fillRect(player.x + 24 + eyeOffset, player.y + 14, 6, 6);
         
         // بؤبؤ العين
         ctx.fillStyle = '#000';
-        ctx.fillRect(p.x + 14 + eyeOffset, p.y + 14, 2, 2);
-        ctx.fillRect(p.x + 24 + eyeOffset, p.y + 14, 2, 2);
+        ctx.fillRect(player.x + 16 + eyeOffset, player.y + 16, 2, 2);
+        ctx.fillRect(player.x + 26 + eyeOffset, player.y + 16, 2, 2);
         
-        // فم اللاعب
+        // الفم
         ctx.fillStyle = '#FFF';
-        ctx.fillRect(p.x + 14, p.y + 25, 12, 4);
+        ctx.fillRect(player.x + 16, player.y + 28, 8, 4);
+        
+        // تأثير المناعة (وميض)
+        if (player.invincible) {
+            ctx.strokeStyle = '#FFD700';
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.roundRect(player.x - 2, player.y - 2, player.width + 4, player.height + 4, 12);
+            ctx.stroke();
+        }
+        
+        // ظل تحت اللاعب عند القفز
+        if (!player.grounded) {
+            ctx.fillStyle = 'rgba(255, 215, 0, 0.2)';
+            ctx.beginPath();
+            ctx.ellipse(
+                player.x + player.width / 2,
+                player.y + player.height + 8,
+                player.width / 3,
+                8,
+                0, 0, Math.PI * 2
+            );
+            ctx.fill();
+        }
     },
     
     drawHUD() {
         const ctx = this.ctx;
         const canvas = this.canvas;
         
-        // معلومات سريعة في الزاوية
+        // خلفية شبه شفافة للمعلومات
         ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-        ctx.fillRect(10, 10, 180, 80);
+        ctx.fillRect(10, 10, 200, 100);
+        ctx.fillRect(canvas.width - 210, 10, 200, 60);
         
+        // معلومات النقاط والأرواح
         ctx.fillStyle = '#FFD700';
-        ctx.font = 'bold 22px Cairo';
+        ctx.font = 'bold 24px Cairo';
         ctx.fillText(`🏆 ${this.score}`, 20, 45);
         
         ctx.fillStyle = '#E74C3C';
-        ctx.font = '18px Cairo';
-        ctx.fillText(`❤️ ${this.lives}`, 20, 75);
+        ctx.font = '20px Cairo';
+        ctx.fillText(`❤️ ${this.lives}`, 20, 80);
         
-        // تلميح سريع
+        // معلومات التقدم
+        ctx.fillStyle = '#4ECDC4';
+        ctx.font = '18px Cairo';
+        ctx.fillText(`💰 ${this.coins}/${this.totalCoins}`, canvas.width - 200, 45);
+        
+        // تلميح
         if (this.frameCount % 120 < 60) {
             ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
             ctx.font = '16px Cairo';
-            ctx.fillText('🎯 اجمع كل العملات!', canvas.width - 200, 40);
+            ctx.fillText('🎯 تقدم نحو القصر!', canvas.width / 2 - 100, 40);
+        }
+    },
+    
+    // ======================
+    // إدارة المؤقتات
+    // ======================
+    startTimer() {
+        if (this.gameTimer) {
+            clearInterval(this.gameTimer);
+        }
+        
+        this.gameTimer = setInterval(() => {
+            if (this.state === 'playing') {
+                this.timeLeft--;
+                this.updateUI();
+                
+                // تحديث رسالة المهمة
+                this.updateMissionText();
+                
+                if (this.timeLeft <= 0) {
+                    this.endGame(false, '⏰ انتهى الوقت!');
+                }
+            }
+        }, 1000);
+    },
+    
+    updateUI() {
+        // الوقت
+        const minutes = Math.floor(this.timeLeft / 60);
+        const seconds = this.timeLeft % 60;
+        document.getElementById('timer-display').textContent = 
+            `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        
+        // النقاط
+        document.getElementById('score-display').textContent = this.score;
+        
+        // الأرواح
+        document.getElementById('lives-display').textContent = this.lives;
+        
+        // العملات
+        document.getElementById('coins-display').textContent = `${this.coins}/${this.totalCoins}`;
+    },
+    
+    updateMissionText() {
+        const missionText = document.getElementById('mission-text');
+        if (!missionText) return;
+        
+        const remainingCoins = this.totalCoins - this.coins;
+        const remainingTime = this.timeLeft;
+        
+        if (remainingCoins > 20) {
+            missionText.textContent = '🎯 اجمع العملات الذهبية!';
+        } else if (remainingCoins > 10) {
+            missionText.textContent = '💰 استمر! العملات تكاد تنتهي!';
+        } else if (remainingCoins > 5) {
+            missionText.textContent = '🔥 قريب من النهاية!';
+        } else if (remainingCoins > 0) {
+            missionText.textContent = '⚡ آخر عملات قليلة!';
+        } else if (remainingTime > 30) {
+            missionText.textContent = '🏃‍♂️ تقدم نحو القصر!';
+        } else {
+            missionText.textContent = '⏰ أسرع! الوقت ينفد!';
         }
     },
     
     // ======================
     // وظائف مساعدة
     // ======================
+    showScreen(screenId) {
+        // إخفاء كل الشاشات
+        document.querySelectorAll('.screen').forEach(screen => {
+            screen.classList.remove('active');
+            screen.style.display = 'none';
+        });
+        
+        // إظهار الشاشة المطلوبة
+        const screen = document.getElementById(screenId + '-screen');
+        if (screen) {
+            screen.classList.add('active');
+            screen.style.display = 'flex';
+            this.state = screenId === 'game' ? 'playing' : screenId;
+            
+            // إذا كانت شاشة اللعب، نبدأ الحلقة
+            if (screenId === 'game') {
+                setTimeout(() => {
+                    if (this.state === 'playing') {
+                        this.startGameLoop();
+                    }
+                }, 100);
+            }
+        }
+    },
+    
+    backToMenu() {
+        this.state = 'menu';
+        
+        // إيقاف المؤقتات
+        if (this.gameTimer) {
+            clearInterval(this.gameTimer);
+            this.gameTimer = null;
+        }
+        
+        if (this.animationId) {
+            cancelAnimationFrame(this.animationId);
+            this.animationId = null;
+        }
+        
+        this.showScreen('start');
+    },
     
     togglePause() {
-        const pauseBtn = document.getElementById('pause-button');
-        
         if (this.state === 'playing') {
             this.state = 'paused';
             if (this.gameTimer) clearInterval(this.gameTimer);
             if (this.animationId) cancelAnimationFrame(this.animationId);
-            if (pauseBtn) {
-                pauseBtn.innerHTML = '<i class="fas fa-play"></i>';
-                pauseBtn.title = 'متابعة اللعبة';
-            }
+            document.getElementById('pause-btn').innerHTML = '<i class="fas fa-play"></i>';
             this.showNotification('⏸️ اللعبة متوقفة');
         } else if (this.state === 'paused') {
             this.state = 'playing';
             this.startTimer();
             this.startGameLoop();
-            if (pauseBtn) {
-                pauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
-                pauseBtn.title = 'إيقاف اللعبة';
-            }
+            document.getElementById('pause-btn').innerHTML = '<i class="fas fa-pause"></i>';
             this.showNotification('▶️ اللعبة مستمرة');
         }
     },
     
     toggleSound() {
-        const btn = document.getElementById('sound-button');
-        if (btn) {
-            if (btn.innerHTML.includes('volume-up')) {
-                btn.innerHTML = '<i class="fas fa-volume-mute"></i>';
-                btn.title = 'تشغيل الصوت';
-                this.soundEnabled = false;
-                this.showNotification('🔇 الصوت متوقف');
-            } else {
-                btn.innerHTML = '<i class="fas fa-volume-up"></i>';
-                btn.title = 'إيقاف الصوت';
-                this.soundEnabled = true;
-                this.showNotification('🔊 الصوت مفعل');
-            }
+        const btn = document.getElementById('sound-btn');
+        if (btn.innerHTML.includes('volume-up')) {
+            btn.innerHTML = '<i class="fas fa-volume-mute"></i>';
+            this.soundEnabled = false;
+            this.showNotification('🔇 الصوت متوقف');
+        } else {
+            btn.innerHTML = '<i class="fas fa-volume-up"></i>';
+            this.soundEnabled = true;
+            this.showNotification('🔊 الصوت مفعل');
         }
     },
     
     toggleFullscreen() {
         try {
             if (!document.fullscreenElement) {
-                // دخول وضع ملء الشاشة
-                if (document.documentElement.requestFullscreen) {
-                    document.documentElement.requestFullscreen();
-                } else if (document.documentElement.mozRequestFullScreen) {
-                    document.documentElement.mozRequestFullScreen();
-                } else if (document.documentElement.webkitRequestFullscreen) {
-                    document.documentElement.webkitRequestFullscreen();
-                } else if (document.documentElement.msRequestFullscreen) {
-                    document.documentElement.msRequestFullscreen();
-                }
-                
-                // تحديث الأزرار
-                const fullscreenBtn = document.getElementById('fullscreen-button');
-                const quickFullscreenBtn = document.getElementById('quick-fullscreen');
-                
-                if (fullscreenBtn) {
-                    fullscreenBtn.innerHTML = '<i class="fas fa-compress"></i>';
-                    fullscreenBtn.title = 'تصغير الشاشة';
-                    fullscreenBtn.classList.add('fullscreen-active');
-                }
-                
-                if (quickFullscreenBtn) {
-                    quickFullscreenBtn.innerHTML = '<i class="fas fa-compress"></i>';
-                    quickFullscreenBtn.title = 'تصغير الشاشة';
-                }
-                
+                document.documentElement.requestFullscreen();
                 this.showNotification('🖥️ وضع ملء الشاشة مفعل');
-                
             } else {
-                // الخروج من وضع ملء الشاشة
-                if (document.exitFullscreen) {
-                    document.exitFullscreen();
-                } else if (document.mozCancelFullScreen) {
-                    document.mozCancelFullScreen();
-                } else if (document.webkitExitFullscreen) {
-                    document.webkitExitFullscreen();
-                } else if (document.msExitFullscreen) {
-                    document.msExitFullscreen();
-                }
-                
-                // تحديث الأزرار
-                const fullscreenBtn = document.getElementById('fullscreen-button');
-                const quickFullscreenBtn = document.getElementById('quick-fullscreen');
-                
-                if (fullscreenBtn) {
-                    fullscreenBtn.innerHTML = '<i class="fas fa-expand"></i>';
-                    fullscreenBtn.title = 'ملء الشاشة';
-                    fullscreenBtn.classList.remove('fullscreen-active');
-                }
-                
-                if (quickFullscreenBtn) {
-                    quickFullscreenBtn.innerHTML = '<i class="fas fa-expand"></i>';
-                    quickFullscreenBtn.title = 'ملء الشاشة';
-                }
-                
+                document.exitFullscreen();
                 this.showNotification('📱 الخروج من ملء الشاشة');
             }
         } catch (error) {
@@ -1278,57 +1222,75 @@ const MarioGame = {
         const sound = this.sounds[soundName];
         if (sound) {
             sound.currentTime = 0;
-            sound.play().catch(e => console.log('🔇 فشل تشغيل الصوت:', e));
+            sound.play().catch(e => {
+                console.log('🔇 فشل تشغيل الصوت:', e);
+            });
         }
     },
     
     showNotification(message) {
-        const notification = document.getElementById('notification');
-        const text = document.getElementById('notification-text');
-        
-        if (notification && text) {
-            text.textContent = message;
-            notification.style.display = 'flex';
-            
-            setTimeout(() => {
-                notification.style.display = 'none';
-            }, 3000);
+        // استخدم دالة العرض من HTML
+        if (typeof window.showNotification === 'function') {
+            window.showNotification(message);
+        } else {
+            console.log('📢 ' + message);
         }
-        
-        console.log('📢 ' + message);
     },
     
     restartGame() {
         this.backToMenu();
-        setTimeout(() => this.startGame(), 300);
+        setTimeout(() => {
+            this.startGame();
+        }, 500);
     },
     
-    shareScore() {
-        const shareText = `🎮 حققت ${this.score} نقطة في لعبة ماريو الخارقة!`;
-        alert(shareText);
+    formatTime(seconds) {
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
     },
     
-    showEmergencyScreen(error) {
-        console.error('🚨 حالة طوارئ:', error);
-        alert('🚨 خطأ في اللعبة: ' + error.message + '\n\nجاري إعادة التحميل...');
-        setTimeout(() => location.reload(), 3000);
-    },
-    
-    // تحديث الصورة الشخصية
-    updatePlayerImage(imageSrc) {
-        try {
-            this.playerImage.src = imageSrc;
-            this.useCustomImage = true;
-            console.log('✅ تم تحديث صورة اللاعب');
-        } catch (e) {
-            console.error('❌ خطأ في تحديث صورة اللاعب:', e);
-            this.useCustomImage = false;
-        }
+    showEmergencyMessage(message) {
+        const emergencyHTML = `
+            <div style="
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: #0a0a1a;
+                color: white;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                z-index: 99999;
+                padding: 20px;
+                text-align: center;
+            ">
+                <div>
+                    <h1 style="color: #E74C3C; margin-bottom: 20px;">⚠️ خطأ في النظام</h1>
+                    <p style="margin-bottom: 30px; color: #aaa;">${message}</p>
+                    <button onclick="location.reload()" style="
+                        padding: 15px 30px;
+                        background: #3498DB;
+                        color: white;
+                        border: none;
+                        border-radius: 10px;
+                        font-size: 16px;
+                        cursor: pointer;
+                    ">
+                        🔄 إعادة تحميل الصفحة
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        document.body.insertAdjacentHTML('beforeend', emergencyHTML);
     }
 };
 
 // ============================================
-// تهيئة اللعبة
+// تهيئة اللعبة عند تحميل الصفحة
 // ============================================
 
 window.addEventListener('DOMContentLoaded', () => {
@@ -1338,66 +1300,73 @@ window.addEventListener('DOMContentLoaded', () => {
         try {
             MarioGame.init();
             
-            window.startMarioGame = () => MarioGame.startGame();
-            window.togglePause = () => MarioGame.togglePause();
+            // جعل الدوال متاحة عالمياً
+            window.startGame = () => MarioGame.startGame();
             window.restartGame = () => MarioGame.restartGame();
+            window.togglePause = () => MarioGame.togglePause();
+            window.toggleSound = () => MarioGame.toggleSound();
             window.backToMenu = () => MarioGame.backToMenu();
-            window.showNotification = (msg) => MarioGame.showNotification(msg);
-            window.updatePlayerImage = (src) => MarioGame.updatePlayerImage(src);
             
             console.log('✅ جميع الأنظمة جاهزة للعمل!');
             
         } catch (error) {
             console.error('❌ فشل تهيئة اللعبة:', error);
+            alert('🚨 خطأ في تحميل اللعبة!\n\n' + error.message + '\n\nجاري إعادة التحميل...');
             setTimeout(() => location.reload(), 3000);
         }
     }, 500);
 });
 
 // ============================================
-// دالات مساعدة
+// تحسينات إضافية
 // ============================================
 
-// تحديث أزرار ملء الشاشة تلقائياً
-function updateFullscreenButton() {
-    const fullscreenBtn = document.getElementById('fullscreen-button');
-    const quickFullscreenBtn = document.getElementById('quick-fullscreen');
-    
-    const isFullscreen = document.fullscreenElement || 
-                         document.webkitFullscreenElement || 
-                         document.mozFullScreenElement || 
-                         document.msFullscreenElement;
-    
-    if (fullscreenBtn) {
-        if (isFullscreen) {
-            fullscreenBtn.innerHTML = '<i class="fas fa-compress"></i>';
-            fullscreenBtn.title = 'تصغير الشاشة';
-            fullscreenBtn.classList.add('fullscreen-active');
-        } else {
-            fullscreenBtn.innerHTML = '<i class="fas fa-expand"></i>';
-            fullscreenBtn.title = 'ملء الشاشة';
-            fullscreenBtn.classList.remove('fullscreen-active');
-        }
-    }
-    
-    if (quickFullscreenBtn) {
-        if (isFullscreen) {
-            quickFullscreenBtn.innerHTML = '<i class="fas fa-compress"></i>';
-            quickFullscreenBtn.title = 'تصغير الشاشة';
-        } else {
-            quickFullscreenBtn.innerHTML = '<i class="fas fa-expand"></i>';
-            quickFullscreenBtn.title = 'ملء الشاشة';
-        }
-    }
+// إضافة دالة roundRect إذا لم تكن موجودة
+if (!CanvasRenderingContext2D.prototype.roundRect) {
+    CanvasRenderingContext2D.prototype.roundRect = function(x, y, width, height, radius) {
+        if (width < 2 * radius) radius = width / 2;
+        if (height < 2 * radius) radius = height / 2;
+        
+        this.beginPath();
+        this.moveTo(x + radius, y);
+        this.arcTo(x + width, y, x + width, y + height, radius);
+        this.arcTo(x + width, y + height, x, y + height, radius);
+        this.arcTo(x, y + height, x, y, radius);
+        this.arcTo(x, y, x + width, y, radius);
+        this.closePath();
+        return this;
+    };
 }
 
-// استمع لتغييرات وضع ملء الشاشة
-document.addEventListener('fullscreenchange', updateFullscreenButton);
-document.addEventListener('webkitfullscreenchange', updateFullscreenButton);
-document.addEventListener('mozfullscreenchange', updateFullscreenButton);
-document.addEventListener('MSFullscreenChange', updateFullscreenButton);
+// إدارة وضع ملء الشاشة
+document.addEventListener('fullscreenchange', () => {
+    const btn = document.getElementById('fullscreen-btn');
+    if (btn) {
+        if (document.fullscreenElement) {
+            btn.innerHTML = '<i class="fas fa-compress"></i>';
+            btn.title = 'تصغير الشاشة';
+        } else {
+            btn.innerHTML = '<i class="fas fa-expand"></i>';
+            btn.title = 'ملء الشاشة';
+        }
+    }
+});
 
-// تحديث عند تحميل الصفحة
-window.addEventListener('load', updateFullscreenButton);
+// منع الإجراءات الافتراضية
+document.addEventListener('keydown', (e) => {
+    if (e.key === ' ' && e.target === document.body) {
+        e.preventDefault();
+    }
+});
+
+// منع التكبير باللمس المزدوج على الجوال
+let lastTouchEnd = 0;
+document.addEventListener('touchend', (e) => {
+    const now = Date.now();
+    if (now - lastTouchEnd <= 300) {
+        e.preventDefault();
+    }
+    lastTouchEnd = now;
+}, { passive: false });
 
 console.log('🎮 نظام اللعبة محمل وجاهز للعمل!');
