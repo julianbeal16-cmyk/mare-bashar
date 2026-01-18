@@ -1,5 +1,5 @@
 /* ============================================
-   🎨 أنماط لعبة ماريو الخارقة - النسخة النهائية
+   🎨 أنماط لعبة ماريو الخارقة - النسخة المحسنة
    ============================================ */
 
 /* === الأساسيات === */
@@ -13,6 +13,7 @@
     --danger: #E74C3C;
     --warning: #F39C12;
     --info: #3498DB;
+    --gray: #7f8c8d;
 }
 
 * {
@@ -24,6 +25,7 @@
     -ms-user-select: none;
     user-select: none;
     -webkit-tap-highlight-color: transparent;
+    outline: none;
 }
 
 html {
@@ -52,7 +54,7 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
-    background: var(--dark);
+    background: linear-gradient(135deg, #0a0a1a 0%, #1a1a2e 100%);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -63,6 +65,9 @@ body {
 .loading-content {
     text-align: center;
     padding: 2rem;
+    background: rgba(0, 0, 0, 0.7);
+    border-radius: 20px;
+    border: 3px solid var(--accent);
 }
 
 .spinner {
@@ -86,8 +91,9 @@ body {
 }
 
 #loading-screen p {
-    color: #aaa;
-    font-size: 0.9rem;
+    color: var(--secondary);
+    font-size: 1rem;
+    font-weight: bold;
 }
 
 /* === الشاشات العامة === */
@@ -101,11 +107,18 @@ body {
     overflow-y: auto;
     overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
+    background: linear-gradient(135deg, #0a0a1a 0%, #1a1a2e 100%);
 }
 
 .screen.active {
     display: flex;
     flex-direction: column;
+    animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
 
 .container {
@@ -116,21 +129,18 @@ body {
     flex: 1;
     display: flex;
     flex-direction: column;
+    overflow-y: auto;
 }
 
 /* === شاشة البداية === */
-#start-screen {
-    background: linear-gradient(135deg, #0a0a1a 0%, #1a1a2e 100%);
-}
-
 .header {
     text-align: center;
-    margin: 2rem 0 3rem;
+    margin: 1rem 0 2rem;
     padding: 0 1rem;
 }
 
 .header h1 {
-    font-size: 2.5rem;
+    font-size: 2rem;
     background: linear-gradient(135deg, var(--accent), var(--primary));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -140,16 +150,16 @@ body {
 
 .subtitle {
     color: var(--secondary);
-    font-size: 1.1rem;
+    font-size: 1rem;
     opacity: 0.9;
 }
 
 /* عرض الشخصية */
 .hero-section {
     background: rgba(255, 255, 255, 0.05);
-    border-radius: 20px;
-    padding: 2rem;
-    margin-bottom: 2rem;
+    border-radius: 15px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
     border: 2px solid rgba(255, 215, 0, 0.2);
     backdrop-filter: blur(10px);
 }
@@ -158,39 +168,25 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 2rem;
-}
-
-@media (min-width: 768px) {
-    .character-preview {
-        flex-direction: row;
-        justify-content: center;
-    }
+    gap: 1.5rem;
 }
 
 .avatar {
-    width: 180px;
-    height: 180px;
+    width: 120px;
+    height: 120px;
     border-radius: 50%;
     background: linear-gradient(135deg, var(--primary), var(--danger));
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 6px solid var(--accent);
+    border: 5px solid var(--accent);
     box-shadow: 0 10px 30px rgba(255, 107, 107, 0.3);
     overflow: hidden;
     position: relative;
 }
 
-.avatar img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: 50%;
-}
-
 .avatar-fallback {
-    font-size: 5rem;
+    font-size: 3.5rem;
     color: white;
     display: flex;
     align-items: center;
@@ -202,54 +198,61 @@ body {
 .character-info {
     flex: 1;
     max-width: 400px;
+    text-align: center;
 }
 
 .character-info h3 {
     color: var(--accent);
-    font-size: 1.8rem;
-    margin-bottom: 1.5rem;
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 0.5rem;
 }
 
 .stats {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-    gap: 1rem;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.8rem;
 }
 
 .stat {
     background: rgba(255, 255, 255, 0.08);
-    padding: 1rem;
-    border-radius: 12px;
+    padding: 0.8rem;
+    border-radius: 10px;
     text-align: center;
     border: 1px solid rgba(255, 255, 255, 0.1);
     transition: all 0.3s ease;
 }
 
 .stat:hover {
-    transform: translateY(-5px);
+    transform: translateY(-3px);
     border-color: var(--accent);
     background: rgba(255, 215, 0, 0.1);
 }
 
 .stat i {
     color: var(--accent);
-    font-size: 1.5rem;
-    margin-bottom: 0.5rem;
+    font-size: 1.2rem;
+    margin-bottom: 0.3rem;
     display: block;
+}
+
+.stat span {
+    font-size: 0.8rem;
+    color: #ddd;
 }
 
 /* إحصائيات */
 .stats-section {
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
 }
 
 .stats-section h2 {
     color: var(--accent);
-    font-size: 1.8rem;
-    margin-bottom: 1.5rem;
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
     display: flex;
     align-items: center;
     gap: 0.5rem;
@@ -257,39 +260,39 @@ body {
 
 .stats-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 1rem;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.8rem;
 }
 
 .stat-card {
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
-    border-radius: 15px;
-    padding: 1.5rem;
+    border-radius: 12px;
+    padding: 1rem;
     text-align: center;
     border: 2px solid rgba(255, 215, 0, 0.1);
     transition: all 0.3s ease;
 }
 
 .stat-card:hover {
-    transform: translateY(-5px);
+    transform: translateY(-3px);
     border-color: var(--accent);
-    box-shadow: 0 10px 20px rgba(255, 215, 0, 0.1);
+    box-shadow: 0 8px 15px rgba(255, 215, 0, 0.1);
 }
 
 .stat-card i {
-    font-size: 2.5rem;
-    margin-bottom: 1rem;
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
     display: block;
 }
 
 .stat-card h3 {
     color: #aaa;
-    font-size: 1rem;
-    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+    margin-bottom: 0.3rem;
 }
 
 .stat-card p {
-    font-size: 2rem;
+    font-size: 1.5rem;
     font-weight: bold;
     color: var(--light);
 }
@@ -301,13 +304,13 @@ body {
 
 /* معلومات التحكم */
 .controls-info {
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
 }
 
 .controls-info h2 {
     color: var(--accent);
-    font-size: 1.8rem;
-    margin-bottom: 1.5rem;
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
     display: flex;
     align-items: center;
     gap: 0.5rem;
@@ -316,81 +319,80 @@ body {
 .controls {
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    gap: 1rem;
     background: rgba(255, 255, 255, 0.05);
-    padding: 2rem;
-    border-radius: 15px;
+    padding: 1.5rem;
+    border-radius: 12px;
     border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .control-group {
     display: flex;
     align-items: center;
-    gap: 1.5rem;
+    gap: 1rem;
 }
 
 .keys {
     display: flex;
-    gap: 0.5rem;
+    gap: 0.3rem;
 }
 
 kbd {
     background: rgba(0, 0, 0, 0.5);
-    padding: 0.8rem 1.2rem;
-    border-radius: 8px;
+    padding: 0.6rem 0.8rem;
+    border-radius: 6px;
     border: 2px solid var(--accent);
     font-family: monospace;
-    font-size: 1.2rem;
+    font-size: 1rem;
     color: var(--accent);
-    min-width: 60px;
+    min-width: 40px;
     text-align: center;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
 }
 
 .control-group span {
     color: #aaa;
-    font-size: 1.1rem;
+    font-size: 0.9rem;
 }
 
 /* أزرار الإجراءات */
 .action-buttons {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
-    margin: 3rem 0;
-}
-
-@media (min-width: 768px) {
-    .action-buttons {
-        flex-direction: row;
-        justify-content: center;
-    }
+    gap: 0.8rem;
+    margin: 2rem 0;
 }
 
 .btn {
-    padding: 1.2rem 2.5rem;
+    padding: 1rem 1.5rem;
     border: none;
-    border-radius: 12px;
-    font-size: 1.2rem;
+    border-radius: 10px;
+    font-size: 1rem;
     font-weight: bold;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 1rem;
+    gap: 0.8rem;
     transition: all 0.3s ease;
-    min-width: 250px;
+    min-width: 200px;
     text-decoration: none;
     font-family: 'Cairo', sans-serif;
+    width: 100%;
 }
 
-.btn:hover {
+.btn:hover:not(:disabled) {
     transform: translateY(-3px);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3);
 }
 
-.btn:active {
+.btn:active:not(:disabled) {
     transform: translateY(-1px);
+}
+
+.btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
 .primary-btn {
@@ -405,28 +407,30 @@ kbd {
 
 /* النصائح */
 .tips {
-    margin-top: 2rem;
-    padding: 1.5rem;
+    margin-top: 1.5rem;
+    padding: 1rem;
     background: linear-gradient(135deg, rgba(46, 204, 113, 0.1), rgba(41, 128, 185, 0.1));
-    border-radius: 15px;
+    border-radius: 12px;
     border-left: 5px solid var(--success);
 }
 
 .tip {
     display: flex;
     align-items: flex-start;
-    gap: 1rem;
+    gap: 0.8rem;
 }
 
 .tip i {
     color: var(--success);
-    font-size: 1.5rem;
-    margin-top: 0.2rem;
+    font-size: 1.2rem;
+    margin-top: 0.1rem;
+    flex-shrink: 0;
 }
 
 .tip p {
     color: #aaa;
-    line-height: 1.6;
+    line-height: 1.5;
+    font-size: 0.9rem;
 }
 
 /* === شاشة اللعب === */
@@ -438,7 +442,7 @@ kbd {
 /* شريط المعلومات */
 .game-header {
     background: rgba(0, 0, 0, 0.95);
-    padding: 1rem;
+    padding: 0.8rem 1rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -447,33 +451,38 @@ kbd {
     position: relative;
     z-index: 100;
     flex-shrink: 0;
+    gap: 1rem;
 }
 
 .info-panel {
     display: flex;
-    gap: 1.5rem;
+    gap: 0.8rem;
     align-items: center;
     flex-wrap: wrap;
+    flex: 1;
+    justify-content: space-between;
 }
 
 .info-item {
     background: rgba(255, 255, 255, 0.1);
-    padding: 0.8rem 1.5rem;
-    border-radius: 30px;
+    padding: 0.6rem 1rem;
+    border-radius: 25px;
     display: flex;
     align-items: center;
-    gap: 0.8rem;
-    min-width: 100px;
+    gap: 0.6rem;
+    min-width: 80px;
     border: 2px solid rgba(255, 215, 0, 0.3);
+    flex: 1;
+    justify-content: center;
 }
 
 .info-item i {
     color: var(--accent);
-    font-size: 1.2rem;
+    font-size: 1rem;
 }
 
 .info-item span {
-    font-size: 1.2rem;
+    font-size: 1rem;
     font-weight: bold;
     color: white;
 }
@@ -489,12 +498,13 @@ kbd {
 
 .action-panel {
     display: flex;
-    gap: 1rem;
+    gap: 0.6rem;
+    flex-shrink: 0;
 }
 
 .icon-btn {
-    width: 50px;
-    height: 50px;
+    width: 45px;
+    height: 45px;
     border-radius: 50%;
     background: rgba(255, 255, 255, 0.1);
     border: 2px solid var(--accent);
@@ -503,14 +513,19 @@ kbd {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.2rem;
+    font-size: 1.1rem;
     transition: all 0.3s ease;
 }
 
-.icon-btn:hover {
+.icon-btn:hover:not(:disabled) {
     background: var(--accent);
     color: #000;
     transform: scale(1.1);
+}
+
+.icon-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
 /* منطقة اللعبة */
@@ -519,60 +534,64 @@ kbd {
     position: relative;
     overflow: hidden;
     background: #000;
-    min-height: 0; /* مهم للتجاوب */
+    min-height: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 #game-canvas {
-    width: 100%;
-    height: 100%;
     display: block;
     background: #87CEEB;
-    image-rendering: -moz-crisp-edges;
-    image-rendering: -webkit-crisp-edges;
-    image-rendering: pixelated;
     image-rendering: crisp-edges;
+    image-rendering: pixelated;
+    max-width: 100%;
+    max-height: 100%;
+    width: 100%;
+    height: 100%;
 }
 
 /* أزرار التحكم للجوال */
 .mobile-controls {
     position: absolute;
-    bottom: 2rem;
+    bottom: 1.5rem;
     left: 0;
     right: 0;
     display: flex;
     justify-content: center;
-    padding: 1rem;
+    padding: 0.8rem;
     z-index: 50;
     pointer-events: none;
 }
 
 .control-row {
     display: flex;
-    gap: 2rem;
+    gap: 1.5rem;
     background: rgba(0, 0, 0, 0.7);
-    padding: 1.5rem;
-    border-radius: 50px;
+    padding: 1rem;
+    border-radius: 40px;
     backdrop-filter: blur(10px);
     border: 3px solid rgba(255, 215, 0, 0.3);
     pointer-events: auto;
 }
 
 .control-btn {
-    width: 80px;
-    height: 80px;
+    width: 70px;
+    height: 70px;
     border-radius: 50%;
-    border: 5px solid;
+    border: 4px solid;
     color: white;
-    font-size: 1.8rem;
+    font-size: 1.5rem;
     cursor: pointer;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     transition: all 0.1s ease;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.5);
     position: relative;
     -webkit-touch-callout: none;
+    touch-action: manipulation;
 }
 
 .control-btn:active {
@@ -588,13 +607,13 @@ kbd {
 .jump-btn {
     border-color: var(--danger);
     background: rgba(231, 76, 60, 0.8);
-    width: 90px;
-    height: 90px;
+    width: 80px;
+    height: 80px;
 }
 
 .jump-btn span {
-    font-size: 0.8rem;
-    margin-top: 0.3rem;
+    font-size: 0.7rem;
+    margin-top: 0.2rem;
 }
 
 /* رسالة المهمة */
@@ -612,11 +631,11 @@ kbd {
 .mission-alert span {
     background: linear-gradient(135deg, var(--info), var(--secondary));
     color: white;
-    padding: 0.8rem 2rem;
-    border-radius: 30px;
+    padding: 0.6rem 1.5rem;
+    border-radius: 25px;
     font-weight: bold;
-    font-size: 1.1rem;
-    border: 3px solid white;
+    font-size: 0.9rem;
+    border: 2px solid white;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
     animation: pulse 2s infinite;
 }
@@ -628,7 +647,6 @@ kbd {
 
 /* === شاشة النهاية === */
 #end-screen {
-    background: linear-gradient(135deg, #0a0a1a 0%, #1a1a2e 100%);
     justify-content: center;
     align-items: center;
     padding: 1rem;
@@ -636,66 +654,68 @@ kbd {
 
 .end-container {
     background: rgba(0, 0, 0, 0.9);
-    border-radius: 25px;
-    padding: 3rem;
-    max-width: 800px;
+    border-radius: 20px;
+    padding: 2rem;
+    max-width: 600px;
     width: 100%;
     text-align: center;
     border: 5px solid var(--accent);
-    box-shadow: 0 20px 50px rgba(255, 215, 0, 0.3);
+    box-shadow: 0 15px 40px rgba(255, 215, 0, 0.3);
+    overflow-y: auto;
+    max-height: 90vh;
 }
 
 .result-icon {
-    width: 120px;
-    height: 120px;
+    width: 100px;
+    height: 100px;
     background: linear-gradient(135deg, var(--accent), var(--warning));
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin: 0 auto 2rem;
-    font-size: 4rem;
+    margin: 0 auto 1.5rem;
+    font-size: 3rem;
     color: #000;
-    box-shadow: 0 10px 30px rgba(255, 215, 0, 0.5);
+    box-shadow: 0 8px 25px rgba(255, 215, 0, 0.5);
     animation: float 3s ease-in-out infinite;
 }
 
 @keyframes float {
     0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-20px); }
+    50% { transform: translateY(-15px); }
 }
 
 #end-title {
-    font-size: 3rem;
+    font-size: 2rem;
     color: var(--accent);
-    margin-bottom: 1rem;
+    margin-bottom: 0.8rem;
     background: linear-gradient(135deg, var(--accent), var(--primary));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
 }
 
 #end-message {
-    font-size: 1.5rem;
+    font-size: 1.2rem;
     color: var(--secondary);
-    margin-bottom: 3rem;
+    margin-bottom: 2rem;
 }
 
 .final-stats {
-    margin: 3rem 0;
+    margin: 2rem 0;
 }
 
 .final-stat {
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
 }
 
 .final-stat h3 {
     color: var(--accent);
-    font-size: 1.5rem;
-    margin-bottom: 1rem;
+    font-size: 1.2rem;
+    margin-bottom: 0.8rem;
 }
 
 .final-stat p {
-    font-size: 4rem;
+    font-size: 3rem;
     font-weight: bold;
     color: white;
 }
@@ -703,33 +723,33 @@ kbd {
 .stats-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 1.5rem;
-    margin-top: 2rem;
+    gap: 1rem;
+    margin-top: 1.5rem;
 }
 
 .stat-item {
     background: rgba(255, 255, 255, 0.05);
-    padding: 1.5rem;
-    border-radius: 15px;
+    padding: 1rem;
+    border-radius: 12px;
     border: 2px solid rgba(255, 215, 0, 0.2);
 }
 
 .stat-item i {
-    font-size: 2rem;
+    font-size: 1.8rem;
     color: var(--accent);
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.3rem;
     display: block;
 }
 
 .stat-item span {
     color: #aaa;
-    font-size: 0.9rem;
+    font-size: 0.8rem;
     display: block;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.3rem;
 }
 
 .stat-item p {
-    font-size: 2rem;
+    font-size: 1.5rem;
     font-weight: bold;
     color: white;
 }
@@ -737,15 +757,8 @@ kbd {
 .end-buttons {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
-    margin-top: 3rem;
-}
-
-@media (min-width: 768px) {
-    .end-buttons {
-        flex-direction: row;
-        justify-content: center;
-    }
+    gap: 0.8rem;
+    margin-top: 2rem;
 }
 
 /* === نافذة التعليمات === */
@@ -765,41 +778,41 @@ kbd {
 
 .modal-content {
     background: linear-gradient(135deg, #1a1a2e, #16213e);
-    border-radius: 20px;
+    border-radius: 15px;
     border: 4px solid var(--accent);
-    max-width: 800px;
+    max-width: 500px;
     width: 100%;
-    max-height: 90vh;
+    max-height: 80vh;
     overflow-y: auto;
-    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.8);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8);
 }
 
 .modal-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 2rem;
+    padding: 1.5rem;
     border-bottom: 3px solid var(--accent);
     background: rgba(0, 0, 0, 0.3);
-    border-radius: 20px 20px 0 0;
+    border-radius: 15px 15px 0 0;
 }
 
 .modal-header h2 {
     color: var(--accent);
-    font-size: 2rem;
+    font-size: 1.5rem;
     display: flex;
     align-items: center;
-    gap: 1rem;
+    gap: 0.8rem;
 }
 
 .close-btn {
     background: none;
     border: none;
     color: white;
-    font-size: 2.5rem;
+    font-size: 2rem;
     cursor: pointer;
-    width: 50px;
-    height: 50px;
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -812,14 +825,14 @@ kbd {
 }
 
 .modal-body {
-    padding: 2rem;
+    padding: 1.5rem;
 }
 
 .instruction {
-    margin-bottom: 2rem;
-    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    padding: 1rem;
     background: rgba(255, 255, 255, 0.05);
-    border-radius: 15px;
+    border-radius: 10px;
     border-left: 5px solid var(--accent);
 }
 
@@ -829,8 +842,8 @@ kbd {
 
 .instruction h3 {
     color: var(--accent);
-    font-size: 1.5rem;
-    margin-bottom: 1rem;
+    font-size: 1.2rem;
+    margin-bottom: 0.8rem;
     display: flex;
     align-items: center;
     gap: 0.5rem;
@@ -838,8 +851,8 @@ kbd {
 
 .instruction p {
     color: #aaa;
-    line-height: 1.6;
-    font-size: 1.1rem;
+    line-height: 1.5;
+    font-size: 0.9rem;
 }
 
 /* === الإشعارات === */
@@ -872,62 +885,97 @@ kbd {
     gap: 1rem;
     box-shadow: 0 10px 30px rgba(231, 76, 60, 0.5);
     border: 3px solid rgba(255, 255, 255, 0.3);
-    max-width: 500px;
+    max-width: 400px;
 }
 
 .notification i {
-    font-size: 1.5rem;
+    font-size: 1.2rem;
 }
 
 /* === تحسينات التجاوب === */
-@media (max-width: 768px) {
+@media (max-width: 767px) {
+    html {
+        font-size: 14px;
+    }
+    
     .container {
-        padding: 0.5rem;
+        padding: 0.8rem;
+    }
+    
+    .header {
+        margin: 0.5rem 0 1.5rem;
     }
     
     .header h1 {
-        font-size: 2rem;
+        font-size: 1.8rem;
+    }
+    
+    .hero-section {
+        padding: 1rem;
     }
     
     .avatar {
-        width: 150px;
-        height: 150px;
+        width: 100px;
+        height: 100px;
+    }
+    
+    .avatar-fallback {
+        font-size: 3rem;
+    }
+    
+    .character-info h3 {
+        font-size: 1.3rem;
+    }
+    
+    .stats {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.5rem;
+    }
+    
+    .stat {
+        padding: 0.6rem;
     }
     
     .stats-grid {
         grid-template-columns: repeat(2, 1fr);
+        gap: 0.6rem;
     }
     
     .stat-card {
-        padding: 1rem;
+        padding: 0.8rem;
     }
     
     .stat-card p {
-        font-size: 1.5rem;
+        font-size: 1.3rem;
     }
     
     .btn {
-        min-width: 200px;
-        padding: 1rem 1.5rem;
-        font-size: 1rem;
+        padding: 0.8rem 1rem;
+        font-size: 0.9rem;
     }
     
     .game-header {
         flex-direction: column;
-        gap: 1rem;
-        padding: 0.8rem;
+        gap: 0.8rem;
+        padding: 0.6rem;
     }
     
     .info-panel {
         width: 100%;
         justify-content: space-between;
+        gap: 0.5rem;
     }
     
     .info-item {
         min-width: auto;
-        padding: 0.6rem 1rem;
+        padding: 0.5rem 0.8rem;
         flex: 1;
         justify-content: center;
+        font-size: 0.9rem;
+    }
+    
+    .info-item span {
+        font-size: 0.9rem;
     }
     
     .action-panel {
@@ -935,78 +983,15 @@ kbd {
         justify-content: center;
     }
     
-    .control-row {
-        padding: 1rem;
-        gap: 1.5rem;
-    }
-    
-    .control-btn {
-        width: 70px;
-        height: 70px;
-        font-size: 1.5rem;
-    }
-    
-    .jump-btn {
-        width: 80px;
-        height: 80px;
-    }
-    
-    .end-container {
-        padding: 1.5rem;
-    }
-    
-    #end-title {
-        font-size: 2rem;
-    }
-    
-    .final-stat p {
-        font-size: 3rem;
-    }
-    
-    .stats-grid {
-        grid-template-columns: 1fr;
-    }
-}
-
-@media (max-width: 480px) {
-    .header h1 {
-        font-size: 1.8rem;
-    }
-    
-    .avatar {
-        width: 120px;
-        height: 120px;
-    }
-    
-    .avatar-fallback {
-        font-size: 4rem;
-    }
-    
-    .stats {
-        grid-template-columns: 1fr;
-    }
-    
-    .stats-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .control-group {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 0.8rem;
-    }
-    
-    .btn {
-        min-width: 100%;
-    }
-    
-    .info-item {
-        font-size: 0.9rem;
-        padding: 0.5rem 0.8rem;
-    }
-    
-    .info-item span {
+    .icon-btn {
+        width: 40px;
+        height: 40px;
         font-size: 1rem;
+    }
+    
+    .control-row {
+        padding: 0.8rem;
+        gap: 1.2rem;
     }
     
     .control-btn {
@@ -1021,21 +1006,86 @@ kbd {
     }
     
     .jump-btn span {
-        font-size: 0.7rem;
+        font-size: 0.6rem;
+    }
+    
+    .end-container {
+        padding: 1.5rem;
+        margin: 0.5rem;
+    }
+    
+    .result-icon {
+        width: 80px;
+        height: 80px;
+        font-size: 2.5rem;
+    }
+    
+    #end-title {
+        font-size: 1.8rem;
+    }
+    
+    .final-stat p {
+        font-size: 2.5rem;
+    }
+    
+    .modal-content {
+        margin: 0.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .header h1 {
+        font-size: 1.5rem;
+    }
+    
+    .avatar {
+        width: 80px;
+        height: 80px;
+    }
+    
+    .avatar-fallback {
+        font-size: 2.5rem;
+    }
+    
+    .stats {
+        grid-template-columns: 1fr;
+    }
+    
+    .control-group {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+    
+    .info-item {
+        min-width: 70px;
+        padding: 0.4rem 0.6rem;
+    }
+    
+    .control-btn {
+        width: 55px;
+        height: 55px;
+        font-size: 1.2rem;
+    }
+    
+    .jump-btn {
+        width: 65px;
+        height: 65px;
     }
 }
 
 /* === تحسينات خاصة للجوال === */
 @media (hover: none) and (pointer: coarse) {
-    .btn:hover,
-    .icon-btn:hover,
+    .btn:hover:not(:disabled),
+    .icon-btn:hover:not(:disabled),
     .stat-card:hover,
     .stat:hover {
         transform: none;
     }
     
-    .btn:active,
-    .icon-btn:active {
+    .btn:active:not(:disabled),
+    .icon-btn:active:not(:disabled),
+    .control-btn:active {
         transform: scale(0.95);
     }
 }
@@ -1043,17 +1093,21 @@ kbd {
 /* === تحسينات للأجهزة ذات الشاشات الصغيرة === */
 @media (max-height: 700px) {
     .hero-section {
-        padding: 1rem;
+        padding: 0.8rem;
         margin-bottom: 1rem;
     }
     
     .avatar {
-        width: 100px;
-        height: 100px;
+        width: 80px;
+        height: 80px;
+    }
+    
+    .avatar-fallback {
+        font-size: 2.5rem;
     }
     
     .action-buttons {
-        margin: 1.5rem 0;
+        margin: 1rem 0;
     }
     
     .end-container {
@@ -1061,10 +1115,14 @@ kbd {
     }
     
     .result-icon {
-        width: 80px;
-        height: 80px;
-        font-size: 3rem;
+        width: 70px;
+        height: 70px;
+        font-size: 2rem;
         margin-bottom: 1rem;
+    }
+    
+    #end-title {
+        font-size: 1.5rem;
     }
 }
 
@@ -1077,37 +1135,10 @@ kbd {
     body {
         min-height: -webkit-fill-available;
     }
-}
-
-/* === تحسينات للأجهزة التي تدعم الوضع الداكن === */
-@media (prefers-color-scheme: dark) {
-    body {
-        background: #0a0a1a;
-    }
-}
-
-/* === تحسينات الطباعة === */
-@media print {
-    .screen {
-        display: none !important;
-    }
     
-    #start-screen {
-        display: block !important;
-        background: white;
-        color: black;
+    .game-area {
+        height: -webkit-fill-available;
     }
-}
-
-/* === تصحيح مشكلة التمرير على iOS === */
-.scroll-fix {
-    -webkit-overflow-scrolling: touch;
-    overflow-y: auto;
-}
-
-/* === تحسين الأداء === */
-.will-change {
-    will-change: transform, opacity;
 }
 
 /* === تحسينات الوصول === */
@@ -1123,20 +1154,13 @@ kbd {
     border: 0;
 }
 
-/* === تحسينات الصور === */
-img {
-    max-width: 100%;
-    height: auto;
-    display: block;
-}
-
 /* === تحسينات النصوص === */
 h1, h2, h3, h4, h5, h6 {
     line-height: 1.2;
 }
 
 p {
-    line-height: 1.6;
+    line-height: 1.5;
 }
 
 /* === تحسينات الألوان للنصوص === */
@@ -1154,3 +1178,63 @@ p {
 .bg-accent { background: var(--accent); }
 .bg-dark { background: var(--dark); }
 .bg-light { background: var(--light); }
+
+/* === تصحيح مشكلة التمرير === */
+.scroll-fix {
+    -webkit-overflow-scrolling: touch;
+    overflow-y: auto;
+}
+
+/* === تحسين الأداء === */
+.will-change {
+    will-change: transform, opacity;
+}
+
+/* === إضافات للأداء العالي === */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+/* === تحسينات للأجهزة التي تدعم اللمس === */
+@media (pointer: coarse) {
+    .btn,
+    .icon-btn,
+    .control-btn {
+        min-height: 44px;
+        min-width: 44px;
+    }
+}
+
+/* === تحسينات للوضع المظلم === */
+@media (prefers-color-scheme: dark) {
+    body {
+        background: #0a0a1a;
+    }
+}
+
+/* === شريط التمرير === */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--accent);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--primary);
+}
