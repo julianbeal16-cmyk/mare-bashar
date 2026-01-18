@@ -4,9 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>🎮 لعبة ماريو الخارقة</title>
-    <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎮</text></svg>">
     <style>
         * {
             margin: 0;
@@ -24,15 +25,25 @@
             font-family: 'Cairo', sans-serif;
         }
         
-        /* تحسينات للجوال */
-        @media (max-width: 768px) {
-            .mobile-only { display: block !important; }
-            .desktop-only { display: none !important; }
-        }
-        
-        @media (min-width: 769px) {
-            .mobile-only { display: none !important; }
-            .desktop-only { display: block !important; }
+        /* إجبار الوضع الأفقي */
+        @media (orientation: portrait) {
+            body::before {
+                content: "🔄 الرجاء تدوير الهاتف إلى الوضع الأفقي";
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: #0a0a1a;
+                color: white;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                font-size: 1.5rem;
+                text-align: center;
+                padding: 2rem;
+                z-index: 9999;
+            }
         }
     </style>
 </head>
@@ -42,12 +53,12 @@
         <div class="loading-content">
             <div class="spinner"></div>
             <h2>🚀 جاري تحميل المغامرة...</h2>
-            <p>يرجى الانتظار قليلاً</p>
+            <p id="loading-progress">0%</p>
         </div>
     </div>
 
     <!-- شاشة البداية -->
-    <div id="start-screen" class="screen active">
+    <div id="start-screen" class="screen">
         <div class="container">
             <div class="header">
                 <h1><i class="fas fa-gamepad"></i> لعبة ماريو الخارقة</h1>
@@ -57,9 +68,7 @@
             <div class="hero-section">
                 <div class="character-preview">
                     <div class="avatar" id="player-avatar">
-                        <img src="player.png" alt="شخصية اللاعب" id="player-img" 
-                             onerror="this.style.display='none'; document.getElementById('avatar-fallback').style.display='flex'">
-                        <div id="avatar-fallback" class="avatar-fallback">
+                        <div class="avatar-fallback">
                             <i class="fas fa-user-ninja"></i>
                         </div>
                     </div>
@@ -95,7 +104,7 @@
                     <div class="stat-card">
                         <i class="fas fa-coins"></i>
                         <h3>العملات</h3>
-                        <p>30</p>
+                        <p>20</p>
                     </div>
                 </div>
             </div>
@@ -111,7 +120,7 @@
                     </div>
                     <div class="control-group">
                         <div class="keys">
-                            <kbd>Space</kbd>
+                            <kbd>Space</kbd><kbd>↑</kbd>
                         </div>
                         <span>القفز</span>
                     </div>
@@ -138,7 +147,7 @@
             <div class="tips">
                 <div class="tip">
                     <i class="fas fa-lightbulb"></i>
-                    <p><strong>💡 نصيحة:</strong> اقفز فوق الأعداء لهزيمتهم واحصل على نقاط إضافية!</p>
+                    <p><strong>💡 نصيحة:</strong> اقفز فوق الأعداء لهزيمتهم واحصل على 200 نقطة إضافية!</p>
                 </div>
             </div>
         </div>
@@ -159,7 +168,7 @@
                 </div>
                 <div class="info-item">
                     <i class="fas fa-coins"></i>
-                    <span id="coins-display">0/30</span>
+                    <span id="coins-display">0/20</span>
                 </div>
                 <div class="info-item timer">
                     <i class="fas fa-clock"></i>
@@ -168,13 +177,13 @@
             </div>
             
             <div class="action-panel">
-                <button id="pause-btn" class="icon-btn">
+                <button id="pause-btn" class="icon-btn" title="إيقاف/متابعة">
                     <i class="fas fa-pause"></i>
                 </button>
-                <button id="fullscreen-btn" class="icon-btn">
+                <button id="fullscreen-btn" class="icon-btn" title="ملء الشاشة">
                     <i class="fas fa-expand"></i>
                 </button>
-                <button id="sound-btn" class="icon-btn">
+                <button id="sound-btn" class="icon-btn" title="تشغيل/إيقاف الصوت">
                     <i class="fas fa-volume-up"></i>
                 </button>
             </div>
@@ -187,13 +196,13 @@
             <!-- أزرار التحكم للجوال -->
             <div class="mobile-controls">
                 <div class="control-row">
-                    <button id="btn-left" class="control-btn direction-btn">
+                    <button id="btn-left" class="control-btn direction-btn" aria-label="يسار">
                         <i class="fas fa-arrow-left"></i>
                     </button>
-                    <button id="btn-right" class="control-btn direction-btn">
+                    <button id="btn-right" class="control-btn direction-btn" aria-label="يمين">
                         <i class="fas fa-arrow-right"></i>
                     </button>
-                    <button id="btn-jump" class="control-btn jump-btn">
+                    <button id="btn-jump" class="control-btn jump-btn" aria-label="قفز">
                         <i class="fas fa-arrow-up"></i>
                         <span>قفز</span>
                     </button>
@@ -203,7 +212,7 @@
 
         <!-- رسالة المهمة -->
         <div class="mission-alert">
-            <span id="mission-text">🎯 اجمع 30 عملة ذهبية!</span>
+            <span id="mission-text">🎯 اجمع 20 عملة ذهبية!</span>
         </div>
     </div>
 
@@ -226,7 +235,7 @@
                     <div class="stat-item">
                         <i class="fas fa-coins"></i>
                         <span>العملات</span>
-                        <p id="final-coins">0/30</p>
+                        <p id="final-coins">0/20</p>
                     </div>
                     <div class="stat-item">
                         <i class="fas fa-clock"></i>
@@ -264,12 +273,12 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h2><i class="fas fa-graduation-cap"></i> دليل اللعب</h2>
-                <button class="close-btn">&times;</button>
+                <button class="close-btn" aria-label="إغلاق">&times;</button>
             </div>
             <div class="modal-body">
                 <div class="instruction">
                     <h3>🎯 الهدف</h3>
-                    <p>اجمع 30 عملة ذهبية وتجنب الأعداء للوصول إلى القصر الملكي!</p>
+                    <p>اجمع 20 عملة ذهبية وتجنب الأعداء للوصول إلى القصر الملكي!</p>
                 </div>
                 <div class="instruction">
                     <h3>🎮 التحكم</h3>
@@ -288,172 +297,24 @@
     </div>
 
     <!-- إشعارات -->
-    <div id="notification" class="notification">
+    <div id="notification" class="notification" role="alert" aria-live="polite">
         <i class="fas fa-info-circle"></i>
         <span id="notification-text">مرحباً بك في اللعبة!</span>
     </div>
 
-    <!-- الأصوات -->
+    <!-- الأصوات المدمجة (base64) -->
     <audio id="jump-sound" preload="auto">
-        <source src="https://assets.mixkit.co/sfx/preview/mixkit-player-jumping-in-a-video-game-2043.mp3" type="audio/mpeg">
+        <source src="data:audio/mpeg;base64,//tQxAAAA..." type="audio/mpeg">
     </audio>
     <audio id="coin-sound" preload="auto">
-        <source src="https://assets.mixkit.co/sfx/preview/mixkit-winning-chimes-2015.mp3" type="audio/mpeg">
+        <source src="data:audio/mpeg;base64,//tQxAAAA..." type="audio/mpeg">
     </audio>
     <audio id="hit-sound" preload="auto">
-        <source src="https://assets.mixkit.co/sfx/preview/mixkit-retro-game-emergency-alarm-1000.mp3" type="audio/mpeg">
+        <source src="data:audio/mpeg;base64,//tQxAAAA..." type="audio/mpeg">
     </audio>
 
     <!-- الملفات الرئيسية -->
     <script src="game.js"></script>
-    <script>
-        // تهيئة سريعة
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('🎮 اللعبة جاهزة للتحميل...');
-            
-            // إخفاء شاشة التحميل بعد 2 ثانية
-            setTimeout(function() {
-                document.getElementById('loading-screen').style.display = 'none';
-                console.log('✅ اللعبة محملة بنجاح!');
-                
-                // تحميل أفضل نتيجة
-                loadBestScore();
-                
-                // إعداد الأزرار الأساسية
-                setupButtons();
-                
-            }, 2000);
-        });
-        
-        function loadBestScore() {
-            try {
-                const saved = localStorage.getItem('mario_best_score');
-                if (saved) {
-                    document.getElementById('best-score').textContent = saved;
-                }
-            } catch(e) {
-                console.log('⚠️ لا يمكن تحميل أفضل نتيجة');
-            }
-        }
-        
-        function setupButtons() {
-            // زر البدء
-            document.getElementById('start-btn').addEventListener('click', function() {
-                if (typeof startGame === 'function') {
-                    startGame();
-                }
-            });
-            
-            // زر التعليمات
-            document.getElementById('how-to-play-btn').addEventListener('click', function() {
-                document.getElementById('instructions-modal').style.display = 'flex';
-            });
-            
-            // زر إغلاق التعليمات
-            document.querySelector('#instructions-modal .close-btn').addEventListener('click', function() {
-                document.getElementById('instructions-modal').style.display = 'none';
-            });
-            
-            // زر إعادة اللعب
-            document.getElementById('play-again-btn').addEventListener('click', function() {
-                if (typeof restartGame === 'function') {
-                    restartGame();
-                }
-            });
-            
-            // زر العودة للقائمة
-            document.getElementById('back-to-menu-btn').addEventListener('click', function() {
-                showScreen('start');
-            });
-            
-            // زر الإيقاف
-            document.getElementById('pause-btn').addEventListener('click', function() {
-                if (typeof togglePause === 'function') {
-                    togglePause();
-                }
-            });
-            
-            // زر الصوت
-            document.getElementById('sound-btn').addEventListener('click', function() {
-                if (typeof toggleSound === 'function') {
-                    toggleSound();
-                }
-            });
-            
-            // زر ملء الشاشة
-            document.getElementById('fullscreen-btn').addEventListener('click', function() {
-                toggleFullscreen();
-            });
-        }
-        
-        function showScreen(screenId) {
-            // إخفاء كل الشاشات
-            document.querySelectorAll('.screen').forEach(screen => {
-                screen.classList.remove('active');
-                screen.style.display = 'none';
-            });
-            
-            // إظهار الشاشة المطلوبة
-            const screen = document.getElementById(screenId + '-screen');
-            if (screen) {
-                screen.classList.add('active');
-                screen.style.display = 'flex';
-            }
-        }
-        
-        function toggleFullscreen() {
-            try {
-                if (!document.fullscreenElement) {
-                    document.documentElement.requestFullscreen().catch(err => {
-                        console.log(`خطأ في ملء الشاشة: ${err.message}`);
-                    });
-                } else {
-                    document.exitFullscreen();
-                }
-            } catch (error) {
-                console.log('⚠️ المتصفح لا يدعم ملء الشاشة');
-            }
-        }
-        
-        function showNotification(message) {
-            const notification = document.getElementById('notification');
-            const text = document.getElementById('notification-text');
-            
-            if (notification && text) {
-                text.textContent = message;
-                notification.classList.add('show');
-                
-                setTimeout(() => {
-                    notification.classList.remove('show');
-                }, 3000);
-            }
-        }
-        
-        // جعل الدوال متاحة عالمياً
-        window.showScreen = showScreen;
-        window.showNotification = showNotification;
-        window.toggleFullscreen = toggleFullscreen;
-        
-        // منع سلوك المتصفح الافتراضي
-        window.addEventListener('keydown', function(e) {
-            if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].indexOf(e.code) > -1) {
-                e.preventDefault();
-            }
-        });
-        
-        // منع التكبير باللمس على الجوال
-        document.addEventListener('touchstart', function(e) {
-            if (e.touches.length > 1) {
-                e.preventDefault();
-            }
-        }, { passive: false });
-        
-        // منع القائمة السياقية
-        document.addEventListener('contextmenu', function(e) {
-            e.preventDefault();
-        });
-        
-        console.log('🎮 النظام الأساسي جاهز!');
-    </script>
+    <script src="app.js"></script>
 </body>
 </html>
