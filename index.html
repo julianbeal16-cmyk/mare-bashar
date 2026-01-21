@@ -3,10 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
     <title>🎮 لعبة ماريو الخارقة - النسخة النهائية</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+    <style>
+        /* تثبيت لمنع التكبير على الجوال */
+        * {
+            touch-action: manipulation;
+        }
+        
+        /* إصلاح مشكلة الصورة */
+        #player-img {
+            width: 150px;
+            height: 200px;
+            object-fit: cover;
+            border: 3px solid #FFD700;
+            border-radius: 10px;
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
 </head>
 <body>
     <!-- شاشة التحميل -->
@@ -23,7 +42,7 @@
     </div>
 
     <!-- شاشة البداية -->
-    <div id="start-screen" class="screen">
+    <div id="start-screen" class="screen active">
         <div class="start-container">
             <header class="game-header">
                 <h1><i class="fas fa-gamepad"></i> لعبة ماريو الخارقة</h1>
@@ -34,9 +53,9 @@
                 <section class="character-section">
                     <div class="character-card">
                         <div class="character-image">
-                            <!-- الصورة هنا -->
+                            <!-- الصورة - تم التعديل -->
                             <img src="player.png" alt="بطل اللعبة" id="player-img" 
-                                 onerror="this.onerror=null; this.src='https://via.placeholder.com/150x200/3498db/ffffff?text=🎮';">
+                                 onerror="handleImageError(this)">
                             <div class="character-badge">
                                 <i class="fas fa-star"></i>
                                 البطل
@@ -178,7 +197,7 @@
                     <button id="pause-btn" class="hud-btn" title="إيقاف/متابعة">
                         <i class="fas fa-pause"></i>
                     </button>
-                    <button id="sound-btn" class="hud-btn" title="تشغيل/إيقاف الصوت">
+                    <button id="sound-btn" class="hud-btn" title="تشغيل/إوقف الصوت">
                         <i class="fas fa-volume-up"></i>
                     </button>
                     <button id="fullscreen-btn" class="hud-btn" title="ملء الشاشة">
@@ -191,18 +210,24 @@
             <div class="game-container">
                 <canvas id="game-canvas"></canvas>
                 
-                <!-- أزرار التحكم للجوال -->
+                <!-- أزرار التحكم للجوال - تم تعديل التصميم -->
                 <div class="mobile-controls">
-                    <div class="controls-row">
+                    <div class="controls-left">
                         <button id="btn-left" class="mobile-btn direction-btn">
                             <i class="fas fa-arrow-left"></i>
                         </button>
                         <button id="btn-right" class="mobile-btn direction-btn">
                             <i class="fas fa-arrow-right"></i>
                         </button>
+                    </div>
+                    <div class="controls-right">
                         <button id="btn-jump" class="mobile-btn jump-btn">
                             <i class="fas fa-arrow-up"></i>
                             <span>قفز</span>
+                        </button>
+                        <button id="btn-slide" class="mobile-btn slide-btn">
+                            <i class="fas fa-arrow-down"></i>
+                            <span>تزحلق</span>
                         </button>
                     </div>
                 </div>
@@ -333,19 +358,36 @@
         </div>
     </div>
 
-    <!-- الأصوات -->
-    <audio id="sound-jump" preload="auto">
-        <source src="https://assets.mixkit.co/sfx/preview/mixkit-player-jumping-in-a-video-game-2043.mp3" type="audio/mpeg">
-    </audio>
-    <audio id="sound-coin" preload="auto">
-        <source src="https://assets.mixkit.co/sfx/preview/mixkit-winning-chimes-2015.mp3" type="audio/mpeg">
-    </audio>
-    <audio id="sound-hit" preload="auto">
-        <source src="https://assets.mixkit.co/sfx/preview/mixkit-retro-game-emergency-alarm-1000.mp3" type="audio/mpeg">
-    </audio>
+    <!-- الأصوات - تم التعديل -->
+    <audio id="sound-jump" preload="auto" src="https://assets.mixkit.co/sfx/preview/mixkit-player-jumping-in-a-video-game-2043.mp3"></audio>
+    <audio id="sound-coin" preload="auto" src="https://assets.mixkit.co/sfx/preview/mixkit-winning-chimes-2015.mp3"></audio>
+    <audio id="sound-hit" preload="auto" src="https://assets.mixkit.co/sfx/preview/mixkit-retro-game-emergency-alarm-1000.mp3"></audio>
 
     <!-- الملفات البرمجية -->
     <script src="game.js"></script>
     <script src="app.js"></script>
+    
+    <!-- Script إضافي -->
+    <script>
+        // دالة معالجة خطأ الصورة
+        function handleImageError(img) {
+            console.log('⚠️ فشل تحميل الصورة، جاري استخدام صورة بديلة');
+            img.onerror = null;
+            img.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTUwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjRjc0QzNDIi8+PHJlY3QgeD0iMjAiIHk9IjMwIiB3aWR0aD0iMTEwIiBoZWlnaHQ9IjE0MCIgZmlsbD0jQzAzOTJCLyI+PGNpcmNsZSBjeD0iNzUiIGN5PSI1MCIgcj0iMjAiIGZpbGw9IiMyOEEwQzkiLz48Y2lyY2xlIGN4PSI0NSIgY3k9IjUwIiByPSIyMCIgZmlsbD0iIzI4QTBDOSIvPjxjaXJjbGUgY3g9IjUwIiBjeT0iODAiIHI9IjEwIiBmaWxsPSIjRkZGRkZGIi8+PHRleHQgeD0iNTAlIiB5PSI0NSUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiNGRkZGRkYiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyMCI+TUU8L3RleHQ+PC9zdmc+';
+            img.style.objectFit = 'cover';
+        }
+        
+        // لمنع التكبير على الجوال
+        document.addEventListener('gesturestart', function(e) {
+            e.preventDefault();
+        });
+        
+        // لمنع التمرير على الجوال عند اللعب
+        document.addEventListener('touchmove', function(e) {
+            if(e.target.classList.contains('mobile-btn')) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+    </script>
 </body>
 </html>
