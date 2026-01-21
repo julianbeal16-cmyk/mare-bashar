@@ -26,7 +26,7 @@
         #player-img {
             width: 150px;
             height: 200px;
-            object-fit: cover;
+            object-fit: contain;
             border: 3px solid #FFD700;
             border-radius: 10px;
             display: block;
@@ -39,6 +39,18 @@
             -moz-user-select: none;
             -ms-user-select: none;
             user-select: none;
+        }
+        
+        /* تحسين للشاشات الصغيرة */
+        @media (max-width: 480px) {
+            .game-header h1 {
+                font-size: 1.8rem !important;
+            }
+            
+            .character-card {
+                flex-direction: column !important;
+                text-align: center !important;
+            }
         }
     </style>
 </head>
@@ -432,34 +444,19 @@
     </audio>
 
     <!-- الملفات البرمجية -->
-    <script src="game-engine.js"></script>
-    <script src="levels.js"></script>
+    <script src="level-manager.js"></script>
     <script src="level-1.js"></script>
     <script src="level-2.js"></script>
     <script src="level-3.js"></script>
+    <script src="game-engine.js"></script>
     <script src="app.js"></script>
     
     <!-- Script إضافي -->
     <script>
-        // دالة معالجة خطأ الصورة
-        function handleImageError(img) {
-            console.log('⚠️ فشل تحميل الصورة، جاري استخدام صورة بديلة');
-            img.onerror = null;
-            img.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTUwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjRjc0QzNDIi8+PHJlY3QgeD0iMjAiIHk9IjMwIiB3aWR0aD0iMTEwIiBoZWlnaHQ9IjE0MCIgZmlsbD0jQzAzOTJCLyI+PGNpcmNsZSBjeD0iNzUiIGN5PSI1MCIgcj0iMjAiIGZpbGw9IiMyOEEwQzkiLz48Y2lyY2xlIGN4PSI0NSIgY3k9IjUwIiByPSIyMCIgZmlsbD0iIzI4QTBDOSIvPjxjaXJjbGUgY3g9IjUwIiBjeT0iODAiIHI9IjEwIiBmaWxsPSIjRkZGRkZGIi8+PHRleHQgeD0iNTAlIiB5PSI0NSUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiNGRkZGRkYiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyMCI+TUU8L3RleHQ+PC9zdmc+';
-            img.style.objectFit = 'cover';
-        }
-        
         // لمنع التكبير على الجوال
         document.addEventListener('gesturestart', function(e) {
             e.preventDefault();
         });
-        
-        // لمنع التمرير على الجوال عند اللعب
-        document.addEventListener('touchmove', function(e) {
-            if(e.target.classList.contains('mobile-btn')) {
-                e.preventDefault();
-            }
-        }, { passive: false });
         
         // تحديث زر البداية بناءً على آخر مرحلة لعب
         document.addEventListener('DOMContentLoaded', function() {
@@ -469,6 +466,14 @@
                 startBtn.innerHTML = `<i class="fas fa-play-circle"></i><span>🎮 ابدأ اللعب (المرحلة ${lastLevel})</span>`;
             }
         });
+        
+        // دالة معالجة خطأ الصورة
+        window.handleImageError = function(img) {
+            console.log('⚠️ فشل تحميل الصورة، جاري استخدام صورة بديلة');
+            img.onerror = null;
+            img.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTUwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjRjc0QzNDIi8+PHJlY3QgeD0iMjAiIHk9IjMwIiB3aWR0aD0iMTEwIiBoZWlnaHQ9IjE0MCIgZmlsbD0jQzAzOTJCLyI+PGNpcmNsZSBjeD0iNzUiIGN5PSI1MCIgcj0iMjAiIGZpbGw9IiMyOEEwQzkiLz48Y2lyY2xlIGN4PSI0NSIgY3k9IjUwIiByPSIyMCIgZmlsbD0iIzI4QTBDOSIvPjxjaXJjbGUgY3g9IjUwIiBjeT0iODAiIHI9IjEwIiBmaWxsPSIjRkZGRkZGIi8+PHRleHQgeD0iNTAlIiB5PSI0NSUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiNGRkZGRkYiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyMCI+TUU8L3RleHQ+PC9zdmc+';
+            img.style.objectFit = 'contain';
+        };
     </script>
 </body>
 </html>
