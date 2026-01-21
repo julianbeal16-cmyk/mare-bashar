@@ -1,5 +1,5 @@
 // ============================================
-// 📱 تهيئة التطبيق والتحكم - الإصدار النهائي
+// 📱 تهيئة التطبيق والتحكم - النسخة النهائية
 // ============================================
 
 'use strict';
@@ -13,28 +13,33 @@ const App = {
         this.setupEventListeners();
         this.setupMobileOptimizations();
         this.loadProgress();
+        this.loadLevelsList();
+        this.setupFocusHandling();
         
         console.log('✅ التطبيق جاهز تماماً!');
     },
     
     // إعداد الأحداث
     setupEventListeners() {
-        // زر البدء - مع معالجة الأخطاء
+        // زر البدء - المرحلة 1
         const startBtn = document.getElementById('start-game-btn');
         if (startBtn) {
             startBtn.addEventListener('click', (e) => {
                 e.preventDefault();
                 console.log('🚀 الضغط على زر البدء');
                 
-                if (typeof MarioGame !== 'undefined' && MarioGame.startGame) {
+                // الحصول على آخر مرحلة لعب
+                const lastLevel = localStorage.getItem('mario_last_level') || 1;
+                
+                if (typeof MarioGame !== 'undefined' && MarioGame.loadLevel) {
                     try {
-                        MarioGame.startGame();
+                        MarioGame.loadLevel(parseInt(lastLevel));
                     } catch (error) {
                         console.error('❌ خطأ في بدء اللعبة:', error);
                         this.showNotification('⚠️ خطأ في بدء اللعبة، جاري المحاولة...');
                         setTimeout(() => {
-                            if (MarioGame && MarioGame.startGame) {
-                                MarioGame.startGame();
+                            if (MarioGame && MarioGame.loadLevel) {
+                                MarioGame.loadLevel(1);
                             }
                         }, 1000);
                     }
@@ -57,6 +62,15 @@ const App = {
             }, { passive: false });
         }
         
+        // زر قائمة المراحل
+        const levelSelectBtn = document.getElementById('level-select-btn');
+        if (levelSelectBtn) {
+            levelSelectBtn.addEventListener('click', () => {
+                document.getElementById('levels-modal').style.display = 'flex';
+                this.updateLevelsList();
+            });
+        }
+        
         // زر التعليمات
         const howToPlayBtn = document.getElementById('how-to-play-btn');
         if (howToPlayBtn) {
@@ -66,12 +80,12 @@ const App = {
         }
         
         // زر إغلاق التعليمات
-        const closeModalBtn = document.querySelector('.close-modal');
-        if (closeModalBtn) {
-            closeModalBtn.addEventListener('click', () => {
-                document.getElementById('instructions-modal').style.display = 'none';
+        const closeModalBtns = document.querySelectorAll('.close-modal');
+        closeModalBtns.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.target.closest('.modal').style.display = 'none';
             });
-        }
+        });
         
         // زر الإيقاف
         const pauseBtn = document.getElementById('pause-btn');
@@ -111,6 +125,16 @@ const App = {
             });
         }
         
+        // زر المرحلة التالية
+        const nextLevelBtn = document.getElementById('next-level-btn');
+        if (nextLevelBtn) {
+            nextLevelBtn.addEventListener('click', () => {
+                if (typeof MarioGame !== 'undefined' && MarioGame.nextLevel) {
+                    MarioGame.nextLevel();
+                }
+            });
+        }
+        
         // زر العودة للقائمة
         const backToMenuBtn = document.getElementById('back-to-menu-btn');
         if (backToMenuBtn) {
@@ -123,18 +147,20 @@ const App = {
         
         // إغلاق النافذة عند النقر خارجها
         window.addEventListener('click', (e) => {
-            if (e.target.id === 'instructions-modal') {
-                document.getElementById('instructions-modal').style.display = 'none';
+            if (e.target.classList.contains('modal')) {
+                e.target.style.display = 'none';
             }
         });
         
         // إغلاق النافذة بمفتاح ESC
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
-                const modal = document.getElementById('instructions-modal');
-                if (modal && modal.style.display === 'flex') {
-                    modal.style.display = 'none';
-                }
+                const modals = document.querySelectorAll('.modal');
+                modals.forEach(modal => {
+                    if (modal.style.display === 'flex') {
+                        modal.style.display = 'none';
+                    }
+                });
                 
                 // الخروج من وضع ملء الشاشة
                 if (document.fullscreenElement) {
@@ -146,7 +172,7 @@ const App = {
         // منع الإجراءات الافتراضية لأزرار التحكم
         document.addEventListener('keydown', (e) => {
             if (['Space', ' ', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'w', 'a', 's', 'd'].includes(e.key)) {
-                if (MarioGame.state === 'playing') {
+                if (MarioGame && MarioGame.state === 'playing') {
                     e.preventDefault();
                 }
             }
@@ -173,7 +199,7 @@ const App = {
                 
                 .mobile-device .btn-primary,
                 .mobile-device .btn-secondary {
-                    padding: 20px;
+                    padding: 18px;
                     font-size: 1.1rem;
                 }
                 
@@ -185,6 +211,27 @@ const App = {
                     .mobile-device .hud-item {
                         padding: 8px 15px;
                         min-width: 90px;
+                        font-size: 0.9rem;
+                    }
+                    
+                    .mobile-device .levels-grid {
+                        grid-template-columns: repeat(2, 1fr) !important;
+                    }
+                }
+                
+                @media (max-width: 480px) {
+                    .mobile-device .levels-grid {
+                        grid-template-columns: 1fr !important;
+                    }
+                    
+                    .mobile-device .action-buttons {
+                        flex-direction: column;
+                    }
+                    
+                    .mobile-device .btn-primary,
+                    .mobile-device .btn-secondary {
+                        width: 100%;
+                        margin-bottom: 10px;
                     }
                 }
             `;
@@ -209,6 +256,13 @@ const App = {
                 e.preventDefault();
             }
         });
+        
+        // منع سحب الصور على الجوال
+        document.addEventListener('dragstart', (e) => {
+            if (e.target.tagName === 'IMG') {
+                e.preventDefault();
+            }
+        });
     },
     
     // محاكاة تحميل التقدم
@@ -225,6 +279,195 @@ const App = {
                     clearInterval(interval);
                 }
             }, 300);
+        }
+    },
+    
+    // تحميل قائمة المراحل
+    loadLevelsList() {
+        // إنشاء شبكة المراحل في الصفحة الرئيسية
+        const levelsGrid = document.getElementById('levels-grid');
+        if (levelsGrid) {
+            const levelsHTML = `
+                <div class="level-card" data-level="1">
+                    <div class="level-icon" style="background: linear-gradient(135deg, #2ECC71, #27AE60);">
+                        <i class="fas fa-mountain"></i>
+                    </div>
+                    <div class="level-info">
+                        <h4>المرحلة 1: المنطقة الخضراء</h4>
+                        <p>بداية سهلة في التلال الخضراء</p>
+                        <div class="level-stats">
+                            <span><i class="fas fa-coins"></i> 60 عملة</span>
+                            <span><i class="fas fa-clock"></i> 3:00</span>
+                        </div>
+                    </div>
+                    <button class="play-level-btn" data-level="1">
+                        <i class="fas fa-play"></i>
+                    </button>
+                </div>
+                
+                <div class="level-card" data-level="2">
+                    <div class="level-icon" style="background: linear-gradient(135deg, #F39C12, #D35400);">
+                        <i class="fas fa-sun"></i>
+                    </div>
+                    <div class="level-info">
+                        <h4>المرحلة 2: أطلال الصحراء</h4>
+                        <p>تحديات في رمال الصحراء</p>
+                        <div class="level-stats">
+                            <span><i class="fas fa-coins"></i> 70 عملة</span>
+                            <span><i class="fas fa-clock"></i> 3:20</span>
+                        </div>
+                    </div>
+                    <button class="play-level-btn" data-level="2">
+                        <i class="fas fa-play"></i>
+                    </button>
+                </div>
+                
+                <div class="level-card" data-level="3">
+                    <div class="level-icon" style="background: linear-gradient(135deg, #3498DB, #2980B9);">
+                        <i class="fas fa-snowflake"></i>
+                    </div>
+                    <div class="level-info">
+                        <h4>المرحلة 3: جليد الجبل</h4>
+                        <p>مغامرة جليدية على القمة</p>
+                        <div class="level-stats">
+                            <span><i class="fas fa-coins"></i> 80 عملة</span>
+                            <span><i class="fas fa-clock"></i> 3:40</span>
+                        </div>
+                    </div>
+                    <button class="play-level-btn" data-level="3">
+                        <i class="fas fa-play"></i>
+                    </button>
+                </div>
+            `;
+            
+            levelsGrid.innerHTML = levelsHTML;
+            
+            // إضافة أحداث لأزرار اللعب في المراحل
+            document.querySelectorAll('.play-level-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const level = parseInt(e.target.closest('.play-level-btn').dataset.level);
+                    this.startLevel(level);
+                });
+            });
+        }
+        
+        // إنشاء قائمة المراحل في النافذة
+        const levelsList = document.getElementById('levels-list');
+        if (levelsList) {
+            this.updateLevelsList();
+        }
+        
+        console.log('✅ قائمة المراحل محملة');
+    },
+    
+    // تحديث قائمة المراحل
+    updateLevelsList() {
+        const levelsList = document.getElementById('levels-list');
+        if (!levelsList) return;
+        
+        // الحصول على تقدم اللاعب
+        const savedLevel = localStorage.getItem('mario_last_level') || 1;
+        const levelScores = JSON.parse(localStorage.getItem('mario_level_scores') || '{}');
+        
+        const levelsHTML = `
+            <div class="level-item ${savedLevel >= 1 ? 'unlocked' : 'locked'}" data-level="1">
+                <div class="level-item-icon">
+                    <i class="fas fa-mountain"></i>
+                </div>
+                <div class="level-item-info">
+                    <h4>المرحلة 1: المنطقة الخضراء</h4>
+                    <p>${levelScores[1] ? `أفضل نتيجة: ${levelScores[1]}` : 'لم تلعب بعد'}</p>
+                </div>
+                <div class="level-item-status">
+                    ${savedLevel >= 1 ? 
+                        `<button class="btn-small play-level-list-btn" data-level="1">
+                            <i class="fas fa-play"></i> لعب
+                        </button>` : 
+                        '<span class="locked-text"><i class="fas fa-lock"></i> مقفلة</span>'
+                    }
+                </div>
+            </div>
+            
+            <div class="level-item ${savedLevel >= 2 ? 'unlocked' : 'locked'}" data-level="2">
+                <div class="level-item-icon">
+                    <i class="fas fa-sun"></i>
+                </div>
+                <div class="level-item-info">
+                    <h4>المرحلة 2: أطلال الصحراء</h4>
+                    <p>${levelScores[2] ? `أفضل نتيجة: ${levelScores[2]}` : 'لم تلعب بعد'}</p>
+                </div>
+                <div class="level-item-status">
+                    ${savedLevel >= 2 ? 
+                        `<button class="btn-small play-level-list-btn" data-level="2">
+                            <i class="fas fa-play"></i> لعب
+                        </button>` : 
+                        '<span class="locked-text"><i class="fas fa-lock"></i> مقفلة</span>'
+                    }
+                </div>
+            </div>
+            
+            <div class="level-item ${savedLevel >= 3 ? 'unlocked' : 'locked'}" data-level="3">
+                <div class="level-item-icon">
+                    <i class="fas fa-snowflake"></i>
+                </div>
+                <div class="level-item-info">
+                    <h4>المرحلة 3: جليد الجبل</h4>
+                    <p>${levelScores[3] ? `أفضل نتيجة: ${levelScores[3]}` : 'لم تلعب بعد'}</p>
+                </div>
+                <div class="level-item-status">
+                    ${savedLevel >= 3 ? 
+                        `<button class="btn-small play-level-list-btn" data-level="3">
+                            <i class="fas fa-play"></i> لعب
+                        </button>` : 
+                        '<span class="locked-text"><i class="fas fa-lock"></i> مقفلة</span>'
+                    }
+                </div>
+            </div>
+        `;
+        
+        levelsList.innerHTML = levelsHTML;
+        
+        // إضافة أحداث لأزرار اللعب في القائمة
+        document.querySelectorAll('.play-level-list-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const level = parseInt(e.target.closest('.play-level-list-btn').dataset.level);
+                this.startLevel(level);
+                document.getElementById('levels-modal').style.display = 'none';
+            });
+        });
+    },
+    
+    // بدء مرحلة محددة
+    startLevel(levelNumber) {
+        console.log(`🚀 بدء المرحلة ${levelNumber}...`);
+        
+        if (typeof MarioGame !== 'undefined' && MarioGame.loadLevel) {
+            try {
+                // حفظ المرحلة الحالية
+                localStorage.setItem('mario_last_level', levelNumber.toString());
+                
+                // تحديث زر البداية الرئيسي
+                const startBtn = document.getElementById('start-game-btn');
+                if (startBtn) {
+                    startBtn.innerHTML = `<i class="fas fa-play-circle"></i><span>🎮 ابدأ اللعب (المرحلة ${levelNumber})</span>`;
+                }
+                
+                // بدء المرحلة
+                MarioGame.loadLevel(levelNumber);
+                
+            } catch (error) {
+                console.error('❌ خطأ في بدء المرحلة:', error);
+                this.showNotification('⚠️ خطأ في تحميل المرحلة، جاري المحاولة...');
+                setTimeout(() => {
+                    if (MarioGame && MarioGame.loadLevel) {
+                        MarioGame.loadLevel(levelNumber);
+                    }
+                }, 1000);
+            }
+        } else {
+            console.error('❌ MarioGame غير معرّف');
+            this.showNotification('🔄 جاري تحميل اللعبة...');
+            setTimeout(() => this.setupEventListeners(), 500);
         }
     },
     
@@ -272,6 +515,22 @@ const App = {
         }
     },
     
+    // إعادة تعيين التحكم عند فقدان التركيز
+    setupFocusHandling() {
+        window.addEventListener('blur', () => {
+            if (typeof MarioGame !== 'undefined' && MarioGame.state === 'playing') {
+                MarioGame.togglePause();
+                this.showNotification('⏸️ اللعبة متوقفة - النافذة غير نشطة');
+            }
+        });
+        
+        window.addEventListener('focus', () => {
+            if (typeof MarioGame !== 'undefined' && MarioGame.state === 'paused') {
+                this.showNotification('النافذة نشطة، اضغط متابعة للاستمرار');
+            }
+        });
+    },
+    
     // إظهار إشعار
     showNotification(message) {
         const notification = document.getElementById('notification');
@@ -287,20 +546,24 @@ const App = {
         }
     },
     
-    // إعادة تعيين التحكم عند فقدان التركيز
-    setupFocusHandling() {
-        window.addEventListener('blur', () => {
-            if (typeof MarioGame !== 'undefined' && MarioGame.state === 'playing') {
-                MarioGame.togglePause();
-                this.showNotification('⏸️ اللعبة متوقفة - النافذة غير نشطة');
+    // حفظ تقدم اللاعب
+    savePlayerProgress(level, score) {
+        try {
+            // حفظ آخر مرحلة لعب
+            localStorage.setItem('mario_last_level', level.toString());
+            
+            // حفظ أفضل نتيجة للمرحلة
+            const levelScores = JSON.parse(localStorage.getItem('mario_level_scores') || '{}');
+            if (!levelScores[level] || score > levelScores[level]) {
+                levelScores[level] = score;
+                localStorage.setItem('mario_level_scores', JSON.stringify(levelScores));
             }
-        });
-        
-        window.addEventListener('focus', () => {
-            if (typeof MarioGame !== 'undefined' && MarioGame.state === 'paused') {
-                this.showNotification('النافذة نشطة، اضغط متابعة للاستمرار');
-            }
-        });
+            
+            console.log(`💾 تم حفظ تقدم المرحلة ${level}: ${score} نقطة`);
+            
+        } catch (e) {
+            console.warn('⚠️ لا يمكن حفظ التقدم:', e);
+        }
     }
 };
 
@@ -311,13 +574,274 @@ const App = {
 document.addEventListener('DOMContentLoaded', () => {
     console.log('📄 بدء تحميل التطبيق...');
     
-    // إضافة فئات CSS للتحكم
-    document.body.classList.add('no-select');
+    // إضافة CSS إضافي للواجهة
+    const extraStyles = document.createElement('style');
+    extraStyles.textContent = `
+        /* أنماط قسم المراحل */
+        .levels-section {
+            margin-bottom: 40px;
+        }
+        
+        .levels-section h2 {
+            color: var(--accent);
+            font-size: 1.8rem;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .levels-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .level-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            border: 2px solid rgba(255, 215, 0, 0.2);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .level-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent);
+            box-shadow: 0 10px 25px rgba(255, 215, 0, 0.1);
+        }
+        
+        .level-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            color: white;
+            flex-shrink: 0;
+        }
+        
+        .level-info {
+            flex: 1;
+        }
+        
+        .level-info h4 {
+            color: var(--accent);
+            font-size: 1.2rem;
+            margin-bottom: 8px;
+        }
+        
+        .level-info p {
+            color: var(--gray-light);
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
+        
+        .level-stats {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .level-stats span {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .play-level-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--accent);
+            border: none;
+            color: #000;
+            font-size: 1.2rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+        
+        .play-level-btn:hover {
+            background: var(--primary);
+            color: white;
+            transform: scale(1.1);
+        }
+        
+        /* قائمة المراحل في النافذة */
+        .levels-list {
+            max-height: 400px;
+            overflow-y: auto;
+            padding: 10px;
+        }
+        
+        .level-item {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            transition: all 0.3s ease;
+        }
+        
+        .level-item.unlocked {
+            border-left: 4px solid var(--accent);
+        }
+        
+        .level-item.locked {
+            opacity: 0.6;
+            border-left: 4px solid var(--gray);
+        }
+        
+        .level-item-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            background: var(--info);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+            flex-shrink: 0;
+        }
+        
+        .level-item-info {
+            flex: 1;
+        }
+        
+        .level-item-info h4 {
+            color: var(--light);
+            font-size: 1.1rem;
+            margin-bottom: 5px;
+        }
+        
+        .level-item-info p {
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+        
+        .level-item-status {
+            flex-shrink: 0;
+        }
+        
+        .btn-small {
+            padding: 8px 15px;
+            background: var(--accent);
+            border: none;
+            border-radius: 20px;
+            color: #000;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+        }
+        
+        .locked-text {
+            color: var(--gray);
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .levels-info {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            text-align: center;
+            color: var(--gray-light);
+            font-size: 0.9rem;
+        }
+        
+        .levels-info i {
+            color: var(--accent);
+            margin-left: 8px;
+        }
+        
+        /* تحديث HUD لإضافة المرحلة */
+        #hud-level {
+            font-weight: bold;
+            color: var(--accent);
+        }
+        
+        /* تحديث شاشة النهاية */
+        #final-level {
+            font-size: 2.5rem;
+            color: var(--accent);
+        }
+        
+        /* زر المرحلة التالية */
+        #next-level-btn {
+            background: linear-gradient(135deg, var(--success), var(--info));
+        }
+        
+        /* استجابة للجوال */
+        @media (max-width: 768px) {
+            .levels-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .level-card {
+                padding: 15px;
+            }
+            
+            .level-icon {
+                width: 50px;
+                height: 50px;
+                font-size: 1.5rem;
+            }
+            
+            .play-level-btn {
+                width: 45px;
+                height: 45px;
+            }
+            
+            .level-item {
+                padding: 12px;
+            }
+            
+            .level-item-icon {
+                width: 45px;
+                height: 45px;
+                font-size: 1.3rem;
+            }
+        }
+        
+        /* منع التحديد */
+        .no-select {
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+    `;
+    document.head.appendChild(extraStyles);
     
     // بدء التطبيق بعد تأخير قصير
     setTimeout(() => {
         App.init();
-        App.setupFocusHandling();
+        console.log('🎮 نظام التطبيق محمل وجاهز!');
     }, 500);
     
     // منع الإجراءات الافتراضية
@@ -389,7 +913,16 @@ window.addEventListener('beforeunload', (e) => {
     }
 });
 
-console.log('🎮 نظام التطبيق محمل وجاهز!');
+// ============================================
+// دعم حفظ التقدم التلقائي
+// ============================================
+
+// دالة لحفظ تقدم اللاعب
+window.saveLevelProgress = function(level, score) {
+    App.savePlayerProgress(level, score);
+};
 
 // جعل App متاحة عالمياً للمراقبة
 window.App = App;
+
+console.log('✅ ملف app.js محمل بنجاح!');
