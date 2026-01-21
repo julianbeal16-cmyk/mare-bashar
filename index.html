@@ -5,10 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
-    <title>🎮 لعبة ماريو الخارقة - النسخة النهائية</title>
+    <title>🎮 لعبة ماريو الخارقة - نظام المراحل المتكامل</title>
+    
+    <!-- الأيقونات -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- الخط العربي -->
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- الأنماط -->
     <link rel="stylesheet" href="style.css">
+    
     <style>
         /* تثبيت لمنع التكبير على الجوال */
         * {
@@ -25,9 +32,17 @@
             display: block;
             margin: 0 auto;
         }
+        
+        /* منع التحديد */
+        .no-select {
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
     </style>
 </head>
-<body>
+<body class="no-select">
     <!-- شاشة التحميل -->
     <div id="loading-screen">
         <div class="loading-content">
@@ -46,16 +61,24 @@
         <div class="start-container">
             <header class="game-header">
                 <h1><i class="fas fa-gamepad"></i> لعبة ماريو الخارقة</h1>
-                <p class="tagline">مغامرة مليئة بالتحديات والإثارة!</p>
+                <p class="tagline">مغامرة ممتعة عبر مراحل متعددة!</p>
             </header>
 
             <main class="main-content">
+                <!-- قسم اختيار المرحلة -->
+                <section class="levels-section">
+                    <h2><i class="fas fa-layer-group"></i> اختر المرحلة</h2>
+                    <div class="levels-grid" id="levels-grid">
+                        <!-- سيتم ملؤه بواسطة JavaScript -->
+                    </div>
+                </section>
+
                 <section class="character-section">
                     <div class="character-card">
                         <div class="character-image">
-                            <!-- الصورة - تم التعديل -->
+                            <!-- صورة اللاعب -->
                             <img src="player.png" alt="بطل اللعبة" id="player-img" 
-                                 onerror="handleImageError(this)">
+                                 onerror="this.onerror=null; this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTUwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjRjc0QzNDIi8+PHJlY3QgeD0iMjAiIHk9IjMwIiB3aWR0aD0iMTEwIiBoZWlnaHQ9IjE0MCIgZmlsbD0jQzAzOTJCLyI+PGNpcmNsZSBjeD0iNzUiIGN5PSI1MCIgcj0iMjAiIGZpbGw9IiMyOEEwQzkiLz48Y2lyY2xlIGN4PSI0NSIgY3k9IjUwIiByPSIyMCIgZmlsbD0iIzI4QTBDOSIvPjxjaXJjbGUgY3g9IjUwIiBjeT0iODAiIHI9IjEwIiBmaWxsPSIjRkZGRkZGIi8+PHRleHQgeD0iNTAlIiB5PSI0NSUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiNGRkZGRkYiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyMCI+TUU8L3RleHQ+PC9zdmc+';">
                             <div class="character-badge">
                                 <i class="fas fa-star"></i>
                                 البطل
@@ -69,7 +92,7 @@
                                 <div class="stat"><i class="fas fa-fist-raised"></i> قوة خارقة</div>
                             </div>
                             <div class="character-description">
-                                <p>انطلق في مغامرة مذهلة، اجمع العملات الذهبية، هزم الأعداء، ووصل للقصر الملكي!</p>
+                                <p>انطلق في مغامرة مذهلة عبر مراحل متعددة، اجمع العملات الذهبية، هزم الأعداء، ووصل للقصر الملكي في كل مرحلة!</p>
                             </div>
                         </div>
                     </div>
@@ -88,8 +111,8 @@
                         <div class="stat-box">
                             <div class="stat-icon"><i class="fas fa-clock"></i></div>
                             <div class="stat-details">
-                                <span class="stat-label">مدة اللعب</span>
-                                <span class="stat-value">02:00</span>
+                                <span class="stat-label">المراحل</span>
+                                <span class="stat-value" id="total-levels">3</span>
                             </div>
                         </div>
                         <div class="stat-box">
@@ -103,7 +126,7 @@
                             <div class="stat-icon"><i class="fas fa-coins"></i></div>
                             <div class="stat-details">
                                 <span class="stat-label">العملات</span>
-                                <span class="stat-value">20</span>
+                                <span class="stat-value">50+</span>
                             </div>
                         </div>
                     </div>
@@ -144,11 +167,15 @@
                     <div class="action-buttons">
                         <button id="start-game-btn" class="btn-primary">
                             <i class="fas fa-play-circle"></i>
-                            <span>🎮 ابدأ اللعب</span>
+                            <span>🎮 ابدأ اللعب (المرحلة 1)</span>
                         </button>
                         <button id="how-to-play-btn" class="btn-secondary">
                             <i class="fas fa-question-circle"></i>
                             <span>📚 تعليمات اللعب</span>
+                        </button>
+                        <button id="level-select-btn" class="btn-secondary">
+                            <i class="fas fa-list-ol"></i>
+                            <span>🗺️ قائمة المراحل</span>
                         </button>
                     </div>
                 </section>
@@ -159,8 +186,8 @@
                             <i class="fas fa-lightbulb"></i>
                         </div>
                         <div class="tip-content">
-                            <h4>💡 نصيحة للمبتدئين</h4>
-                            <p>اقفز فوق رؤوس الأعداء لهزيمتهم، واجمع كل العملات الذهبية لتحقيق أعلى النقاط!</p>
+                            <h4>💡 نصائح للمراحل المتقدمة</h4>
+                            <p>كل مرحلة أطول وأصعب من سابقتها! حاول جمع كل العملات وتجنب الأعداء للحصول على نقاط إضافية.</p>
                         </div>
                     </div>
                 </section>
@@ -184,20 +211,24 @@
                     </div>
                     <div class="hud-item">
                         <i class="fas fa-coins"></i>
-                        <span id="hud-coins">0/20</span>
+                        <span id="hud-coins">0/50</span>
+                    </div>
+                    <div class="hud-item">
+                        <i class="fas fa-flag"></i>
+                        <span id="hud-level">1</span>
                     </div>
                 </div>
                 <div class="hud-center">
                     <div class="timer-box">
                         <i class="fas fa-clock"></i>
-                        <span id="hud-timer">02:00</span>
+                        <span id="hud-timer">03:00</span>
                     </div>
                 </div>
                 <div class="hud-right">
                     <button id="pause-btn" class="hud-btn" title="إيقاف/متابعة">
                         <i class="fas fa-pause"></i>
                     </button>
-                    <button id="sound-btn" class="hud-btn" title="تشغيل/إوقف الصوت">
+                    <button id="sound-btn" class="hud-btn" title="تشغيل/إيقاف الصوت">
                         <i class="fas fa-volume-up"></i>
                     </button>
                     <button id="fullscreen-btn" class="hud-btn" title="ملء الشاشة">
@@ -210,7 +241,7 @@
             <div class="game-container">
                 <canvas id="game-canvas"></canvas>
                 
-                <!-- أزرار التحكم للجوال - تم تعديل التصميم -->
+                <!-- أزرار التحكم للجوال -->
                 <div class="mobile-controls">
                     <div class="controls-left">
                         <button id="btn-left" class="mobile-btn direction-btn">
@@ -234,7 +265,7 @@
 
                 <!-- رسالة المهمة -->
                 <div class="mission-alert">
-                    <span id="mission-text">🎯 اجمع 20 عملة ذهبية!</span>
+                    <span id="mission-text">🎯 اجمع العملات ووصل للقصر!</span>
                 </div>
             </div>
         </div>
@@ -248,7 +279,7 @@
                     <i class="fas fa-trophy"></i>
                 </div>
                 <h1 id="end-title">🎉 تهانينا!</h1>
-                <p id="end-message" class="result-message">لقد أكملت المغامرة بنجاح</p>
+                <p id="end-message" class="result-message">لقد أكملت المرحلة بنجاح</p>
             </div>
 
             <div class="stats-section-end">
@@ -262,7 +293,7 @@
                         <div class="stat-icon-end"><i class="fas fa-coins"></i></div>
                         <div class="stat-details-end">
                             <span>العملات</span>
-                            <strong id="final-coins">0/20</strong>
+                            <strong id="final-coins">0/50</strong>
                         </div>
                     </div>
                     <div class="stat-card-end">
@@ -280,10 +311,10 @@
                         </div>
                     </div>
                     <div class="stat-card-end">
-                        <div class="stat-icon-end"><i class="fas fa-bolt"></i></div>
+                        <div class="stat-icon-end"><i class="fas fa-flag"></i></div>
                         <div class="stat-details-end">
-                            <span>الكفاءة</span>
-                            <strong id="final-efficiency">0%</strong>
+                            <span>المرحلة</span>
+                            <strong id="final-level">1</strong>
                         </div>
                     </div>
                 </div>
@@ -294,10 +325,32 @@
                     <i class="fas fa-redo"></i>
                     <span>🔄 لعب مرة أخرى</span>
                 </button>
+                <button id="next-level-btn" class="btn-secondary">
+                    <i class="fas fa-arrow-right"></i>
+                    <span>➡️ المرحلة التالية</span>
+                </button>
                 <button id="back-to-menu-btn" class="btn-secondary">
                     <i class="fas fa-home"></i>
                     <span>🏠 القائمة الرئيسية</span>
                 </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة اختيار المرحلة -->
+    <div id="levels-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-layer-group"></i> قائمة المراحل</h2>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="levels-list" id="levels-list">
+                    <!-- سيتم ملؤه بواسطة JavaScript -->
+                </div>
+                <div class="levels-info">
+                    <p><i class="fas fa-info-circle"></i> اختر مرحلة للعب أو استمر من حيث توقفت</p>
+                </div>
             </div>
         </div>
     </div>
@@ -316,7 +369,7 @@
                     </div>
                     <div class="instruction-content">
                         <h3>🎯 هدف اللعبة</h3>
-                        <p>اجمع 20 عملة ذهبية وتجنب الأعداء للوصول إلى القصر الملكي في نهاية المرحلة.</p>
+                        <p>اجمع كل العملات الذهبية وتجنب الأعداء للوصول إلى القصر الملكي في نهاية كل مرحلة.</p>
                     </div>
                 </div>
                 <div class="instruction">
@@ -346,6 +399,15 @@
                         <p>كل عملة ذهبية = 100 نقطة. حاول جمعها جميعاً لمكافأة إضافية.</p>
                     </div>
                 </div>
+                <div class="instruction">
+                    <div class="instruction-icon">
+                        <i class="fas fa-layer-group"></i>
+                    </div>
+                    <div class="instruction-content">
+                        <h3>🏆 نظام المراحل</h3>
+                        <p>اللعبة تحتوي على 3 مراحل، كل مرحلة أطول وأصعب من سابقتها.</p>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -358,13 +420,23 @@
         </div>
     </div>
 
-    <!-- الأصوات - تم التعديل -->
-    <audio id="sound-jump" preload="auto" src="https://assets.mixkit.co/sfx/preview/mixkit-player-jumping-in-a-video-game-2043.mp3"></audio>
-    <audio id="sound-coin" preload="auto" src="https://assets.mixkit.co/sfx/preview/mixkit-winning-chimes-2015.mp3"></audio>
-    <audio id="sound-hit" preload="auto" src="https://assets.mixkit.co/sfx/preview/mixkit-retro-game-emergency-alarm-1000.mp3"></audio>
+    <!-- الأصوات -->
+    <audio id="sound-jump" preload="auto">
+        <source src="https://assets.mixkit.co/sfx/preview/mixkit-player-jumping-in-a-video-game-2043.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="sound-coin" preload="auto">
+        <source src="https://assets.mixkit.co/sfx/preview/mixkit-winning-chimes-2015.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="sound-hit" preload="auto">
+        <source src="https://assets.mixkit.co/sfx/preview/mixkit-retro-game-emergency-alarm-1000.mp3" type="audio/mpeg">
+    </audio>
 
     <!-- الملفات البرمجية -->
-    <script src="game.js"></script>
+    <script src="game-engine.js"></script>
+    <script src="levels.js"></script>
+    <script src="level-1.js"></script>
+    <script src="level-2.js"></script>
+    <script src="level-3.js"></script>
     <script src="app.js"></script>
     
     <!-- Script إضافي -->
@@ -388,6 +460,15 @@
                 e.preventDefault();
             }
         }, { passive: false });
+        
+        // تحديث زر البداية بناءً على آخر مرحلة لعب
+        document.addEventListener('DOMContentLoaded', function() {
+            const lastLevel = localStorage.getItem('mario_last_level') || 1;
+            const startBtn = document.getElementById('start-game-btn');
+            if (startBtn) {
+                startBtn.innerHTML = `<i class="fas fa-play-circle"></i><span>🎮 ابدأ اللعب (المرحلة ${lastLevel})</span>`;
+            }
+        });
     </script>
 </body>
 </html>
