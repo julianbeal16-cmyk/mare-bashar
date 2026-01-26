@@ -4,33 +4,37 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="mobile-web-app-capable" content="yes">
-    <title>🎮 لعبة ماريو الخارقة - نظام المراحل المتكامل</title>
+    <title>🎮 لعبة ماريو الخارقة - النسخة الكاملة</title>
     
-    <!-- الأيقونات -->
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- الخط العربي -->
+    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     
-    <!-- الأنماط -->
+    <!-- CSS -->
     <link rel="stylesheet" href="style.css">
     
     <style>
-        /* تثبيت لمنع التكبير على الجوال */
+        /* إصلاحات فورية */
         * {
-            touch-action: manipulation;
+            touch-action: manipulation !important;
+            -webkit-tap-highlight-color: transparent !important;
         }
         
-        /* إصلاح مشكلة الصورة */
+        button, .btn-primary, .btn-secondary, .hud-btn, .mobile-btn {
+            cursor: pointer !important;
+            pointer-events: auto !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+        }
+        
         #player-img {
             width: 150px;
             height: 200px;
             object-fit: contain;
             border: 3px solid #FFD700;
             border-radius: 10px;
-            display: block;
-            margin: 0 auto;
         }
         
         /* منع التحديد */
@@ -41,15 +45,10 @@
             user-select: none;
         }
         
-        /* تحسين للشاشات الصغيرة */
+        /* إصلاح للشاشات الصغيرة */
         @media (max-width: 480px) {
             .game-header h1 {
                 font-size: 1.8rem !important;
-            }
-            
-            .character-card {
-                flex-direction: column !important;
-                text-align: center !important;
             }
         }
     </style>
@@ -88,7 +87,6 @@
                 <section class="character-section">
                     <div class="character-card">
                         <div class="character-image">
-                            <!-- صورة اللاعب -->
                             <img src="player.png" alt="بطل اللعبة" id="player-img" 
                                  onerror="this.onerror=null; this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTUwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjRjc0QzNDIi8+PHJlY3QgeD0iMjAiIHk9IjMwIiB3aWR0aD0iMTEwIiBoZWlnaHQ9IjE0MCIgZmlsbD0jQzAzOTJCLyI+PGNpcmNsZSBjeD0iNzUiIGN5PSI1MCIgcj0iMjAiIGZpbGw9IiMyOEEwQzkiLz48Y2lyY2xlIGN4PSI0NSIgY3k9IjUwIiByPSIyMCIgZmlsbD0iIzI4QTBDOSIvPjxjaXJjbGUgY3g9IjUwIiBjeT0iODAiIHI9IjEwIiBmaWxsPSIjRkZGRkZGIi8+PHRleHQgeD0iNTAlIiB5PSI0NSUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiNGRkZGRkYiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyMCI+TUU8L3RleHQ+PC9zdmc+';">
                             <div class="character-badge">
@@ -179,7 +177,7 @@
                     <div class="action-buttons">
                         <button id="start-game-btn" class="btn-primary">
                             <i class="fas fa-play-circle"></i>
-                            <span>🎮 ابدأ اللعب (المرحلة 1)</span>
+                            <span>🎮 ابدأ اللعب</span>
                         </button>
                         <button id="how-to-play-btn" class="btn-secondary">
                             <i class="fas fa-question-circle"></i>
@@ -191,18 +189,6 @@
                         </button>
                     </div>
                 </section>
-
-                <section class="tips-section">
-                    <div class="tip-card">
-                        <div class="tip-icon">
-                            <i class="fas fa-lightbulb"></i>
-                        </div>
-                        <div class="tip-content">
-                            <h4>💡 نصائح للمراحل المتقدمة</h4>
-                            <p>كل مرحلة أطول وأصعب من سابقتها! حاول جمع كل العملات وتجنب الأعداء للحصول على نقاط إضافية.</p>
-                        </div>
-                    </div>
-                </section>
             </main>
         </div>
     </div>
@@ -210,7 +196,7 @@
     <!-- شاشة اللعب -->
     <div id="game-screen" class="screen">
         <div class="game-ui">
-            <!-- شريط المعلومات العلوي -->
+            <!-- شريط المعلومات -->
             <div class="game-hud">
                 <div class="hud-left">
                     <div class="hud-item">
@@ -273,11 +259,6 @@
                             <span>تزحلق</span>
                         </button>
                     </div>
-                </div>
-
-                <!-- رسالة المهمة -->
-                <div class="mission-alert">
-                    <span id="mission-text">🎯 اجمع العملات ووصل للقصر!</span>
                 </div>
             </div>
         </div>
@@ -402,33 +383,7 @@
                         <p>اقفز فوق رؤوس الأعداء لهزيمتهم. كل عدو مهزوم يعطيك 200 نقطة.</p>
                     </div>
                 </div>
-                <div class="instruction">
-                    <div class="instruction-icon">
-                        <i class="fas fa-coins"></i>
-                    </div>
-                    <div class="instruction-content">
-                        <h3>💰 جمع النقاط</h3>
-                        <p>كل عملة ذهبية = 100 نقطة. حاول جمعها جميعاً لمكافأة إضافية.</p>
-                    </div>
-                </div>
-                <div class="instruction">
-                    <div class="instruction-icon">
-                        <i class="fas fa-layer-group"></i>
-                    </div>
-                    <div class="instruction-content">
-                        <h3>🏆 نظام المراحل</h3>
-                        <p>اللعبة تحتوي على 3 مراحل، كل مرحلة أطول وأصعب من سابقتها.</p>
-                    </div>
-                </div>
             </div>
-        </div>
-    </div>
-
-    <!-- إشعارات -->
-    <div id="notification" class="notification">
-        <div class="notification-content">
-            <i class="fas fa-info-circle"></i>
-            <span id="notification-text">مرحباً بك في لعبة ماريو الخارقة!</span>
         </div>
     </div>
 
@@ -443,7 +398,7 @@
         <source src="https://assets.mixkit.co/sfx/preview/mixkit-retro-game-emergency-alarm-1000.mp3" type="audio/mpeg">
     </audio>
 
-    <!-- الملفات البرمجية -->
+    <!-- الملفات JavaScript -->
     <script src="level-manager.js"></script>
     <script src="level-1.js"></script>
     <script src="level-2.js"></script>
@@ -451,29 +406,41 @@
     <script src="game-engine.js"></script>
     <script src="app.js"></script>
     
-    <!-- Script إضافي -->
     <script>
-        // لمنع التكبير على الجوال
+        // حل فوري لمشكلة الأزرار
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🔧 تطبيق إصلاح الأزرار الفوري...');
+            
+            // تأكد من تفعيل جميع الأزرار
+            setTimeout(function() {
+                document.querySelectorAll('button').forEach(btn => {
+                    btn.style.cursor = 'pointer';
+                    btn.style.pointerEvents = 'auto';
+                    btn.style.opacity = '1';
+                    btn.disabled = false;
+                });
+                
+                // زر البدء مباشر
+                const startBtn = document.getElementById('start-game-btn');
+                if (startBtn) {
+                    startBtn.onclick = function() {
+                        console.log('🚀 زر البدء يعمل!');
+                        if (window.MarioGame && typeof MarioGame.loadLevel === 'function') {
+                            MarioGame.loadLevel(1);
+                        } else {
+                            alert('🎮 اللعبة جاهزة! اضغط موافق للبدء');
+                        }
+                    };
+                }
+                
+                console.log('✅ جميع الأزرات مفعلة وجاهزة');
+            }, 100);
+        });
+        
+        // منع التكبير على الجوال
         document.addEventListener('gesturestart', function(e) {
             e.preventDefault();
         });
-        
-        // تحديث زر البداية بناءً على آخر مرحلة لعب
-        document.addEventListener('DOMContentLoaded', function() {
-            const lastLevel = localStorage.getItem('mario_last_level') || 1;
-            const startBtn = document.getElementById('start-game-btn');
-            if (startBtn) {
-                startBtn.innerHTML = `<i class="fas fa-play-circle"></i><span>🎮 ابدأ اللعب (المرحلة ${lastLevel})</span>`;
-            }
-        });
-        
-        // دالة معالجة خطأ الصورة
-        window.handleImageError = function(img) {
-            console.log('⚠️ فشل تحميل الصورة، جاري استخدام صورة بديلة');
-            img.onerror = null;
-            img.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTUwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjRjc0QzNDIi8+PHJlY3QgeD0iMjAiIHk9IjMwIiB3aWR0aD0iMTEwIiBoZWlnaHQ9IjE0MCIgZmlsbD0jQzAzOTJCLyI+PGNpcmNsZSBjeD0iNzUiIGN5PSI1MCIgcj0iMjAiIGZpbGw9IiMyOEEwQzkiLz48Y2lyY2xlIGN4PSI0NSIgY3k9IjUwIiByPSIyMCIgZmlsbD0iIzI4QTBDOSIvPjxjaXJjbGUgY3g9IjUwIiBjeT0iODAiIHI9IjEwIiBmaWxsPSIjRkZGRkZGIi8+PHRleHQgeD0iNTAlIiB5PSI0NSUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiNGRkZGRkYiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyMCI+TUU8L3RleHQ+PC9zdmc+';
-            img.style.objectFit = 'contain';
-        };
     </script>
 </body>
 </html>
