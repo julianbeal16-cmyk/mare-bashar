@@ -1085,3 +1085,128 @@ html, body {
         min-height: -webkit-fill-available;
     }
 }
+
+/* ============================================
+   أنماط إضافية مطلوبة
+   ============================================ */
+
+/* الإشعارات */
+.notification {
+    position: fixed;
+    top: 20px;
+    right: 50%;
+    transform: translateX(50%);
+    background: rgba(0, 0, 0, 0.9);
+    color: white;
+    padding: 15px 30px;
+    border-radius: 50px;
+    border: 2px solid var(--accent);
+    z-index: 9999;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    max-width: 90%;
+    text-align: center;
+    backdrop-filter: blur(10px);
+}
+
+.notification.show {
+    opacity: 1;
+    visibility: visible;
+    top: 30px;
+}
+
+/* الرسوم المتحركة */
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+/* تنسيق الرسائل */
+#notification-text {
+    font-weight: bold;
+    color: var(--accent);
+}
+
+/* إصلاحات للصور */
+.player-img-fallback i {
+    animation: bounce 2s infinite;
+}
+
+/* تحسينات للأزرار */
+.btn-primary:active, .btn-secondary:active {
+    transform: scale(0.95);
+}
+
+.mobile-btn.active {
+    transform: scale(0.85);
+    opacity: 0.8;
+}
+
+/* تحسينات للشاشات */
+@media (max-height: 600px) {
+    .mobile-controls {
+        bottom: 10px !important;
+    }
+    
+    .mobile-btn {
+        width: 55px !important;
+        height: 55px !important;
+        font-size: 1.2rem !important;
+    }
+    
+    .jump-btn,
+    .slide-btn {
+        width: 60px !important;
+        height: 60px !important;
+    }
+}
+
+/* رسالة الوضع العمودي */
+@media (orientation: portrait) and (max-width: 768px) {
+    #game-screen::before {
+        content: "🔄 الرجاء تدوير الهاتف إلى الوضع الأفقي للعب";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(10, 10, 26, 0.95);
+        color: white;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 1.3rem;
+        text-align: center;
+        padding: 20px;
+        z-index: 10000;
+        backdrop-filter: blur(10px);
+    }
+}
+
+/* حل مشكلة شاشة اللعب */
+#game-screen {
+    display: none;
+}
+
+#game-screen.active {
+    display: flex !important;
+}
+
+/* إصلاح شريط التقدم */
+.progress-fill {
+    background: linear-gradient(90deg, var(--primary), var(--accent), var(--secondary));
+    background-size: 200% 100%;
+    animation: loading 2s infinite linear;
+}
+
+@keyframes loading {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
