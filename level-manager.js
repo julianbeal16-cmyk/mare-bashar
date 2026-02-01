@@ -53,7 +53,6 @@ const LevelManager = {
         
         this.currentLevel = level;
         console.log(`🎮 تحميل المرحلة ${levelNumber}: ${level.name}`);
-        console.log(`📊 الإحصائيات: ${level.totalCoins} عملة، ${level.timeLimit} ثانية`);
         
         return level;
     },
@@ -102,8 +101,11 @@ const LevelManager = {
 
 // تحميل مدير المراحل عند بدء الصفحة
 document.addEventListener('DOMContentLoaded', () => {
-    LevelManager.init();
+    setTimeout(() => {
+        LevelManager.init();
+    }, 100);
 });
 
 // جعل LevelManager متاحاً عالمياً
 window.LevelManager = LevelManager;
+console.log('✅ ملف level-manager.js محمل بنجاح!');
