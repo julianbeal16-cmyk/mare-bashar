@@ -430,55 +430,6 @@ const App = {
                     font-size: 0.7rem !important;
                 }
             }
-            
-            @media (max-height: 600px) {
-                .mobile-controls {
-                    bottom: 10px !important;
-                }
-                
-                .mobile-btn {
-                    width: 55px !important;
-                    height: 55px !important;
-                    font-size: 1.2rem !important;
-                }
-                
-                .jump-btn,
-                .slide-btn {
-                    width: 60px !important;
-                    height: 60px !important;
-                }
-                
-                .mission-alert {
-                    top: 70px !important;
-                }
-                
-                .mission-alert span {
-                    font-size: 0.9rem !important;
-                    padding: 8px 20px !important;
-                }
-            }
-            
-            /* رسالة الوضع العمودي */
-            @media (orientation: portrait) and (max-width: 768px) {
-                #game-screen::before {
-                    content: "🔄 الرجاء تدوير الهاتف إلى الوضع الأفقي للعب";
-                    position: absolute;
-                    top: 0;
-                    left: 0;
-                    width: 100%;
-                    height: 100%;
-                    background: rgba(10, 10, 26, 0.95);
-                    color: white;
-                    display: flex;
-                    justify-content: center;
-                    align-items: center;
-                    font-size: 1.3rem;
-                    text-align: center;
-                    padding: 20px;
-                    z-index: 10000;
-                    backdrop-filter: blur(10px);
-                }
-            }
         `;
         document.head.appendChild(style);
     },
@@ -511,13 +462,6 @@ const App = {
                 e.preventDefault();
             }
         }, { passive: false });
-        
-        // منع سحب الصفحة على الجوال
-        document.addEventListener('touchstart', (e) => {
-            if (e.touches.length > 1) {
-                e.preventDefault();
-            }
-        }, { passive: false });
     },
     
     handleOrientationChange() {
@@ -542,22 +486,6 @@ const App = {
     // ======================
     loadProgress() {
         console.log('📊 تحميل تقدم اللاعب...');
-        
-        // عرض شريط التقدم (محاكاة)
-        const progressFill = document.getElementById('progress-fill');
-        if (progressFill) {
-            let progress = 0;
-            const interval = setInterval(() => {
-                progress += 5 + Math.random() * 10;
-                if (progress > 100) progress = 100;
-                progressFill.style.width = `${progress}%`;
-                
-                if (progress >= 100) {
-                    clearInterval(interval);
-                    console.log('✅ تحميل التقدم مكتمل');
-                }
-            }, 300);
-        }
         
         // تحديث أفضل نتيجة
         this.updateBestScore();
@@ -843,13 +771,6 @@ const App = {
                 }
                 
                 this.showNotification('🖥️ وضع ملء الشاشة مفعل');
-                
-                // قفل التوجيه على الجوال
-                if (screen.orientation && screen.orientation.lock) {
-                    screen.orientation.lock('landscape').catch(() => {
-                        console.log('🔒 لا يمكن قفل التوجيه');
-                    });
-                }
             } else {
                 if (document.exitFullscreen) {
                     document.exitFullscreen();
@@ -860,11 +781,6 @@ const App = {
                 }
                 
                 this.showNotification('📱 الخروج من ملء الشاشة');
-                
-                // إلغاء قفل التوجيه
-                if (screen.orientation && screen.orientation.unlock) {
-                    screen.orientation.unlock();
-                }
             }
         } catch (error) {
             console.log('⚠️ خطأ في ملء الشاشة:', error);
@@ -883,27 +799,6 @@ const App = {
             setTimeout(() => {
                 notification.classList.remove('show');
             }, 3000);
-        }
-    },
-    
-    savePlayerProgress(level, score) {
-        try {
-            // حفظ آخر مرحلة لعب
-            localStorage.setItem('mario_last_level', level.toString());
-            
-            // حفظ أفضل نتيجة للمرحلة
-            const levelScores = JSON.parse(localStorage.getItem('mario_level_scores') || '{}');
-            if (!levelScores[level] || score > levelScores[level]) {
-                levelScores[level] = score;
-                localStorage.setItem('mario_level_scores', JSON.stringify(levelScores));
-            }
-            
-            console.log(`💾 تم حفظ تقدم المرحلة ${level}: ${score} نقطة`);
-            return true;
-            
-        } catch (e) {
-            console.warn('⚠️ لا يمكن حفظ التقدم:', e);
-            return false;
         }
     }
 };
