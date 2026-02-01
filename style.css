@@ -1367,3 +1367,98 @@ canvas {
 ::-webkit-scrollbar-thumb:hover {
     background: var(--primary);
 }
+/* ============================================
+   إظهار أزرار التحكم
+   ============================================ */
+
+/* إظهار أزرار التحكم اللمسية */
+.mobile-controls {
+    display: none;
+}
+
+.mobile-device .mobile-controls {
+    display: flex !important;
+    animation: fadeInUp 0.5s ease;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* جعل الأزرار أكثر وضوحاً */
+.mobile-btn {
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+    border-width: 3px !important;
+}
+
+.mobile-btn:active, .mobile-btn.active {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+    transform: scale(0.85);
+}
+
+/* إضافة نص توضيحي */
+.mobile-controls::before {
+    content: "🎮 أزرار التحكم";
+    position: absolute;
+    top: -25px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    color: var(--accent);
+    font-weight: bold;
+    font-size: 0.9rem;
+    opacity: 0.8;
+}
+
+/* تحسين الرؤية على الشاشات الصغيرة */
+@media (max-width: 768px) {
+    .mobile-controls {
+        bottom: 10px !important;
+    }
+    
+    .mobile-btn {
+        width: 60px !important;
+        height: 60px !important;
+        font-size: 1.4rem !important;
+    }
+    
+    .jump-btn, .slide-btn {
+        width: 65px !important;
+        height: 65px !important;
+    }
+}
+
+/* رسالة مساعدة */
+#game-screen::after {
+    content: "💡 استخدم أزرار الأسهم للحركة ومفتاح المسافة للقفز";
+    position: absolute;
+    top: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    border: 2px solid var(--accent);
+    z-index: 98;
+    animation: fadeInOut 5s ease-in-out;
+    display: none;
+}
+
+@keyframes fadeInOut {
+    0%, 100% { opacity: 0; }
+    10%, 90% { opacity: 1; }
+}
+
+.mobile-device #game-screen::after {
+    content: "💡 استخدم الأزرار أدناه للتحكم";
+    display: block;
+}
