@@ -1,5 +1,5 @@
 // ============================================
-// 📱 تطبيق اللعبة - النسخة النهائية 100%
+// 📱 تطبيق اللعبة - النسخة المعدلة 100%
 // ============================================
 
 'use strict';
@@ -12,7 +12,7 @@ const App = {
         console.log('📱 تهيئة تطبيق اللعبة...');
         
         try {
-            // تحميل الصورة مباشرة
+            // تحميل الصورة
             this.loadPlayerImage();
             
             this.setupEventListeners();
@@ -29,7 +29,7 @@ const App = {
         } catch (error) {
             console.error('❌ خطأ في تهيئة التطبيق:', error);
             this.showNotification('⚠️ خطأ في التهيئة، جاري المحاولة...');
-            setTimeout(() => this.init(), 1000);
+            // لا نعيد التهيئة تلقائياً لمنع الحلقات اللا نهائية
         }
     },
     
@@ -38,55 +38,42 @@ const App = {
     // ======================
     loadPlayerImage() {
         console.log('🖼️ تحميل صورة اللاعب...');
-        const playerImg = document.getElementById('player-img');
-        if (!playerImg) return;
+        const playerImgContainer = document.getElementById('player-img-container');
+        if (!playerImgContainer) return;
         
         const img = new Image();
         img.onload = function() {
             console.log('✅ صورة اللاعب محملة بنجاح!');
-            playerImg.innerHTML = '';
-            playerImg.style.background = 'none';
+            playerImgContainer.innerHTML = '';
+            playerImgContainer.style.background = 'none';
             img.style.width = '100%';
             img.style.height = '100%';
             img.style.objectFit = 'cover';
             img.style.borderRadius = '10px';
-            playerImg.appendChild(img);
+            playerImgContainer.appendChild(img);
+            playerImgContainer.id = 'player-img-loaded';
         };
         
         img.onerror = function() {
             console.log('⚠️ لم يتم تحميل صورة اللاعب، استخدام البديل');
-            playerImg.innerHTML = '<i class="fas fa-user-ninja"></i>';
-            playerImg.style.background = 'linear-gradient(135deg, #E74C3C, #C0392B)';
-            playerImg.style.display = 'flex';
-            playerImg.style.alignItems = 'center';
-            playerImg.style.justifyContent = 'center';
-            playerImg.style.fontSize = '3rem';
-            playerImg.style.color = 'white';
+            playerImgContainer.innerHTML = '<i class="fas fa-user-ninja"></i>';
+            playerImgContainer.style.background = 'linear-gradient(135deg, #E74C3C, #C0392B)';
+            playerImgContainer.style.display = 'flex';
+            playerImgContainer.style.alignItems = 'center';
+            playerImgContainer.style.justifyContent = 'center';
+            playerImgContainer.style.fontSize = '3rem';
+            playerImgContainer.style.color = 'white';
         };
         
-        // محاولة جميع المسارات الممكنة
-        const paths = ['player.png', './player.png', 'assets/player.png', 'images/player.png'];
-        let currentIndex = 0;
+        // محاولة تحميل الصورة
+        img.src = 'player.png';
         
-        const tryNextPath = () => {
-            if (currentIndex >= paths.length) {
+        // إذا لم تحمل خلال 2 ثانية، استخدام البديل
+        setTimeout(() => {
+            if (!img.complete) {
                 img.onerror();
-                return;
             }
-            
-            console.log(`🔍 محاولة تحميل من: ${paths[currentIndex]}`);
-            img.src = paths[currentIndex];
-            currentIndex++;
-            
-            // إذا لم تحمل خلال 2 ثانية، جرب المسار التالي
-            setTimeout(() => {
-                if (!img.complete) {
-                    tryNextPath();
-                }
-            }, 2000);
-        };
-        
-        tryNextPath();
+        }, 2000);
     },
     
     // ======================
@@ -133,11 +120,12 @@ const App = {
         }
         
         // إزالة أي أحداث سابقة
-        startBtn.replaceWith(startBtn.cloneNode(true));
-        const newStartBtn = document.getElementById('start-game-btn');
+        const newStartBtn = startBtn.cloneNode(true);
+        startBtn.parentNode.replaceChild(newStartBtn, startBtn);
+        const currentStartBtn = document.getElementById('start-game-btn');
         
         // النقر
-        newStartBtn.addEventListener('click', (e) => {
+        currentStartBtn.addEventListener('click', (e) => {
             e.preventDefault();
             e.stopPropagation();
             console.log('🚀 الضغط على زر البدء');
@@ -145,22 +133,16 @@ const App = {
         });
         
         // اللمس
-        newStartBtn.addEventListener('touchstart', (e) => {
+        currentStartBtn.addEventListener('touchstart', (e) => {
             e.preventDefault();
-            newStartBtn.style.transform = 'scale(0.95)';
-            newStartBtn.style.opacity = '0.9';
+            currentStartBtn.style.transform = 'scale(0.95)';
+            currentStartBtn.style.opacity = '0.9';
         }, { passive: false });
         
-        newStartBtn.addEventListener('touchend', (e) => {
+        currentStartBtn.addEventListener('touchend', (e) => {
             e.preventDefault();
-            newStartBtn.style.transform = '';
-            newStartBtn.style.opacity = '';
-        }, { passive: false });
-        
-        newStartBtn.addEventListener('touchcancel', (e) => {
-            e.preventDefault();
-            newStartBtn.style.transform = '';
-            newStartBtn.style.opacity = '';
+            currentStartBtn.style.transform = '';
+            currentStartBtn.style.opacity = '';
         }, { passive: false });
         
         console.log('✅ زر البدء جاهز');
@@ -268,25 +250,15 @@ const App = {
         const btn = document.getElementById(id);
         if (btn) {
             // إزالة الأحداث السابقة
-            btn.replaceWith(btn.cloneNode(true));
-            const newBtn = document.getElementById(id);
+            const newBtn = btn.cloneNode(true);
+            btn.parentNode.replaceChild(newBtn, btn);
+            const currentBtn = document.getElementById(id);
             
-            newBtn.addEventListener('click', (e) => {
+            currentBtn.addEventListener('click', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
                 callback();
             });
-            
-            // تحسين اللمس
-            newBtn.addEventListener('touchstart', (e) => {
-                e.preventDefault();
-                newBtn.classList.add('active');
-            }, { passive: false });
-            
-            newBtn.addEventListener('touchend', (e) => {
-                e.preventDefault();
-                newBtn.classList.remove('active');
-            }, { passive: false });
         }
     },
     
@@ -294,11 +266,7 @@ const App = {
         const fullscreenBtn = document.getElementById('fullscreen-btn');
         if (!fullscreenBtn) return;
         
-        // إزالة الأحداث السابقة
-        fullscreenBtn.replaceWith(fullscreenBtn.cloneNode(true));
-        const newBtn = document.getElementById('fullscreen-btn');
-        
-        newBtn.addEventListener('click', (e) => {
+        fullscreenBtn.addEventListener('click', (e) => {
             e.preventDefault();
             e.stopPropagation();
             this.toggleFullscreen();
@@ -306,35 +274,21 @@ const App = {
         
         // تحديث أيقونة زر ملء الشاشة عند التغيير
         document.addEventListener('fullscreenchange', () => {
-            const icon = newBtn.querySelector('i');
+            const icon = fullscreenBtn.querySelector('i');
             if (document.fullscreenElement) {
                 if (icon) {
                     icon.className = 'fas fa-compress';
-                    icon.style.transform = 'rotate(0deg)';
                 }
-                newBtn.title = 'تصغير الشاشة';
+                fullscreenBtn.title = 'تصغير الشاشة';
                 this.showNotification('🖥️ وضع ملء الشاشة مفعل');
             } else {
                 if (icon) {
                     icon.className = 'fas fa-expand';
-                    icon.style.transform = 'rotate(0deg)';
                 }
-                newBtn.title = 'ملء الشاشة';
+                fullscreenBtn.title = 'ملء الشاشة';
                 this.showNotification('📱 الخروج من ملء الشاشة');
             }
         });
-        
-        // تحديث حالات الشاشة عند التحميل
-        setTimeout(() => {
-            const icon = newBtn.querySelector('i');
-            if (document.fullscreenElement) {
-                if (icon) icon.className = 'fas fa-compress';
-                newBtn.title = 'تصغير الشاشة';
-            } else {
-                if (icon) icon.className = 'fas fa-expand';
-                newBtn.title = 'ملء الشاشة';
-            }
-        }, 100);
         
         console.log('✅ زر ملء الشاشة جاهز');
     },
@@ -466,199 +420,39 @@ const App = {
     applyMobileStyles() {
         const style = document.createElement('style');
         style.textContent = `
-            /* تحسينات الجوال */
-            .mobile-device .mobile-controls {
+            /* إظهار أزرار التحكم على الجوال */
+            .mobile-device #mobile-controls {
                 display: flex !important;
-                opacity: 0.95;
-            }
-            
-            .mobile-device .btn-primary,
-            .mobile-device .btn-secondary {
-                padding: 16px 24px;
-                font-size: 1rem;
-                min-height: 55px;
-            }
-            
-            .mobile-device .game-hud {
-                padding: 10px 15px;
-            }
-            
-            .mobile-device .hud-item {
-                padding: 8px 15px;
-                min-width: 85px;
-                font-size: 0.9rem;
+                opacity: 1 !important;
+                visibility: visible !important;
+                pointer-events: auto !important;
             }
             
             .mobile-device .mobile-btn {
-                width: 65px !important;
-                height: 65px !important;
-                font-size: 1.4rem !important;
+                pointer-events: auto !important;
+                touch-action: manipulation !important;
             }
             
-            .mobile-device .jump-btn,
-            .mobile-device .slide-btn {
-                width: 70px !important;
-                height: 70px !important;
-            }
-            
-            /* إظهار رسالة الوضع العمودي */
-            .mobile-device #game-screen.portrait-warning::before {
-                content: "🔄 الرجاء تدوير الهاتف إلى الوضع الأفقي للعب";
+            /* رسالة المساعدة */
+            .mobile-device .game-help {
                 position: absolute;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background: rgba(10, 10, 26, 0.95);
+                top: 20%;
+                left: 50%;
+                transform: translateX(-50%);
+                background: rgba(0, 0, 0, 0.8);
                 color: white;
-                display: flex !important;
-                justify-content: center;
-                align-items: center;
-                font-size: 1.3rem;
+                padding: 10px 20px;
+                border-radius: 10px;
+                border: 2px solid var(--accent);
+                z-index: 99;
+                font-size: 0.9rem;
                 text-align: center;
-                padding: 20px;
-                z-index: 10000;
-                backdrop-filter: blur(10px);
+                animation: fadeOut 5s forwards;
             }
             
-            /* تحسينات للشاشات الصغيرة */
-            @media (max-width: 768px) {
-                .levels-grid {
-                    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)) !important;
-                }
-                
-                .character-card {
-                    flex-direction: column !important;
-                    text-align: center !important;
-                }
-                
-                .character-stats {
-                    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)) !important;
-                }
-                
-                .stats-grid {
-                    grid-template-columns: repeat(2, 1fr) !important;
-                }
-                
-                .controls-guide {
-                    grid-template-columns: 1fr !important;
-                }
-                
-                .action-buttons {
-                    flex-direction: column !important;
-                    gap: 12px !important;
-                }
-                
-                .btn-primary, 
-                .btn-secondary {
-                    width: 100% !important;
-                    margin-bottom: 5px !important;
-                }
-                
-                .mobile-controls {
-                    bottom: 15px !important;
-                    padding: 10px 15px !important;
-                }
-                
-                .controls-left,
-                .controls-right {
-                    min-width: 150px !important;
-                    padding: 10px 15px !important;
-                    gap: 15px !important;
-                }
-                
-                .modal-content {
-                    max-width: 95% !important;
-                }
-            }
-            
-            @media (max-width: 480px) {
-                .game-header h1 {
-                    font-size: 1.8rem !important;
-                }
-                
-                .tagline {
-                    font-size: 1rem !important;
-                }
-                
-                .levels-grid {
-                    grid-template-columns: 1fr !important;
-                }
-                
-                .level-card {
-                    padding: 15px !important;
-                }
-                
-                .level-icon {
-                    width: 50px !important;
-                    height: 50px !important;
-                    font-size: 1.5rem !important;
-                }
-                
-                .play-level-btn {
-                    width: 45px !important;
-                    height: 45px !important;
-                }
-                
-                .mobile-controls {
-                    bottom: 10px !important;
-                    padding: 8px 10px !important;
-                }
-                
-                .controls-left,
-                .controls-right {
-                    min-width: 140px !important;
-                    padding: 8px 12px !important;
-                    gap: 12px !important;
-                }
-                
-                .mobile-btn {
-                    width: 60px !important;
-                    height: 60px !important;
-                    font-size: 1.3rem !important;
-                }
-                
-                .jump-btn,
-                .slide-btn {
-                    width: 65px !important;
-                    height: 65px !important;
-                }
-                
-                .jump-btn span,
-                .slide-btn span {
-                    font-size: 0.7rem !important;
-                }
-                
-                .character-image {
-                    width: 120px !important;
-                    height: 160px !important;
-                }
-                
-                .character-info h3 {
-                    font-size: 1.4rem !important;
-                }
-                
-                .modal-header h2 {
-                    font-size: 1.5rem !important;
-                }
-            }
-            
-            @media (max-height: 600px) {
-                .mobile-controls {
-                    bottom: 5px !important;
-                }
-                
-                .mobile-btn {
-                    width: 55px !important;
-                    height: 55px !important;
-                    font-size: 1.2rem !important;
-                }
-                
-                .jump-btn,
-                .slide-btn {
-                    width: 60px !important;
-                    height: 60px !important;
-                }
+            @keyframes fadeOut {
+                0%, 70% { opacity: 1; }
+                100% { opacity: 0; }
             }
         `;
         document.head.appendChild(style);
@@ -678,23 +472,39 @@ const App = {
     enhanceTouchControls() {
         // تحسين استجابة الأزرار اللمسية
         document.querySelectorAll('.mobile-btn, .hud-btn, .btn-primary, .btn-secondary').forEach(btn => {
-            btn.style.cursor = 'pointer';
-            btn.style.userSelect = 'none';
-            btn.style.WebkitUserSelect = 'none';
-            btn.style.MozUserSelect = 'none';
-            btn.style.msUserSelect = 'none';
             btn.style.touchAction = 'manipulation';
         });
         
-        // منع التمرير عند اللمس على أزرار التحكم
-        document.addEventListener('touchmove', (e) => {
-            if (e.target.classList.contains('mobile-btn') || 
-                e.target.closest('.mobile-controls')) {
-                e.preventDefault();
-            }
-        }, { passive: false });
+        // عرض رسالة مساعدة عند بدء اللعبة
+        setTimeout(() => {
+            this.showGameHelp();
+        }, 1000);
+    },
+    
+    showGameHelp() {
+        const helpDiv = document.createElement('div');
+        helpDiv.className = 'game-help';
+        helpDiv.innerHTML = `
+            <div>👆 استخدم الأزرار أدناه للتحكم</div>
+            <div style="font-size:0.8rem;margin-top:5px;color:#FFD700">
+                <i class="fas fa-arrow-left"></i> يسار | 
+                <i class="fas fa-arrow-right"></i> يمين | 
+                <i class="fas fa-arrow-up"></i> قفز | 
+                <i class="fas fa-arrow-down"></i> تزحلق
+            </div>
+        `;
         
-        console.log('✅ تحسينات اللمس مفعلة');
+        const gameScreen = document.getElementById('game-screen');
+        if (gameScreen) {
+            gameScreen.appendChild(helpDiv);
+            
+            // إزالة الرسالة بعد 5 ثواني
+            setTimeout(() => {
+                if (helpDiv.parentNode) {
+                    helpDiv.parentNode.removeChild(helpDiv);
+                }
+            }, 5000);
+        }
     },
     
     handleOrientationChange() {
@@ -715,12 +525,6 @@ const App = {
             setTimeout(() => {
                 MarioGame.updateCanvasSize();
             }, 100);
-        }
-        
-        // تحديث قائمة المراحل إذا كانت مفتوحة
-        const levelsModal = document.getElementById('levels-modal');
-        if (levelsModal && levelsModal.style.display === 'flex') {
-            this.updateLevelsList();
         }
         
         this.showNotification('🔄 تم تعديل الواجهة للتوجيه الجديد');
@@ -770,8 +574,6 @@ const App = {
             const span = startBtn.querySelector('span');
             if (span) {
                 span.textContent = `🎮 ابدأ اللعب (المرحلة ${lastLevel})`;
-            } else {
-                startBtn.innerHTML = `<i class="fas fa-play-circle"></i><span>🎮 ابدأ اللعب (المرحلة ${lastLevel})</span>`;
             }
             
             console.log(`✅ زر البدء محدث للمرحلة ${lastLevel}`);
@@ -786,9 +588,6 @@ const App = {
         
         // إنشاء شبكة المراحل في الصفحة الرئيسية
         this.createLevelsGrid();
-        
-        // إنشاء قائمة المراحل في النافذة المنبثقة
-        this.updateLevelsList();
         
         console.log('✅ قائمة المراحل محملة');
     },
@@ -1031,27 +830,6 @@ const App = {
             setTimeout(() => {
                 notification.classList.remove('show');
             }, 3000);
-        }
-    },
-    
-    savePlayerProgress(level, score) {
-        try {
-            // حفظ آخر مرحلة لعب
-            localStorage.setItem('mario_last_level', level.toString());
-            
-            // حفظ أفضل نتيجة للمرحلة
-            const levelScores = JSON.parse(localStorage.getItem('mario_level_scores') || '{}');
-            if (!levelScores[level] || score > levelScores[level]) {
-                levelScores[level] = score;
-                localStorage.setItem('mario_level_scores', JSON.stringify(levelScores));
-            }
-            
-            console.log(`💾 تم حفظ تقدم المرحلة ${level}: ${score} نقطة`);
-            return true;
-            
-        } catch (e) {
-            console.warn('⚠️ لا يمكن حفظ التقدم:', e);
-            return false;
         }
     }
 };
