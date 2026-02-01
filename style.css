@@ -35,6 +35,7 @@ html, body {
     color: var(--light);
     direction: rtl;
     position: fixed;
+    touch-action: manipulation;
 }
 
 /* === شاشة التحميل === */
@@ -49,6 +50,7 @@ html, body {
     justify-content: center;
     align-items: center;
     z-index: 9999;
+    transition: opacity 0.5s ease;
 }
 
 .loading-content {
@@ -57,6 +59,7 @@ html, body {
     background: rgba(0, 0, 0, 0.8);
     border-radius: 20px;
     border: 3px solid var(--accent);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
 }
 
 .loader {
@@ -85,13 +88,21 @@ html, body {
     background: rgba(255, 255, 255, 0.1);
     border-radius: 5px;
     overflow: hidden;
+    position: relative;
 }
 
 .progress-fill {
     height: 100%;
-    background: linear-gradient(90deg, var(--primary), var(--accent));
+    background: linear-gradient(90deg, var(--primary), var(--accent), var(--secondary));
+    background-size: 200% 100%;
     width: 0%;
     transition: width 0.3s ease;
+    animation: loading 2s infinite linear;
+}
+
+@keyframes loading {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
 }
 
 /* === الشاشات العامة === */
@@ -116,17 +127,28 @@ html, body {
     justify-content: center;
     align-items: center;
     background: linear-gradient(135deg, var(--dark) 0%, var(--dark-secondary) 100%);
+    padding: 20px;
 }
 
 .start-container {
     max-width: 1200px;
     width: 100%;
     padding: 20px;
+    animation: fadeIn 0.8s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 .game-header {
     text-align: center;
     margin-bottom: 40px;
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 20px;
+    border: 2px solid rgba(255, 215, 0, 0.2);
 }
 
 .game-header h1 {
@@ -135,12 +157,14 @@ html, body {
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     margin-bottom: 15px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .tagline {
     color: var(--secondary);
     font-size: 1.2rem;
     opacity: 0.9;
+    font-weight: 600;
 }
 
 /* قسم المراحل */
@@ -173,11 +197,13 @@ html, body {
     gap: 20px;
     border: 2px solid rgba(255, 215, 0, 0.2);
     transition: all 0.3s ease;
+    cursor: pointer;
 }
 
 .level-card:hover {
     transform: translateY(-5px);
     border-color: var(--accent);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
 }
 
 .level-icon {
@@ -206,6 +232,7 @@ html, body {
     color: var(--gray-light);
     font-size: 0.9rem;
     margin-bottom: 10px;
+    opacity: 0.8;
 }
 
 .level-stats {
@@ -268,12 +295,18 @@ html, body {
     flex-shrink: 0;
 }
 
-.character-image img {
+#player-img {
     width: 100%;
     height: 100%;
     object-fit: cover;
     border-radius: 15px;
     border: 4px solid var(--accent);
+    background: linear-gradient(135deg, #E74C3C, #C0392B);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3rem;
+    color: white;
 }
 
 .character-badge {
@@ -291,6 +324,7 @@ html, body {
     align-items: center;
     gap: 8px;
     white-space: nowrap;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
 }
 
 .character-info {
@@ -320,6 +354,12 @@ html, body {
     border-radius: 10px;
     text-align: center;
     border: 1px solid rgba(255, 215, 0, 0.2);
+    transition: transform 0.3s ease;
+}
+
+.character-stats .stat:hover {
+    transform: translateY(-3px);
+    border-color: var(--accent);
 }
 
 .character-stats .stat i {
@@ -367,6 +407,12 @@ html, body {
     align-items: center;
     gap: 20px;
     border: 2px solid rgba(255, 215, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.stat-box:hover {
+    transform: translateY(-5px);
+    border-color: var(--accent);
 }
 
 .stat-icon {
@@ -444,11 +490,13 @@ html, body {
     color: var(--accent);
     min-width: 50px;
     text-align: center;
+    box-shadow: 0 4px 0 rgba(0, 0, 0, 0.3);
 }
 
 .control-text {
     color: var(--gray-light);
     font-size: 1rem;
+    font-weight: 600;
 }
 
 /* قسم الأزرار */
@@ -477,10 +525,19 @@ html, body {
     transition: all 0.3s ease;
     min-width: 250px;
     font-family: 'Cairo', sans-serif;
+    box-shadow: 0 6px 0 rgba(0, 0, 0, 0.2);
+    position: relative;
+    overflow: hidden;
 }
 
 .btn-primary:hover, .btn-secondary:hover {
     transform: translateY(-5px);
+    box-shadow: 0 8px 0 rgba(0, 0, 0, 0.2);
+}
+
+.btn-primary:active, .btn-secondary:active {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 0 rgba(0, 0, 0, 0.2);
 }
 
 .btn-primary {
@@ -513,6 +570,7 @@ html, body {
     align-items: center;
     border-bottom: 3px solid var(--accent);
     flex-shrink: 0;
+    z-index: 100;
 }
 
 .hud-left, .hud-center, .hud-right {
@@ -529,6 +587,12 @@ html, body {
     align-items: center;
     gap: 12px;
     min-width: 120px;
+    transition: all 0.3s ease;
+}
+
+.hud-item:hover {
+    background: rgba(255, 255, 255, 0.15);
+    transform: translateY(-2px);
 }
 
 .hud-item i {
@@ -550,6 +614,12 @@ html, body {
     display: flex;
     align-items: center;
     gap: 12px;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
 }
 
 .timer-box i {
@@ -584,6 +654,10 @@ html, body {
     transform: scale(1.1);
 }
 
+.hud-btn:active {
+    transform: scale(0.95);
+}
+
 /* منطقة اللعبة */
 .game-container {
     flex: 1;
@@ -605,10 +679,15 @@ html, body {
     bottom: 20px;
     left: 0;
     right: 0;
-    display: flex;
+    display: none;
     justify-content: space-between;
     padding: 15px 25px;
     pointer-events: none;
+    z-index: 99;
+}
+
+.mobile-device .mobile-controls {
+    display: flex;
 }
 
 .controls-left, .controls-right {
@@ -620,6 +699,7 @@ html, body {
     backdrop-filter: blur(10px);
     border: 3px solid rgba(255, 215, 0, 0.3);
     pointer-events: auto;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
 }
 
 .mobile-btn {
@@ -636,10 +716,15 @@ html, body {
     justify-content: center;
     transition: all 0.1s ease;
     background: rgba(255, 255, 255, 0.15);
+    pointer-events: auto;
+    touch-action: manipulation;
+    user-select: none;
+    -webkit-user-select: none;
 }
 
-.mobile-btn:active {
+.mobile-btn:active, .mobile-btn.active {
     transform: scale(0.85);
+    opacity: 0.8;
 }
 
 .direction-btn {
@@ -673,6 +758,7 @@ html, body {
     justify-content: center;
     align-items: center;
     background: linear-gradient(135deg, var(--dark) 0%, var(--dark-secondary) 100%);
+    padding: 20px;
 }
 
 .end-container {
@@ -683,6 +769,13 @@ html, body {
     width: 100%;
     text-align: center;
     border: 5px solid var(--accent);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5);
+    animation: slideUp 0.5s ease;
+}
+
+@keyframes slideUp {
+    from { transform: translateY(50px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
 }
 
 .result-section {
@@ -700,17 +793,25 @@ html, body {
     margin: 0 auto 25px;
     font-size: 3.5rem;
     color: #000;
+    animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-20px); }
 }
 
 #end-title {
     font-size: 3rem;
     color: var(--accent);
     margin-bottom: 15px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
 }
 
 .result-message {
     font-size: 1.5rem;
     color: var(--secondary);
+    font-weight: 600;
 }
 
 /* الإحصائيات النهائية */
@@ -732,6 +833,7 @@ html, body {
     font-size: 5rem;
     font-weight: bold;
     color: white;
+    text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.5);
 }
 
 .detailed-stats {
@@ -749,6 +851,12 @@ html, body {
     gap: 20px;
     border: 2px solid rgba(255, 215, 0, 0.2);
     text-align: right;
+    transition: transform 0.3s ease;
+}
+
+.stat-card-end:hover {
+    transform: translateY(-5px);
+    border-color: var(--accent);
 }
 
 .stat-icon-end {
@@ -801,6 +909,7 @@ html, body {
     align-items: center;
     z-index: 2000;
     padding: 20px;
+    backdrop-filter: blur(5px);
 }
 
 .modal-content {
@@ -811,6 +920,12 @@ html, body {
     width: 100%;
     max-height: 80vh;
     overflow-y: auto;
+    animation: modalAppear 0.3s ease;
+}
+
+@keyframes modalAppear {
+    from { transform: scale(0.9); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
 }
 
 .modal-header {
@@ -842,10 +957,12 @@ html, body {
     display: flex;
     align-items: center;
     justify-content: center;
+    transition: all 0.3s ease;
 }
 
 .close-modal:hover {
     background: rgba(255, 255, 255, 0.1);
+    transform: rotate(90deg);
 }
 
 .modal-body {
@@ -857,6 +974,22 @@ html, body {
     max-height: 400px;
     overflow-y: auto;
     padding: 10px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--accent) rgba(255, 255, 255, 0.1);
+}
+
+.levels-list::-webkit-scrollbar {
+    width: 8px;
+}
+
+.levels-list::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+}
+
+.levels-list::-webkit-scrollbar-thumb {
+    background: var(--accent);
+    border-radius: 4px;
 }
 
 .level-item {
@@ -868,6 +1001,12 @@ html, body {
     align-items: center;
     gap: 15px;
     transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.level-item:hover {
+    background: rgba(255, 255, 255, 0.08);
+    transform: translateX(-5px);
 }
 
 .level-item.unlocked {
@@ -877,6 +1016,11 @@ html, body {
 .level-item.locked {
     opacity: 0.6;
     border-left: 4px solid var(--gray);
+    cursor: not-allowed;
+}
+
+.level-item.locked:hover {
+    transform: none;
 }
 
 .level-item-icon {
@@ -922,6 +1066,13 @@ html, body {
     align-items: center;
     gap: 8px;
     font-size: 0.9rem;
+    transition: all 0.3s ease;
+}
+
+.btn-small:hover {
+    background: var(--primary);
+    color: white;
+    transform: scale(1.05);
 }
 
 .locked-text {
@@ -957,6 +1108,11 @@ html, body {
     display: flex;
     align-items: flex-start;
     gap: 20px;
+    transition: transform 0.3s ease;
+}
+
+.instruction:hover {
+    transform: translateX(5px);
 }
 
 .instruction:last-child {
@@ -987,10 +1143,44 @@ html, body {
     font-size: 1.1rem;
 }
 
+/* === الإشعارات === */
+#notification {
+    position: fixed;
+    top: 20px;
+    right: 50%;
+    transform: translateX(50%);
+    background: rgba(0, 0, 0, 0.9);
+    color: white;
+    padding: 15px 30px;
+    border-radius: 50px;
+    border: 2px solid var(--accent);
+    z-index: 9999;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    max-width: 90%;
+    text-align: center;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
+}
+
+#notification.show {
+    opacity: 1;
+    visibility: visible;
+    top: 30px;
+}
+
+#notification-text {
+    font-weight: bold;
+    color: var(--accent);
+    font-size: 1.1rem;
+}
+
 /* === تحسينات التجاوب === */
 @media (max-width: 1024px) {
     .character-card {
         flex-direction: column;
+        text-align: center;
     }
     
     .character-stats {
@@ -1007,6 +1197,10 @@ html, body {
         width: 70px;
         height: 70px;
     }
+    
+    .start-container {
+        max-width: 95%;
+    }
 }
 
 @media (max-width: 768px) {
@@ -1022,7 +1216,7 @@ html, body {
         grid-template-columns: 1fr;
     }
     
-    .action-buttons {
+    .action-buttons, .action-buttons-end {
         flex-direction: column;
         align-items: center;
     }
@@ -1034,18 +1228,30 @@ html, body {
     .game-hud {
         flex-direction: column;
         gap: 15px;
+        padding: 10px;
+    }
+    
+    .hud-left, .hud-center, .hud-right {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .hud-item {
+        min-width: auto;
+        padding: 10px 20px;
     }
     
     .controls-left, .controls-right {
         min-width: 140px;
+        padding: 10px 15px;
     }
     
     .detailed-stats {
         grid-template-columns: 1fr;
     }
     
-    .action-buttons-end {
-        flex-direction: column;
+    .modal-content {
+        max-width: 95%;
     }
 }
 
@@ -1072,6 +1278,20 @@ html, body {
     
     .controls-left, .controls-right {
         min-width: 130px;
+        padding: 8px 12px;
+        gap: 15px;
+    }
+    
+    .end-container {
+        padding: 30px 20px;
+    }
+    
+    #end-title {
+        font-size: 2.2rem;
+    }
+    
+    .final-score {
+        font-size: 3.5rem;
     }
 }
 
@@ -1084,129 +1304,66 @@ html, body {
     body {
         min-height: -webkit-fill-available;
     }
-}
-
-/* ============================================
-   أنماط إضافية مطلوبة
-   ============================================ */
-
-/* الإشعارات */
-.notification {
-    position: fixed;
-    top: 20px;
-    right: 50%;
-    transform: translateX(50%);
-    background: rgba(0, 0, 0, 0.9);
-    color: white;
-    padding: 15px 30px;
-    border-radius: 50px;
-    border: 2px solid var(--accent);
-    z-index: 9999;
-    opacity: 0;
-    visibility: hidden;
-    transition: all 0.3s ease;
-    max-width: 90%;
-    text-align: center;
-    backdrop-filter: blur(10px);
-}
-
-.notification.show {
-    opacity: 1;
-    visibility: visible;
-    top: 30px;
-}
-
-/* الرسوم المتحركة */
-@keyframes pulse {
-    0% { opacity: 1; }
-    50% { opacity: 0.5; }
-    100% { opacity: 1; }
-}
-
-@keyframes bounce {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-10px); }
-}
-
-/* تنسيق الرسائل */
-#notification-text {
-    font-weight: bold;
-    color: var(--accent);
-}
-
-/* إصلاحات للصور */
-.player-img-fallback i {
-    animation: bounce 2s infinite;
-}
-
-/* تحسينات للأزرار */
-.btn-primary:active, .btn-secondary:active {
-    transform: scale(0.95);
-}
-
-.mobile-btn.active {
-    transform: scale(0.85);
-    opacity: 0.8;
-}
-
-/* تحسينات للشاشات */
-@media (max-height: 600px) {
-    .mobile-controls {
-        bottom: 10px !important;
-    }
     
     .mobile-btn {
-        width: 55px !important;
-        height: 55px !important;
-        font-size: 1.2rem !important;
-    }
-    
-    .jump-btn,
-    .slide-btn {
-        width: 60px !important;
-        height: 60px !important;
+        -webkit-touch-callout: none;
     }
 }
 
-/* رسالة الوضع العمودي */
-@media (orientation: portrait) and (max-width: 768px) {
-    #game-screen::before {
-        content: "🔄 الرجاء تدوير الهاتف إلى الوضع الأفقي للعب";
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(10, 10, 26, 0.95);
-        color: white;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        font-size: 1.3rem;
-        text-align: center;
-        padding: 20px;
-        z-index: 10000;
-        backdrop-filter: blur(10px);
+/* تحسينات الوصول */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
     }
 }
 
-/* حل مشكلة شاشة اللعب */
-#game-screen {
-    display: none;
+/* تحسينات الأداء */
+canvas {
+    image-rendering: -moz-crisp-edges;
+    image-rendering: -webkit-crisp-edges;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
 }
 
-#game-screen.active {
-    display: flex !important;
+/* تلميحات للأزرار */
+[title] {
+    position: relative;
 }
 
-/* إصلاح شريط التقدم */
-.progress-fill {
-    background: linear-gradient(90deg, var(--primary), var(--accent), var(--secondary));
-    background-size: 200% 100%;
-    animation: loading 2s infinite linear;
+[title]:hover::after {
+    content: attr(title);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.9);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    white-space: nowrap;
+    z-index: 1000;
+    border: 1px solid var(--accent);
+    pointer-events: none;
+    margin-bottom: 5px;
 }
 
-@keyframes loading {
-    0% { background-position: 200% 0; }
-    100% { background-position: -200% 0; }
+/* تحسينات شريط التمرير */
+::-webkit-scrollbar {
+    width: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--accent);
+    border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--primary);
 }
