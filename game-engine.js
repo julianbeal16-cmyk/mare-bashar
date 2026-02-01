@@ -35,7 +35,7 @@ const MarioGame = {
     castle: null,
     particles: [],
     camera: { x: 0, y: 0 },
-    worldWidth: 4000,
+    worldWidth: 3000, // خففنا العرض
     worldHeight: 600,
     
     // التحكم
@@ -78,6 +78,7 @@ const MarioGame = {
             this.loadBestScore();
             this.setupControls();
             this.setupAudio();
+            this.setupTouchControls(); // ← أضفنا هذا السطر
             
             this.state = 'menu';
             console.log('✅ اللعبة مهيأة بنجاح!');
@@ -139,30 +140,15 @@ const MarioGame = {
                 resolve();
             };
             
-            // محاولة مسارات مختلفة
-            const paths = ['player.png', './player.png', 'assets/player.png'];
-            let currentPath = 0;
+            this.playerImage.src = 'player.png';
             
-            const tryLoad = () => {
-                if (currentPath >= paths.length) {
+            // إذا لم تحمل خلال 2 ثانية
+            setTimeout(() => {
+                if (!this.imageLoaded && !this.imageError) {
                     this.createFallbackImage();
                     resolve();
-                    return;
                 }
-                
-                console.log(`🔍 محاولة تحميل من: ${paths[currentPath]}`);
-                this.playerImage.src = paths[currentPath];
-                currentPath++;
-                
-                // إذا لم تحمل خلال 1.5 ثانية، جرب المسار التالي
-                setTimeout(() => {
-                    if (!this.imageLoaded && !this.imageError && this.playerImage.complete === false) {
-                        tryLoad();
-                    }
-                }, 1500);
-            };
-            
-            tryLoad();
+            }, 2000);
         });
     },
     
@@ -242,50 +228,94 @@ const MarioGame = {
             this.keys[e.key.toLowerCase()] = false;
         });
         
-        this.setupTouchControls();
-        
-        console.log('🎮 نظام التحكم جاهز');
+        console.log('🎮 لوحة المفاتيح جاهزة');
     },
     
+    // ======================
+    // إصلاح أزرار التحكم اللمسية
+    // ======================
     setupTouchControls() {
+        console.log('👆 إعداد أزرار التحكم اللمسية...');
+        
+        // تأكد من وجود أزرار التحكم
         const setupButton = (id, control) => {
             const btn = document.getElementById(id);
-            if (!btn) return;
+            if (!btn) {
+                console.error(`❌ زر ${id} غير موجود!`);
+                return;
+            }
             
-            const activate = (e) => {
+            console.log(`✅ تهيئة زر ${id} للتحكم ${control}`);
+            
+            // إزالة أي أحداث سابقة
+            const newBtn = btn.cloneNode(true);
+            btn.parentNode.replaceChild(newBtn, btn);
+            const currentBtn = document.getElementById(id);
+            
+            // تفعيل اللمس
+            currentBtn.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
                 this.touchControls[control] = true;
-                e.preventDefault();
-                btn.classList.add('active');
-                
-                if (navigator.vibrate) {
-                    navigator.vibrate(30);
-                }
-            };
+                currentBtn.classList.add('active');
+                console.log(`👆 زر ${control} مفعل`);
+            }, { passive: false });
             
-            const deactivate = (e) => {
+            currentBtn.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
                 this.touchControls[control] = false;
+                currentBtn.classList.remove('active');
+                console.log(`👆 زر ${control} غير مفعل`);
+            }, { passive: false });
+            
+            currentBtn.addEventListener('touchcancel', (e) => {
                 e.preventDefault();
-                btn.classList.remove('active');
-            };
+                e.stopPropagation();
+                this.touchControls[control] = false;
+                currentBtn.classList.remove('active');
+            }, { passive: false });
             
-            btn.addEventListener('pointerdown', activate);
-            btn.addEventListener('pointerup', deactivate);
-            btn.addEventListener('pointerleave', deactivate);
-            btn.addEventListener('pointercancel', deactivate);
+            // تفعيل الفأرة
+            currentBtn.addEventListener('mousedown', (e) => {
+                e.preventDefault();
+                this.touchControls[control] = true;
+                currentBtn.classList.add('active');
+            });
             
-            btn.addEventListener('touchstart', activate, { passive: false });
-            btn.addEventListener('touchend', deactivate, { passive: false });
-            btn.addEventListener('touchcancel', deactivate, { passive: false });
+            currentBtn.addEventListener('mouseup', (e) => {
+                e.preventDefault();
+                this.touchControls[control] = false;
+                currentBtn.classList.remove('active');
+            });
             
-            btn.addEventListener('mousedown', activate);
-            btn.addEventListener('mouseup', deactivate);
-            btn.addEventListener('mouseleave', deactivate);
+            currentBtn.addEventListener('mouseleave', (e) => {
+                this.touchControls[control] = false;
+                currentBtn.classList.remove('active');
+            });
         };
         
+        // إعداد جميع أزرار التحكم
         setupButton('btn-left', 'left');
         setupButton('btn-right', 'right');
         setupButton('btn-jump', 'jump');
         setupButton('btn-slide', 'slide');
+        
+        // إظهار أزرار التحكم عند بدء اللعبة
+        const gameScreen = document.getElementById('game-screen');
+        const observer = new MutationObserver(() => {
+            if (gameScreen.classList.contains('active')) {
+                const mobileControls = document.querySelector('.mobile-controls');
+                if (mobileControls) {
+                    mobileControls.style.display = 'flex';
+                    console.log('📱 أزرار التحكم اللمسية معروضة');
+                }
+            }
+        });
+        
+        observer.observe(gameScreen, { attributes: true, attributeFilter: ['class'] });
+        
+        console.log('✅ أزرار التحكم اللمسية جاهزة');
     },
     
     setupAudio() {
@@ -332,6 +362,12 @@ const MarioGame = {
         this.updateUI();
         this.createLevelFromData(levelData);
         
+        // إظهار أزرار التحكم اللمسية
+        const mobileControls = document.querySelector('.mobile-controls');
+        if (mobileControls) {
+            mobileControls.style.display = 'flex';
+        }
+        
         this.showScreen('game');
         
         this.startTimer();
@@ -346,25 +382,27 @@ const MarioGame = {
         console.log(`🌍 إنشاء المرحلة من البيانات...`);
         
         const canvas = this.canvas;
-        const groundY = canvas ? canvas.height - 100 : 500;
+        const groundY = canvas ? canvas.height - 100 : 400;
         
-        this.worldWidth = levelData.castle.x + 500;
+        // خففنا حجم العالم
+        this.worldWidth = levelData.castle ? levelData.castle.x + 300 : 2500;
         this.worldHeight = groundY + 200;
-        this.totalCoins = levelData.totalCoins || 50;
+        this.totalCoins = levelData.totalCoins || 30; // خففنا عدد العملات
         this.timeLeft = levelData.timeLimit || 180;
         
         const startX = levelData.playerStart?.x || 150;
         const startY = levelData.playerStart?.y || groundY - 150;
         
+        // زيادة سرعة اللاعب
         this.player = {
             x: startX,
             y: startY,
             width: 50,
             height: 80,
-            speed: 6,
+            speed: 8, // زدنا السرعة
             velX: 0,
             velY: 0,
-            jumpPower: -15,
+            jumpPower: -16, // زدنا قوة القفز
             gravity: 0.8,
             grounded: false,
             facingRight: true,
@@ -375,6 +413,7 @@ const MarioGame = {
             invincibleTimer: 0
         };
         
+        // الأرض الأساسية
         this.platforms = [
             {
                 x: 0,
@@ -386,6 +425,7 @@ const MarioGame = {
             }
         ];
         
+        // إضافة المنصات
         if (levelData.platforms && Array.isArray(levelData.platforms)) {
             levelData.platforms.forEach(p => {
                 if (p && p.x !== undefined && p.y !== undefined) {
@@ -401,6 +441,7 @@ const MarioGame = {
             });
         }
         
+        // العملات
         this.coins = [];
         if (levelData.coins && Array.isArray(levelData.coins)) {
             levelData.coins.forEach(c => {
@@ -417,6 +458,7 @@ const MarioGame = {
             });
         }
         
+        // الأعداء
         this.enemies = [];
         if (levelData.enemies && Array.isArray(levelData.enemies)) {
             levelData.enemies.forEach(e => {
@@ -438,6 +480,7 @@ const MarioGame = {
             });
         }
         
+        // القصر
         if (levelData.castle) {
             this.castle = {
                 x: levelData.castle.x,
@@ -449,7 +492,7 @@ const MarioGame = {
             };
         } else {
             this.castle = {
-                x: this.worldWidth - 400,
+                x: this.worldWidth - 300,
                 y: groundY - 250,
                 width: 280,
                 height: 200,
@@ -522,16 +565,20 @@ const MarioGame = {
         
         player.velX = 0;
         
+        // التحكم في الحركة - التحقق من أزرار اللمس
         if (this.keys['arrowleft'] || this.keys['a'] || this.touchControls.left) {
             player.velX = -player.speed;
             player.facingRight = false;
+            console.log('⬅️ تحرك لليسار');
         }
         
         if (this.keys['arrowright'] || this.keys['d'] || this.touchControls.right) {
             player.velX = player.speed;
             player.facingRight = true;
+            console.log('➡️ تحرك لليمين');
         }
         
+        // التزحلق
         if (this.touchControls.slide || this.keys['arrowdown'] || this.keys['s']) {
             if (player.grounded && !player.isSliding) {
                 player.isSliding = true;
@@ -550,11 +597,13 @@ const MarioGame = {
             }
         }
         
+        // القفز - التحقق من زر القفز اللمسي
         const jumpPressed = this.keys[' '] || this.keys['arrowup'] || this.keys['w'] || this.touchControls.jump;
         if (jumpPressed && player.grounded && !player.isSliding) {
             player.velY = player.jumpPower;
             player.grounded = false;
             this.playSound('jump');
+            console.log('🔼 قفز');
         }
         
         player.velY += player.gravity;
@@ -714,7 +763,6 @@ const MarioGame = {
             }
         });
         
-        // FIX: القصر يفحص فقط عندما تكون كل العملات مجمعة
         if (this.castle && !this.castle.reached) {
             if (this.checkCollision(player, this.castle)) {
                 if (this.coinsCollected >= this.totalCoins) {
@@ -1300,6 +1348,14 @@ const MarioGame = {
             if (screenId === 'game') {
                 this.state = 'playing';
                 this.updateCanvasSize();
+                
+                // إظهار أزرار التحكم اللمسية
+                setTimeout(() => {
+                    const mobileControls = document.querySelector('.mobile-controls');
+                    if (mobileControls) {
+                        mobileControls.style.display = 'flex';
+                    }
+                }, 100);
             } else if (screenId === 'start') {
                 this.state = 'menu';
                 if (window.App && typeof App.updateLevelsList === 'function') {
